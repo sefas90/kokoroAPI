@@ -89,11 +89,7 @@ class MaterialController extends BaseController {
     public function destroy($id) {
         $material = Material::find($id);
         if (!$material) {
-            return response()->json([
-                'error' => [
-                    'message' => 'No se encontro el material.'
-                ]
-            ]);
+            return $this->sendError('No se encontro el material');
         }
 
         return $material->delete() ?

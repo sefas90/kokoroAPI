@@ -96,21 +96,11 @@ class CampaignController extends BaseController {
     public function destroy($id) {
         $campaign = Campaign::find($id);
         if (!$campaign) {
-            return response()->json([
-                'error' => [
-                    'message' => 'No se encontro el campaign.'
-                ]
-            ]);
+            return $this->sendError('No se encontro la campaña');
         }
 
         return $campaign->delete() ?
-            response()->json([
-                'message' => 'La campaña ' . $campaign->campaign_name . ' se elimino correctamente.'
-            ]) :
-            response()->json([
-                'error' => [
-                    'message' => 'La campaña ' . $campaign->campaign_name .' no se pudo eliminar.'
-                ]
-            ]);
+            $this->sendResponse('', 'La campaña ' . $campaign->campaign_name . ' se elimino correctamente.') :
+            $this->sendError('Ocurrio un error al eliminar una campaña');
     }
 }

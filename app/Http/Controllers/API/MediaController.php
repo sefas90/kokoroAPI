@@ -99,21 +99,11 @@ class MediaController extends BaseController {
     public function destroy($id) {
         $media = Media::find($id);
         if (!$media) {
-            return response()->json([
-                'error' => [
-                    'message' => 'No se encontro el media.'
-                ]
-            ]);
+            return $this->sendError('No se encontro el medio');
         }
 
         return $media->delete() ?
-            response()->json([
-                'message' => 'El media ' . $media->media_name . ' se elimino correctamente.'
-            ]) :
-            response()->json([
-                'error' => [
-                    'message' => 'El media ' . $media->media_name .' no se pudo eliminar.'
-                ]
-            ]);
+            $this->sendResponse('', 'El media ' . $media->media_name . ' se elimino correctamente.') :
+            $this->sendError('Ocurrio un error al eliminar un medio');
     }
 }

@@ -89,11 +89,7 @@ class GuideController extends BaseController {
     public function destroy($id) {
         $guide = Guide::find($id);
         if (!$guide) {
-            return response()->json([
-                'error' => [
-                    'message' => 'No se encontro el guide.'
-                ]
-            ]);
+            return $this->sendError('No se encontro la guia');
         }
 
         return $guide->delete() ?

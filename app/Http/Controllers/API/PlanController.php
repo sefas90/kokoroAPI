@@ -41,7 +41,7 @@ class PlanController extends BaseController {
 
             return $plan->save() ?
                 $this->sendResponse('', 'El plan ' . $plan->plan_name . ' se guardo correctamente') :
-                $this->sendError('Ocurrio un error al crear un nuevo plane.');
+                $this->sendError('Ocurrio un error al crear un nuevo plan.');
         } else {
             return $this->sendError('No esta autenticado');
         }
@@ -51,7 +51,7 @@ class PlanController extends BaseController {
         if (Auth::check()){
             $plan = Plan::find($id);
             if (!$plan) {
-                return $this->sendError('No se contro el plane');
+                return $this->sendError('No se contro el plan');
             }
             return $this->sendResponse($plan, '');
         } else {
@@ -72,15 +72,15 @@ class PlanController extends BaseController {
 
             $plan = Plan::find($id);
             if (!$plan) {
-                return $this->sendError('No se encontro el plane');
+                return $this->sendError('No se encontro el plan');
             }
 
             $plan->plan_name = trim($request->plan_name);
             $plan->client_id = trim($request->client_id);
 
             return $plan->save() ?
-                $this->sendResponse('', 'El plane ' . $plan->plan_name . ' se actualizo correctamente') :
-                $this->sendError('Ocurrio un error al actualizar el plane ' . $plan->plan_name . '.');
+                $this->sendResponse('', 'El plan ' . $plan->plan_name . ' se actualizo correctamente') :
+                $this->sendError('Ocurrio un error al actualizar el plan ' . $plan->plan_name . '.');
         } else {
             return $this->sendError('No esta autenticado');
         }
@@ -89,21 +89,11 @@ class PlanController extends BaseController {
     public function destroy($id) {
         $plan = Plan::find($id);
         if (!$plan) {
-            return response()->json([
-                'error' => [
-                    'message' => 'No se encontro el plane.'
-                ]
-            ]);
+            return $this->sendError('No se encontro el plan');
         }
 
         return $plan->delete() ?
-            response()->json([
-                'message' => 'El plane ' . $plan->plan_name . ' se elimino correctamente.'
-            ]) :
-            response()->json([
-                'error' => [
-                    'message' => 'El plane ' . $plan->plan_name .' no se pudo eliminar.'
-                ]
-            ]);
+            $this->sendResponse('', 'El plan ' . $plan->plan_name . ' se elimino correctamente.') :
+            $this->sendError('Ocurrio un error al eliminar un plan');
     }
 }

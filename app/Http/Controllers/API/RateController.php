@@ -52,7 +52,7 @@ class RateController extends BaseController {
 
             return $rate->save() ?
                 $this->sendResponse('', 'El rate ' . $rate->rate_name . ' se guardo correctamente') :
-                $this->sendError('Ocurrio un error al crear una nueva campaña.');
+                $this->sendError('Ocurrio un error al crear una nueva tarifa.');
         } else {
             return $this->sendError('No esta autenticado');
         }
@@ -62,7 +62,7 @@ class RateController extends BaseController {
         if (Auth::check()){
             $rate = Rate::find($id);
             if (!$rate) {
-                return $this->sendError('No se contro la campaña');
+                return $this->sendError('No se contro la tarifa');
             }
             return $this->sendResponse($rate, '');
         } else {
@@ -83,7 +83,7 @@ class RateController extends BaseController {
 
             $rate = Rate::find($id);
             if (!$rate) {
-                return $this->sendError('No se encontro la campaña');
+                return $this->sendError('No se encontro la tarifa');
             }
 
             $rate->rate_name = trim($request->rate_name);
@@ -92,8 +92,8 @@ class RateController extends BaseController {
             $rate->plan_id       = trim($request->plan_id);
 
             return $rate->save() ?
-                $this->sendResponse('', 'La campaña ' . $rate->rate_name . ' se actualizo correctamente') :
-                $this->sendError('Ocurrio un error al actualizar la campaña ' . $rate->rate_name . '.');
+                $this->sendResponse('', 'La tarifa ' . $rate->rate_name . ' se actualizo correctamente') :
+                $this->sendError('Ocurrio un error al actualizar la tarifa ' . $rate->rate_name . '.');
         } else {
             return $this->sendError('No esta autenticado');
         }
@@ -102,21 +102,11 @@ class RateController extends BaseController {
     public function destroy($id) {
         $rate = Rate::find($id);
         if (!$rate) {
-            return response()->json([
-                'error' => [
-                    'message' => 'No se encontro el rate.'
-                ]
-            ]);
+            return $this->sendError('No se encontro la tarifa');
         }
 
         return $rate->delete() ?
-            response()->json([
-                'message' => 'La campaña ' . $rate->rate_name . ' se elimino correctamente.'
-            ]) :
-            response()->json([
-                'error' => [
-                    'message' => 'La campaña ' . $rate->rate_name .' no se pudo eliminar.'
-                ]
-            ]);
+            $this->sendResponse('', 'La tarifa ' . $rate->rate_name . ' se elimino correctamente.') :
+            $this->sendError('Ocurrio un error al eliminar una tarifa');
     }
 }

@@ -88,11 +88,7 @@ class ClientController extends BaseController {
     public function destroy($id) {
         $client = Client::find($id);
         if (!$client) {
-            return response()->json([
-               'error' => [
-                   'message' => 'No se encontro el cliente.'
-               ]
-            ]);
+            return $this->sendError('No se encontro el cliente');
         }
 
         return $client->delete() ?

@@ -97,21 +97,11 @@ class AuspiceController extends BaseController {
     public function destroy($id) {
         $auspice = Auspice::find($id);
         if (!$auspice) {
-            return response()->json([
-                'error' => [
-                    'message' => 'No se encontro el auspicee.'
-                ]
-            ]);
+            return $this->sendError('No se encontro el auspicio');
         }
 
         return $auspice->delete() ?
-            response()->json([
-                'message' => 'El auspicee ' . $auspice->auspice_name . ' se elimino correctamente.'
-            ]) :
-            response()->json([
-                'error' => [
-                    'message' => 'El auspicee ' . $auspice->auspice_name .' no se pudo eliminar.'
-                ]
-            ]);
+            $this->sendResponse('', 'El auspicio ' . $auspice->auspice_name . ' se elimino correctamente.') :
+            $this->sendError('Ocurrio un error al eliminar un auspicio');
     }
 }
