@@ -32,5 +32,12 @@ The server starts running on
 localhost:8000
 ```
 
+# Routing
+
+To show all routes
+```console
+php artisan route:list
+```
+
 ## All documentation
 [Laravel](https://laravel.com/docs/8.x)
