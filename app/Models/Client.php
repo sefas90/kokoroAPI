@@ -10,6 +10,7 @@ class Client extends Model {
 
     protected $fillable = [
         'client_name',
+        'representative',
         'NIT',
         'created_at',
         'updated_at',

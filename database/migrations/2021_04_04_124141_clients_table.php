@@ -10,6 +10,7 @@ class ClientsTable extends Migration {
         Schema::create('clients', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('client_name', 50);
+            $table->string('representative', 50);
             $table->string('NIT', 11);
             $table->timestamps();
             $table->softDeletes();
