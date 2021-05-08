@@ -10,7 +10,7 @@ class Media extends Model {
 
     protected $fillable = [
         'media_name',
-        'representative',
+        'business_name',
         'NIT',
         'city_id',
         'media_type',

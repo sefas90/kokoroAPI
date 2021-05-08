@@ -49,8 +49,6 @@ Route::group($attributes, function () {
     Route::post('/campaign/{id}', [CampaignController::class, 'update']);
     Route::delete('/campaign/{id}', [CampaignController::class, 'destroy']);
 
-    Route::get('/cities', [CityController::class, 'index']);
-
     Route::get('/client', [ClientController::class, 'index']);
     Route::post('/client', [ClientController::class, 'store']);
     Route::get('/client/{id}', [ClientController::class, 'show']);
@@ -75,8 +73,6 @@ Route::group($attributes, function () {
     Route::post('/media/{id}', [MediaController::class, 'update']);
     Route::delete('/media/{id}', [MediaController::class, 'destroy']);
 
-    Route::get('/mediaTypes', [MediaTypeController::class, 'index']);
-
     Route::get('/permissions', [PermissionController::class, 'permissions']);
 
     Route::get('/plan', [PlanController::class, 'index']);
@@ -99,4 +95,13 @@ Route::group($attributes, function () {
     Route::get('/user/{id}', [UserController::class, 'show']);
     Route::post('/user/{id}', [UserController::class, 'update']);
     Route::delete('/user/{id}', [UserController::class, 'destroy']);
+
+    // Dropdowns
+    Route::get('/citiesList', [CityController::class, 'index']);
+    Route::get('/mediaTypesList', [MediaTypeController::class, 'index']);
+    Route::get('/guideList', [GuideController::class, 'list']);
+    Route::get('/planList', [PlanController::class, 'list']);
+    Route::get('/rateList', [RateController::class, 'list']);
+    Route::get('/campaignList', [CampaignController::class, 'list']);
+    Route::get('/clientList', [ClientController::class, 'list']);
 });

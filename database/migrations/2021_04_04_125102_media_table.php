@@ -10,7 +10,7 @@ class MediaTable extends Migration {
         Schema::create('media', function (Blueprint $table) {
             $table->bigIncrements('id')->index();
             $table->string('media_name');
-            $table->string('representative');
+            $table->string('business_name');
             $table->string('NIT');
             $table->bigInteger('city_id')->unsigned();
             $table->bigInteger('media_type')->unsigned();

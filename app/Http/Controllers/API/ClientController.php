@@ -50,7 +50,8 @@ class ClientController extends BaseController {
 
     public function update(Request $request, $id) {
         $validator = Validator::make($request->all(), [
-            'client_name' => 'required',
+            'clientName' => 'required',
+            'representative' => 'required',
             'NIT' => 'required',
         ]);
 
@@ -63,8 +64,9 @@ class ClientController extends BaseController {
             return $this->sendError('No se encontro el cliente');
         }
 
-        $client->client_name = trim($request->client_name);
-        $client->NIT         = trim($request->NIT);
+        $client->client_name    = trim($request->clientName);
+        $client->representative = trim($request->representative);
+        $client->NIT            = trim($request->NIT);
 
         return $client->save() ?
             $this->sendResponse('', 'El cliente ' . $client->client_name . ' se actualizo correctamente') :
@@ -81,4 +83,12 @@ class ClientController extends BaseController {
             $this->sendResponse('', 'El cliente ' . $client->client_name . ' se elimino correctamente.') :
             $this->sendError('El cliente ' . $client->client_name .' no se pudo eliminar.');
     }
+
+    public function list() {
+        return $this->sendResponse(DB::table('clients')
+            ->select('id', 'client_name as value', 'client_name as label')
+            ->where('deleted_at', '=', null)
+            ->get(), '');
+    }
+
 }
