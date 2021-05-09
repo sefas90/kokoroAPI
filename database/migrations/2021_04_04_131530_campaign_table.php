@@ -13,9 +13,11 @@ class CampaignTable extends Migration {
             $table->dateTime('date_ini');
             $table->dateTime('date_end');
             $table->bigInteger('plan_id')->unsigned();
+            $table->bigInteger('client_id')->unsigned();
             $table->timestamps();
             $table->softDeletes();
             $table->foreign('plan_id')->references('id')->on('plan');
+            $table->foreign('client_id')->references('id')->on('clients');
             $table->engine = 'InnoDB';
         });
     }

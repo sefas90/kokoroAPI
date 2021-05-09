@@ -6,24 +6,27 @@ use App\Models\Campaign;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Validator;
 
 class CampaignController extends BaseController {
     public function index (Request $request) {
         $sort = explode(":", $request->sort);
-        return $this->sendResponse(DB::table('campaign')
-            ->select('campaign.id', 'campaign_name as campaignName', 'client_name as clientName', 'date_ini', 'date_end')
-            ->join('plan', 'plan.id', '=', 'campaign.plan_id')
-            ->where('campaign.deleted_at', '=', null)
-            ->orderBy(empty($sort[0]) ? 'campaign.id' : 'campaign.'.$sort[0], empty($sort[1]) ? 'asc' : $sort[1])
+        return $this->sendResponse(DB::table('campaigns')
+            ->select('campaigns.id', 'campaign_name as campaignName', 'clients.client_name as clientName', 'clients.id as clientId', 'date_ini as dateIni', 'date_end as dateEnd', 'plan.plan_name as planName', 'plan.id as planId')
+            ->join('plan', 'plan.id', '=', 'campaigns.plan_id')
+            ->join('clients', 'clients.id', '=', 'campaigns.client_id')
+            ->where('campaigns.deleted_at', '=', null)
+            ->orderBy(empty($sort[0]) ? 'campaigns.id' : 'campaigns.'.$sort[0], empty($sort[1]) ? 'asc' : $sort[1])
             ->get(), '');
     }
 
     public function store(Request $request) {
         $validator = Validator::make($request->all(), [
-            'campaign_name' => 'required',
-            'date_ini'      => 'required',
-            'date_end'      => 'required',
-            'plan_id'       => 'required',
+            'campaignName' => 'required',
+            'dateIni'      => 'required',
+            'dateEnd'      => 'required',
+            'planId'       => 'required',
+            'clientId'     => 'required',
         ]);
 
         if($validator->fails()){
@@ -31,10 +34,11 @@ class CampaignController extends BaseController {
         }
 
         $campaign = new Campaign(array(
-            'campaign_name' => trim($request->campaign_name),
-            'date_ini'      => trim($request->date_ini),
-            'date_end'      => trim($request->date_end),
-            'plan_id'       => trim($request->plan_id)
+            'campaign_name' => trim($request->campaignName),
+            'date_ini'      => trim($request->dateIni),
+            'date_end'      => trim($request->dateEnd),
+            'plan_id'       => trim($request->planId),
+            'client_id'       => trim($request->clientId),
         ));
 
         return $campaign->save() ?
@@ -52,10 +56,11 @@ class CampaignController extends BaseController {
 
     public function update(Request $request, $id) {
         $validator = Validator::make($request->all(), [
-            'campaign_name' => 'required',
-            'date_ini'      => 'required',
-            'date_end'      => 'required',
-            'plan_id'       => 'required',
+            'campaignName' => 'required',
+            'dateIni'      => 'required',
+            'dateEnd'      => 'required',
+            'planId'       => 'required',
+            'clientId'     => 'required',
         ]);
 
         if($validator->fails()){
@@ -67,10 +72,11 @@ class CampaignController extends BaseController {
             return $this->sendError('No se encontro la campaña');
         }
 
-        $campaign->campaign_name = trim($request->campaign_name);
-        $campaign->date_ini      = trim($request->date_ini);
-        $campaign->date_end      = trim($request->date_end);
-        $campaign->plan_id       = trim($request->plan_id);
+        $campaign->campaign_name = trim($request->campaignName);
+        $campaign->date_ini      = trim($request->dateIni);
+        $campaign->date_end      = trim($request->dateEnd);
+        $campaign->plan_id       = trim($request->planId);
+        $campaign->plan_id       = trim($request->clientId);
 
         return $campaign->save() ?
             $this->sendResponse('', 'La campaña ' . $campaign->campaign_name . ' se actualizo correctamente') :
@@ -89,8 +95,8 @@ class CampaignController extends BaseController {
     }
 
     public function list() {
-        return $this->sendResponse(DB::table('campaign')
-            ->select('id', 'campaign_name as value', 'campaign_name as label')
+        return $this->sendResponse(DB::table('campaigns')
+            ->select('id', 'id as value', 'campaign_name as label')
             ->where('deleted_at', '=', null)
             ->get(), '');
     }

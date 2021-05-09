@@ -6,12 +6,15 @@ use App\Models\Media;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Validator;
 
 class MediaController extends BaseController {
     public function index (Request $request) {
         $sort = explode(":", $request->sort);
         return $this->sendResponse(DB::table('media')
-            ->select('id', 'media_name as mediaName', 'business_name as businessName', 'NIT', 'city_id as cityId', 'media_type as mediaType')
+            ->select('media.id', 'media_name as mediaName', 'business_name as businessName', 'NIT', 'city', 'cities.id as cityId', 'media_types.media_type as mediaType', 'media_types.id as mediaTypeId')
+            ->join('cities', 'cities.id', '=', 'media.city_id')
+            ->join('media_types', 'media_types.id', '=', 'media.media_type')
             ->where('media.deleted_at', '=', null)
             ->orderBy(empty($sort[0]) ? 'media.id' : 'media.'.$sort[0], empty($sort[1]) ? 'asc' : $sort[1])
             ->get(), '');
@@ -19,11 +22,11 @@ class MediaController extends BaseController {
 
     public function store(Request $request) {
         $validator = Validator::make($request->all(), [
-            'media_name'     => 'required',
-            'business_name'  => 'required',
+            'mediaName'     => 'required',
+            'businessName'  => 'required',
             'NIT'            => 'required',
-            'city_id'        => 'required',
-            'media_type'     => 'required',
+            'cityId'        => 'required',
+            'mediaType'     => 'required',
         ]);
 
         if($validator->fails()) {
@@ -53,11 +56,11 @@ class MediaController extends BaseController {
 
     public function update(Request $request, $id) {
         $validator = Validator::make($request->all(), [
-            'media_name'     => 'required',
-            'business_name'  => 'required',
+            'mediaName'     => 'required',
+            'businessName'  => 'required',
             'NIT'            => 'required',
-            'city_id'        => 'required',
-            'media_type'     => 'required',
+            'cityId'        => 'required',
+            'mediaType'     => 'required',
         ]);
 
         if($validator->fails()){
@@ -69,11 +72,11 @@ class MediaController extends BaseController {
             return $this->sendError('No se encontro el media');
         }
 
-        $media->media_name     = trim($request->media_name);
-        $media->representative = trim($request->business_name);
+        $media->media_name     = trim($request->mediaName);
+        $media->business_name = trim($request->businessName);
         $media->NIT            = trim($request->NIT);
-        $media->city_id        = trim($request->city_id);
-        $media->media_type     = trim($request->media_type);
+        $media->city_id        = trim($request->cityId);
+        $media->media_type     = trim($request->mediaType);
 
         return $media->save() ?
             $this->sendResponse('', 'El media ' . $media->media_name . ' se actualizo correctamente') :
@@ -89,5 +92,12 @@ class MediaController extends BaseController {
         return $media->delete() ?
             $this->sendResponse('', 'El media ' . $media->media_name . ' se elimino correctamente.') :
             $this->sendError('Ocurrio un error al eliminar un medio');
+    }
+
+    public function list() {
+        return $this->sendResponse(DB::table('media')
+            ->select('id', 'id as value', 'media_name as label')
+            ->where('deleted_at', '=', null)
+            ->get(), '');
     }
 }

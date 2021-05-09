@@ -6,25 +6,28 @@ use App\Models\Rate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Validator;
 
 class RateController extends BaseController {
     public function index (Request $request) {
         $sort = explode(":", $request->sort);
         return $this->sendResponse(DB::table('rates')
-            ->select('rate.id', 'show', 'hour_ini', 'hour_end', 'brod_mo', 'brod_tu',
-                             'brod_we', 'brod_th', 'brod_fr', 'brod_sa', 'brod_su', 'cost', 'media_name as mediaName')
-            ->join('media', 'media.id', '=', 'rate.media_id')
-            ->where('rate.deleted_at', '=', null)
-            ->orderBy(empty($sort[0]) ? 'rate.id' : 'rate.'.$sort[0], empty($sort[1]) ? 'asc' : $sort[1])
+            ->select('rates.id', 'show', 'hour_ini as hourIni', 'hour_end as hourEnd', 'brod_mo as brodMo', 'brod_tu as brodTu',
+                             'brod_we as brodWe', 'brod_th as brodTh', 'brod_fr as brodFr', 'brod_sa as brodSa', 'brod_su as brodSu', 'cost', 'media_name as mediaName', 'media.id as mediaId')
+            ->join('media', 'media.id', '=', 'rates.media_id')
+            ->where('rates.deleted_at', '=', null)
+            ->orderBy(empty($sort[0]) ? 'rates.id' : 'rates.'.$sort[0], empty($sort[1]) ? 'asc' : $sort[1])
             ->get(), '');
     }
 
     public function store(Request $request) {
         $validator = Validator::make($request->all(), [
             'show'     => 'required',
-            'media_id' => 'required',
-            'hour_ini' => 'required',
+            'mediaId'  => 'required',
+            'hourIni'  => 'required',
+            'hourEnd'  => 'required',
             'cost'     => 'required',
+            'emitDays' => 'required',
         ]);
 
         if($validator->fails()){
@@ -33,16 +36,17 @@ class RateController extends BaseController {
 
         $rate = new Rate(array(
             'show'     => trim($request->show),
-            'media_id' => trim($request->media_id),
-            'hour_ini' => trim($request->hour_ini),
+            'media_id' => trim($request->mediaId),
+            'hour_ini' => trim($request->hourIni),
+            'hour_end' => trim($request->hourEnd),
             'cost'     => trim($request->cost),
-            'brod_mo'  => trim($request->brod_mo),
-            'brod_tu'  => trim($request->brod_tu),
-            'brod_we'  => trim($request->brod_we),
-            'brod_th'  => trim($request->brod_th),
-            'brod_fr'  => trim($request->brod_fr),
-            'brod_sa'  => trim($request->brod_sa),
-            'brod_su'  => trim($request->brod_su)
+            'brod_mo'  => trim($request->emitDays['Lunes']) || 0,
+            'brod_tu'  => trim($request->emitDays['Martes']) || 0,
+            'brod_we'  => trim($request->emitDays['Miercoles']) || 0,
+            'brod_th'  => trim($request->emitDays['Jueves']) || 0,
+            'brod_fr'  => trim($request->emitDays['viernes']) || 0,
+            'brod_sa'  => trim($request->emitDays['sabado']) || 0,
+            'brod_su'  => trim($request->emitDays['domingo']) || 0
         ));
 
         return $rate->save() ?
@@ -60,8 +64,12 @@ class RateController extends BaseController {
 
     public function update(Request $request, $id) {
         $validator = Validator::make($request->all(), [
-            'rate_name' => 'required',
-            'client_id' => 'required',
+            'show'     => 'required',
+            'mediaId'  => 'required',
+            'hourIni'  => 'required',
+            'hourEnd'  => 'required',
+            'cost'     => 'required',
+            'emitDays' => 'required',
         ]);
 
         if($validator->fails()){
@@ -73,10 +81,18 @@ class RateController extends BaseController {
             return $this->sendError('No se encontro la tarifa');
         }
 
-        $rate->rate_name = trim($request->rate_name);
-        $rate->date_ini      = trim($request->date_ini);
-        $rate->date_end      = trim($request->date_end);
-        $rate->plan_id       = trim($request->plan_id);
+        $rate->show     = trim($request->show);
+        $rate->media_id = trim($request->mediaId);
+        $rate->hour_ini = trim($request->hourIni);
+        $rate->hour_end = trim($request->hourEnd);
+        $rate->cost     = trim($request->cost);
+        $rate->brod_mo  = trim($request->emitDays['Lunes']) || 0;
+        $rate->brod_tu  = trim($request->emitDays['Martes']) || 0;
+        $rate->brod_we  = trim($request->emitDays['Miercoles']) || 0;
+        $rate->brod_th  = trim($request->emitDays['Jueves']) || 0;
+        $rate->brod_fr  = trim($request->emitDays['viernes']) || 0;
+        $rate->brod_sa  = trim($request->emitDays['sabado']) || 0;
+        $rate->brod_su  = trim($request->emitDays['domingo']) || 0;
 
         return $rate->save() ?
             $this->sendResponse('', 'La tarifa ' . $rate->rate_name . ' se actualizo correctamente') :
@@ -95,8 +111,8 @@ class RateController extends BaseController {
     }
 
     public function list() {
-        return $this->sendResponse(DB::table('rate')
-            ->select('id', 'show as value', 'show as label')
+        return $this->sendResponse(DB::table('rates')
+            ->select('id', 'id as value', 'show as label')
             ->where('deleted_at', '=', null)
             ->get(), '');
     }

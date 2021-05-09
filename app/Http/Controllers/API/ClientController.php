@@ -86,7 +86,7 @@ class ClientController extends BaseController {
 
     public function list() {
         return $this->sendResponse(DB::table('clients')
-            ->select('id', 'client_name as value', 'client_name as label')
+            ->select('id', 'id as value', 'client_name as label')
             ->where('deleted_at', '=', null)
             ->get(), '');
     }

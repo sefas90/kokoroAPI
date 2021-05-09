@@ -3,8 +3,33 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Guide extends Model
-{
-    //
+class Guide extends Model {
+    use SoftDeletes;
+
+    protected $fillable = [
+        'guide_name',
+        'date_ini',
+        'date_end',
+        'media_id',
+        'campaign_id',
+        'created_at',
+        'updated_at',
+        'deleted_at'
+    ];
+
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+        'deleted_at',
+    ];
+
+    protected $dates = [
+        'date_ini',
+        'date_end',
+        'created_at',
+        'updated_at',
+        'deleted_at',
+    ];
 }

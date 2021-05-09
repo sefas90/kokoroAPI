@@ -6,23 +6,27 @@ use App\Models\Guide;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Validator;
 
 class GuideController extends BaseController {
     public function index (Request $request) {
         $sort = explode(":", $request->sort);
         return $this->sendResponse(DB::table('guides')
-            ->select('id', 'guide_name as guideName', 'date_ini', 'date_end', 'media_name as mediaName', 'representative', 'campaign_name as campaignName')
+            ->select('guides.id', 'guide_name as guideName', 'guides.date_ini as dateIni', 'guides.date_end as dateEnd', 'media_name as mediaName', 'campaign_name as campaignName')
             ->join('media', 'media.id', '=', 'guides.media_id')
             ->join('campaigns', 'campaigns.id', '=', 'guides.campaign_id')
-            ->where('deleted_at', '=', null)
-            ->orderBy(empty($sort[0]) ? 'guide.id' : 'guide.'.$sort[0], empty($sort[1]) ? 'asc' : $sort[1])
+            ->where('guides.deleted_at', '=', null)
+            ->orderBy(empty($sort[0]) ? 'guides.id' : 'guides.'.$sort[0], empty($sort[1]) ? 'asc' : $sort[1])
             ->get(), '');
     }
 
     public function store(Request $request) {
         $validator = Validator::make($request->all(), [
-            'guide_name' => 'required',
-            'NIT'         => 'required',
+            'guideName'  => 'required',
+            'dateIni'    => 'required',
+            'dateEnd'    => 'required',
+            'mediaId'    => 'required',
+            'campaignId' => 'required',
         ]);
 
         if($validator->fails()){
@@ -30,8 +34,11 @@ class GuideController extends BaseController {
         }
 
         $guide = new Guide(array(
-            'guide_name' => trim($request->guide_name),
-            'NIT'         => trim($request->NIT)
+            'guide_name'  => trim($request->guideName),
+            'date_ini'    => trim($request->dateIni),
+            'date_end'    => trim($request->dateEnd),
+            'media_id'    => trim($request->mediaId),
+            'campaign_id' => trim($request->campaignId),
         ));
 
         return $guide->save() ?
@@ -49,8 +56,11 @@ class GuideController extends BaseController {
 
     public function update(Request $request, $id) {
         $validator = Validator::make($request->all(), [
-            'guide_name' => 'required',
-            'NIT' => 'required',
+            'guideName'  => 'required',
+            'dateIni'    => 'required',
+            'dateEnd'    => 'required',
+            'mediaId'    => 'required',
+            'campaignId' => 'required',
         ]);
 
         if($validator->fails()){
@@ -83,7 +93,7 @@ class GuideController extends BaseController {
 
     public function list() {
         return $this->sendResponse(DB::table('guides')
-            ->select('id', 'guide_name as value', 'guide_name as label')
+            ->select('id', 'id as value', 'guide_name as label')
             ->where('deleted_at', '=', null)
             ->get(), '');
     }

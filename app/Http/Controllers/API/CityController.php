@@ -7,8 +7,8 @@ use Illuminate\Support\Facades\DB;
 
 class CityController extends BaseController {
     public function index() {
-        return $this->sendResponse(DB::table('campaign')
-            ->select('id', 'city')
+        return $this->sendResponse(DB::table('cities')
+            ->select('id', 'id as value', 'city as label')
             ->get(), '');
     }
 }

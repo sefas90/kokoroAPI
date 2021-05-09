@@ -11,10 +11,10 @@ class MaterialController extends BaseController {
     public function index (Request $request) {
         $sort = explode(":", $request->sort);
         return $this->sendResponse(DB::table('material')
-            ->select('id', 'material_name as materialName', 'duration', 'rates.show', 'guide_name')
+            ->select('material.id', 'material_name as materialName', 'duration', 'rates.show', 'guide_name')
             ->join('guides', 'guides.id', '=', 'material.guide_id')
             ->join('rates', 'rates.id', '=', 'material.guide_id')
-            ->where('deleted_at', '=', null)
+            ->where('material.deleted_at', '=', null)
             ->orderBy(empty($sort[0]) ? 'material.id' : 'material.'.$sort[0], empty($sort[1]) ? 'asc' : $sort[1])
             ->get(), '');
     }

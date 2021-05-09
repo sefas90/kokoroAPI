@@ -12,7 +12,7 @@ class PlanController extends BaseController {
     public function index (Request $request) {
         $sort = explode(":", $request->sort);
         return $this->sendResponse(DB::table('plan')
-            ->select('plan.id', 'plan_name as planName', 'client_name as clientName')
+            ->select('plan.id', 'plan_name as planName', 'client_name as clientName', 'plan.client_id as clientId')
             ->join('clients', 'clients.id', '=', 'plan.client_id')
             ->where('plan.deleted_at', '=', null)
             ->orderBy(empty($sort[0]) ? 'plan.id' : 'plan.'.$sort[0], empty($sort[1]) ? 'asc' : $sort[1])
@@ -21,8 +21,8 @@ class PlanController extends BaseController {
 
     public function store(Request $request) {
         $validator = Validator::make($request->all(), [
-            'plan_name' => 'required',
-            'client_id' => 'required',
+            'planName' => 'required',
+            'clientId' => 'required',
         ]);
 
         if($validator->fails()){
@@ -30,8 +30,8 @@ class PlanController extends BaseController {
         }
 
         $plan = new Plan(array(
-            'plan_name'   => trim($request->plan_name),
-            'client_id'   => trim($request->client_id)
+            'plan_name'   => trim($request->planName),
+            'client_id'   => trim($request->clientId)
         ));
 
         return $plan->save() ?
@@ -49,8 +49,8 @@ class PlanController extends BaseController {
 
     public function update(Request $request, $id) {
         $validator = Validator::make($request->all(), [
-            'plan_name' => 'required',
-            'client_id' => 'required',
+            'planName' => 'required',
+            'clientId' => 'required',
         ]);
 
         if($validator->fails()){
@@ -62,8 +62,8 @@ class PlanController extends BaseController {
             return $this->sendError('No se encontro el plan');
         }
 
-        $plan->plan_name = trim($request->plan_name);
-        $plan->client_id = trim($request->client_id);
+        $plan->plan_name = trim($request->planName);
+        $plan->client_id = trim($request->clientId);
 
         return $plan->save() ?
             $this->sendResponse('', 'El plan ' . $plan->plan_name . ' se actualizo correctamente') :
@@ -83,7 +83,7 @@ class PlanController extends BaseController {
 
     public function list() {
         return $this->sendResponse(DB::table('plan')
-            ->select('plan.id', 'plan_name as value', 'plan_name as label')
+            ->select('id', 'id as value', 'plan_name as label')
             ->where('deleted_at', '=', null)
             ->get(), '');
     }

@@ -13,6 +13,7 @@ class Campaign extends Model {
         'date_ini',
         'date_end',
         'plan_id',
+        'client_id',
         'created_at',
         'updated_at',
         'deleted_at'

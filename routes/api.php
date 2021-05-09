@@ -104,4 +104,5 @@ Route::group($attributes, function () {
     Route::get('/rateList', [RateController::class, 'list']);
     Route::get('/campaignList', [CampaignController::class, 'list']);
     Route::get('/clientList', [ClientController::class, 'list']);
+    Route::get('/mediaList', [MediaController::class, 'list']);
 });
