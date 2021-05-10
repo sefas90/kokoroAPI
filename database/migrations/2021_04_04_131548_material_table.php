@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 class MaterialTable extends Migration {
 
     public function up() {
-        Schema::create('material', function (Blueprint $table) {
+        Schema::create('materials', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('material_name');
             $table->bigInteger('duration'); // in seconds
@@ -22,6 +22,6 @@ class MaterialTable extends Migration {
     }
 
     public function down() {
-        Schema::dropIfExists('material');
+        Schema::dropIfExists('materials');
     }
 }

@@ -3,26 +3,32 @@
 namespace App\Http\Controllers\API;
 
 use App\Models\Material;
+use App\Models\PlaningMaterial;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Validator;
 
 class MaterialController extends BaseController {
     public function index (Request $request) {
         $sort = explode(":", $request->sort);
-        return $this->sendResponse(DB::table('material')
-            ->select('material.id', 'material_name as materialName', 'duration', 'rates.show', 'guide_name')
-            ->join('guides', 'guides.id', '=', 'material.guide_id')
-            ->join('rates', 'rates.id', '=', 'material.guide_id')
-            ->where('material.deleted_at', '=', null)
-            ->orderBy(empty($sort[0]) ? 'material.id' : 'material.'.$sort[0], empty($sort[1]) ? 'asc' : $sort[1])
+        return $this->sendResponse(DB::table('materials')
+            ->select('materials.id', 'material_name as materialName', 'duration', 'rates.show', 'guides.guide_name as guideName', 'guides.id as guideId',
+                'rates.id as rateId', 'rates.cost')
+            ->join('guides', 'guides.id', '=', 'materials.guide_id')
+            ->join('rates', 'rates.id', '=', 'materials.rate_id')
+            ->where('materials.deleted_at', '=', null)
+            ->orderBy(empty($sort[0]) ? 'materials.id' : 'materials.'.$sort[0], empty($sort[1]) ? 'asc' : $sort[1])
             ->get(), '');
     }
 
     public function store(Request $request) {
         $validator = Validator::make($request->all(), [
-            'material_name' => 'required',
-            'NIT'         => 'required',
+            'materialName' => 'required',
+            'duration'     => 'required',
+            'guideId'      => 'required',
+            'rateId'       => 'required',
+            'timesPerDay'  => 'required'
         ]);
 
         if($validator->fails()){
@@ -30,13 +36,33 @@ class MaterialController extends BaseController {
         }
 
         $material = new Material(array(
-            'material_name' => trim($request->material_name),
-            'NIT'         => trim($request->NIT)
+            'material_name' => trim($request->materialName),
+            'duration'      => trim($request->duration),
+            'guide_id'      => trim($request->guideId),
+            'rate_id'       => trim($request->rateId),
         ));
 
-        return $material->save() ?
-            $this->sendResponse('', 'El material ' . $material->material_name . ' se guardo correctamente') :
-            $this->sendError('Ocurrio un error al crear un nuevo material.');
+        if($material->save())  {
+            $success = false;
+            foreach ($request['timesPerDay'] as $key => $row) {
+                $materialPlaning = new PlaningMaterial(array(
+                    'material_id' => $material['id'],
+                    'times_per_day' => $row['timesPerDay'],
+                    'broadcast_day' => $row['date']
+                ));
+
+                if ($materialPlaning->save()) {
+                    $success = true;
+                } else {
+                    $success = false;
+                }
+            }
+            return $success ?
+                $this->sendResponse('', 'El material ' . $material->material_name . ' se guardo correctamente') :
+                $this->sendError('Ocurrio un error al crear un nuevo material.');
+        } else {
+            return $this->sendError('Ocurrio un error al crear un nuevo material.');
+        }
     }
 
     public function show($id) {
