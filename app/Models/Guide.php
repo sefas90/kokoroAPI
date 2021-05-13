@@ -14,6 +14,7 @@ class Guide extends Model {
         'date_end',
         'media_id',
         'campaign_id',
+        'editable',
         'created_at',
         'updated_at',
         'deleted_at'

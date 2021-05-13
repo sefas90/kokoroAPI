@@ -14,6 +14,7 @@ class GuideTable extends Migration {
             $table->dateTime('date_end');
             $table->bigInteger('media_id')->unsigned();
             $table->bigInteger('campaign_id')->unsigned();
+            $table->boolean('editable');
             $table->timestamps();
             $table->softDeletes();
             $table->foreign('campaign_id')->references('id')->on('campaigns');

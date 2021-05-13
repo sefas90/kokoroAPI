@@ -105,4 +105,7 @@ Route::group($attributes, function () {
     Route::get('/campaignList', [CampaignController::class, 'list']);
     Route::get('/clientList', [ClientController::class, 'list']);
     Route::get('/mediaList', [MediaController::class, 'list']);
+
+    // Reports
+    Route::post('/mediaOrder', [GuideController::class, 'order']);
 });

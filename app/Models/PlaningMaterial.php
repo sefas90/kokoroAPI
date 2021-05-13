@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PlaningMaterial extends Model {
-    use SoftDeletes;
     protected $table = 'material_planing';
     public $timestamps = false;
     protected $fillable = [

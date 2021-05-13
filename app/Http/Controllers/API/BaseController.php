@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller as Controller;
+use Barryvdh\DomPDF\Facade as PDF;
 
 class BaseController extends Controller {
 
@@ -24,5 +25,12 @@ class BaseController extends Controller {
             $response['data'] = $errorMessages;
         }
         return response()->json($response, $code);
+    }
+
+    public function exportPdf($response, $view, $downloadName) {
+        view()->share('data', $response);
+        $pdf = PDF::loadView($view)->setPaper('letter', 'landscape');
+        $pdf->getDomPDF()->set_option("enable_php", true);
+        return $pdf->download($downloadName);
     }
 }

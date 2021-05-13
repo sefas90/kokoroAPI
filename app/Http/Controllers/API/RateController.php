@@ -10,7 +10,7 @@ use Validator;
 
 class RateController extends BaseController {
     public function index (Request $request) {
-        $sort = explode(":", $request->sort);
+        $sort = explode(':', $request->sort);
         return $this->sendResponse(DB::table('rates')
             ->select('rates.id', 'show', 'hour_ini as hourIni', 'hour_end as hourEnd', 'brod_mo as brodMo', 'brod_tu as brodTu',
                              'brod_we as brodWe', 'brod_th as brodTh', 'brod_fr as brodFr', 'brod_sa as brodSa', 'brod_su as brodSu', 'cost', 'media_name as mediaName', 'media.id as mediaId')
@@ -112,8 +112,10 @@ class RateController extends BaseController {
 
     public function list() {
         return $this->sendResponse(DB::table('rates')
-            ->select('id', 'id as value', 'show as label')
-            ->where('deleted_at', '=', null)
+            ->select('rates.id', 'rates.id as value', 'show as label', 'brod_mo', 'brod_tu', 'brod_we', 'brod_th', 'brod_fr', 'brod_sa', 'brod_su', 'media_types.media_type as mediaType')
+            ->join('media', 'media.id', '=', 'rates.media_id')
+            ->join('media_types', 'media_types.id', '=', 'media.media_type')
+            ->where('rates.deleted_at', '=', null)
             ->get(), '');
     }
 }
