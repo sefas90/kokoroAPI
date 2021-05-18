@@ -11,6 +11,7 @@ class OrderNumber extends Model {
         'id',
         'order_number',
         'version',
+        'observation',
         'guide_id'
     ];
 }

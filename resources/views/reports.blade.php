@@ -1,15 +1,29 @@
 <style type="text/css">
+    .md-3 {
+        width: 33%;
+    }
+    .md-4 {
+        width: 25%;
+    }
+    .md-5 {
+        width: 20%;
+    }
     .data-table {
         width: 100%;
+        font-size: 10px;
+    }
+    .selected {
+        background-color: aquamarine;
     }
     table {
         border-collapse: collapse;
         border-spacing: 0;
-        border: 1px solid #ddd;
+        border: 1px solid black;
     }
     th, td {
         text-align: left;
         padding: 5px;
+        border: 1px solid black;
     }
     tr:nth-child(even) {
         background-color: #f2f2f2;
@@ -30,13 +44,11 @@
         <table class="data-table">
             <thead>
             <tr>
-                <th rowspan="2">KOKORO</th>
-                <th rowspan="2">{{$data['businessName']}}</th>
-                <th>Numero de orden: {{$data['order']}}</th>
+                <th class="md-3" rowspan="2">KOKORO</th>
+                <th class="md-3" rowspan="2">{{$data['businessName']}}</th>
+                <th class="md-3">Numero de orden: {{$data['order']}}</th>
             </tr>
             <tr>
-                <th></th>
-                <th></th>
                 <th>Fecha de emision: {{$data['date']}}</th>
             </tr>
             </thead>
@@ -48,30 +60,77 @@
                 <td>Programa</td>
                 <td>Material</td>
                 <td>Dur</td>
+                @for ($i = 1; $i <= $data['daysInMonth']; $i++)
+                <td>{{ $i }}</td>
+                @endfor
                 <td>Spots</td>
-                <td>Costo</td>
+                <td>C. Unitario</td>
                 <td>Inversion</td>
             </tr>
             @foreach($data['result'] as $key => $row)
             <tr>
-                <td>{{ $row->media_name }}<td>
-                <td>{{ $row->show }}<td>
-                <td>{{ $row->material_name }}<td>
-                <td>{{ $row->duration }}<td>
-                <td>-<td>
-                <td>{{ $row->cost }}<td>
-                <td>-<td>
+                <td>{{ $row->media_name }}</td>
+                <td>{{ $row->show }}</td>
+                <td>{{ $row->material_name }}</td>
+                <td>{{ $row->duration }}</td>
+                @for ($i = 1; $i <= $data['daysInMonth']; $i++)
+                    <td class="border-table">
+                    @foreach($row->planing as $k => $r)
+                        @if ($i == $r->day)
+                        <span class="selected">{{ $r->times_per_day }}</span>
+                        @endif
+                    @endforeach
+                    </td>
+                @endfor
+                <td>{{ $row->spots }}</td>
+                <td>{{ number_format($row->cost, 2, '.', '') }}</td>
+                <td>{{ number_format($row->spots * $row->cost, 2, '.', '') }}</td>
             </tr>
             @endforeach
             </tbody>
         </table>
+
+        <table class="data-table">
+            <thead>
+            <tr>
+                <th class="md-5">Cliente/Agencia</th>
+                <th class="md-5">Recibido</th>
+                <th class="md-5">Totales</th>
+                <th class="md-5">Ins.</th>
+                <th class="md-5">Inversion</th>
+            </tr>
+            <tr>
+                <th rowspan="2">name</th>
+                <th rowspan="2">(ninguno)</th>
+                <th>Total</th>
+                <th>{{ $data['totalSpots'] }}</th>
+                <th>{{ number_format($data['totalMount'], 2, '.', '') }}</th>
+            </tr>
+            <tr>
+                <th>Total Orden</th>
+                <th>{{ $data['totalSpots'] }}</th>
+                <th>{{ number_format($data['totalMount'], 2, '.', '') }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>Facturar a:</td>
+                <td>Direccion de facturacion:</td>
+                <td colspan="3">Observaciones</td>
+            </tr>
+            <tr>
+                <td>{{ $data['billingPolicies'] }}</td>
+                <td>{{ $data['billingAddress'] }}</td>
+                <td>{{ $data['observation1'] }}</td>
+                <td colspan="2">{{ $data['observation2'] }}</td>
+            </tr>
+            </tbody>
+        </table>
     </div>
 </div>
-
-{{-- Here's the magic. This MUST be inside body tag. Page count / total, centered at bottom of page --}}
 <script type="text/php">
     if (isset($pdf)) {
-        $text = "page {PAGE_NUM} / {PAGE_COUNT}";
+        $text = "Página {PAGE_NUM} / {PAGE_COUNT}";
         $size = 10;
         $font = $fontMetrics->getFont("Verdana");
         $width = $fontMetrics->get_text_width($text, $font, $size) / 2;

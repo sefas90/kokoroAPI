@@ -12,7 +12,7 @@ class ClientController extends BaseController {
     public function index (Request $request) {
         $sort = explode(":", $request->sort);
         return $this->sendResponse(DB::table('clients')
-            ->select('id', 'client_name as clientName', 'NIT', 'representative')
+            ->select('id', 'client_name as clientName', 'NIT', 'representative', 'billing_policies as billingPolicies', 'billing_address as billingAddress')
             ->where('deleted_at', '=', null)
             ->orderBy(empty($sort[0]) ? 'clients.id' : 'clients.'.$sort[0], empty($sort[1]) ? 'asc' : $sort[1])
             ->get(), '');
@@ -29,10 +29,15 @@ class ClientController extends BaseController {
             return $this->sendError('Error de validacion.', $validator->errors());
         }
 
+        $policies = empty(!$request->billingPolicies) ? $request->billingPolicies
+            : 'NIT: ' . $request->NIT . ' Nombre: ' . $request->representative;
+
         $client = new Client(array(
-            'client_name' => trim($request->clientName),
-            'representative' => trim($request->representative),
-            'NIT'         => trim($request->NIT)
+            'client_name'       => trim($request->clientName),
+            'representative'    => trim($request->representative),
+            'NIT'               => trim($request->NIT),
+            'billing_policies'  => trim($policies),
+            'billing_address'   => trim($request->billingAddress),
         ));
 
         return $client->save() ?
@@ -50,9 +55,9 @@ class ClientController extends BaseController {
 
     public function update(Request $request, $id) {
         $validator = Validator::make($request->all(), [
-            'clientName' => 'required',
+            'clientName'     => 'required',
             'representative' => 'required',
-            'NIT' => 'required',
+            'NIT'            => 'required',
         ]);
 
         if($validator->fails()){
@@ -64,9 +69,11 @@ class ClientController extends BaseController {
             return $this->sendError('No se encontro el cliente');
         }
 
-        $client->client_name    = trim($request->clientName);
-        $client->representative = trim($request->representative);
-        $client->NIT            = trim($request->NIT);
+        $client->client_name        = trim($request->clientName);
+        $client->representative     = trim($request->representative);
+        $client->NIT                = trim($request->NIT);
+        $client->billing_policies   = trim($request->billingPolicies);
+        $client->billing_address    = trim($request->billingAddress);
 
         return $client->save() ?
             $this->sendResponse('', 'El cliente ' . $client->client_name . ' se actualizo correctamente') :
@@ -90,5 +97,4 @@ class ClientController extends BaseController {
             ->where('deleted_at', '=', null)
             ->get(), '');
     }
-
 }

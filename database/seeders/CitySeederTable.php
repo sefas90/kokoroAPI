@@ -16,5 +16,7 @@ class CitySeederTable extends Seeder{
         City::create(['city' => 'Beni']);
         City::create(['city' => 'Tarija']);
         City::create(['city' => 'Chuquisaca']);
+        City::create(['city' => 'Nacional']);
+        City::create(['city' => 'Internacional']);
     }
 }

@@ -12,6 +12,8 @@ class Client extends Model {
         'client_name',
         'representative',
         'NIT',
+        'billing_address',
+        'billing_policies',
         'created_at',
         'updated_at',
         'deleted_at'

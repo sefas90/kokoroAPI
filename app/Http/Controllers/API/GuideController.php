@@ -15,7 +15,7 @@ class GuideController extends BaseController {
         $sort = explode(":", $request->sort);
         return $this->sendResponse(DB::table('guides')
             ->select('guides.id', 'guide_name as guideName', 'guides.date_ini as dateIni', 'campaigns.id as campaignId',
-                'guides.date_end as dateEnd', 'media_name as mediaName', 'campaign_name as campaignName', 'guides.id as guideId', 'editable'
+                'guides.date_end as dateEnd', 'media_name as mediaName', 'campaign_name as campaignName', 'guides.id as guideId', 'editable as status'
             )
             ->join('media', 'media.id', '=', 'guides.media_id')
             ->join('campaigns', 'campaigns.id', '=', 'guides.campaign_id')
@@ -101,77 +101,114 @@ class GuideController extends BaseController {
             'guideId'    => 'required'
         ]);
 
-        $result = DB::table('materials')
-            ->select('materials.id as id', 'materials.material_name', 'materials.duration', 'materials.guide_id', 'materials.rate_id',
-                'guides.guide_name', 'guides.media_id', 'guides.campaign_id', 'guides.editable', 'rates.show',
-                'rates.hour_ini', 'rates.hour_end', 'rates.cost', 'media.media_name', 'media.business_name', 'media.NIT', 'media.media_type',
-                'campaigns.campaign_name', 'campaigns.plan_id', 'campaigns.client_id', 'campaigns.date_ini', 'campaigns.date_end')
-            ->join('guides', 'guides.id', '=', 'materials.guide_id')
-            ->join('rates', 'rates.id', '=', 'materials.rate_id')
-            ->join('media', 'media.id', '=', 'rates.media_id')
-            ->join('campaigns', 'campaigns.id', '=', 'guides.campaign_id')
-            ->join('media_types', 'media_types.id', '=', 'media.media_type')
-            ->where('guides.id', '=', $request->guideId)
-            ->get();
+        if (!$validator->fails()){
+            $observation = [
+                0 => '',
+                1 => $request->observation
+            ];
 
-        foreach ($result as $key => $row) {
-            $id = $result[$key]->id;
-            $planing = DB::table('material_planing')
-                ->select('*')
-                ->where('material_planing.material_id', '=', $id)
+            $result = DB::table('materials')
+                ->select('materials.id as id', 'materials.material_name', 'materials.duration', 'materials.guide_id', 'materials.rate_id',
+                    'guides.guide_name', 'guides.media_id', 'guides.campaign_id', 'guides.editable', 'rates.show',
+                    'rates.hour_ini', 'rates.hour_end', 'rates.cost', 'media.media_name', 'media.business_name', 'media.NIT', 'media.media_type',
+                    'campaigns.campaign_name', 'campaigns.plan_id', 'campaigns.client_id', 'campaigns.date_ini', 'campaigns.date_end',
+                    'clients.id as clientId', 'clients.client_name as clientName', 'clients.representative', 'clients.NIT as clientNIT', 'clients.billing_address as billingAddress', 'clients.billing_policies as billingPolicies')
+                ->join('guides', 'guides.id', '=', 'materials.guide_id')
+                ->join('rates', 'rates.id', '=', 'materials.rate_id')
+                ->join('media', 'media.id', '=', 'rates.media_id')
+                ->join('campaigns', 'campaigns.id', '=', 'guides.campaign_id')
+                ->join('clients', 'clients.id', '=', 'campaigns.client_id')
+                ->join('media_types', 'media_types.id', '=', 'media.media_type')
+                ->where('guides.id', '=', $request->guideId)
                 ->get();
-            if (count($planing)) {
-                $result[$key]->planing = $planing;
+
+            if (count($result) > 0) {
+                $total = 0;
+                $totalSpots = 0;
+                foreach ($result as $key => $row) {
+                    $id = $result[$key]->id;
+                    $planing = DB::table('material_planing')
+                        ->select('broadcast_day', 'times_per_day')
+                        ->where('material_planing.material_id', '=', $id)
+                        ->get();
+                    if (count($planing)) {
+                        $spots = 0;
+                        foreach ($planing as $k => $r) {
+                            $planing[$k]->day = date("d", strtotime($planing[$k]->broadcast_day));
+                            $spots += $planing[$k]->times_per_day;
+                        }
+                        $result[$key]->spots = $spots;
+                        $totalSpots += $spots;
+                        $result[$key]->planing = $planing;
+                    }
+                    $total += $result[$key]->spots * $result[$key]->cost;
+                }
+
+                $orderNumber = DB::table('order_numbers')
+                    ->select('*')
+                    ->where('order_numbers.guide_id', '=', $request->guideId)
+                    ->get();
+
+                if (count($orderNumber) > 0) {
+                    $max_order   = OrderNumber::where('guide_id', '=', $request->guideId)->get()->max('order_number');
+                    $max_version = OrderNumber::where('guide_id', '=', $request->guideId)->get()->max('version');
+                    $observation[0] = 'Remplaza a la orden ' . $max_order.'.'.$max_version.'';
+                    $orderNumber = OrderNumber::create([
+                        'order_number'  => $max_order,
+                        'version'       => $max_version + 1,
+                        'guide_id'      => $request->guideId,
+                        'observation'  => $observation[0].' - '.$observation[1]
+                    ]);
+                } else {
+                    $order = OrderNumber::all()->max('order_number');
+                    $orderNumber = OrderNumber::create([
+                        'order_number'  => $order + 1,
+                        'version'       => 0,
+                        'guide_id'      => $request->guideId,
+                        'observation'  => $observation[1]
+                    ]);
+                }
+
+                $orderNumber = $orderNumber->order_number.'.'.$orderNumber->version;
+
+                $date_ini = new DateTime($result[0]->date_ini);
+                $date_end = new DateTime($result[0]->date_end);
+                $pages = $date_ini->diff($date_end)->m;
+
+                $month = date("m", strtotime(explode(" ", $result[0]->date_ini)[0]));
+                $year = date("Y", strtotime(explode(" ", $result[0]->date_ini)[0]));
+
+                $response = [
+                    'result'          => $result,
+                    'order'           => $orderNumber,
+                    'businessName'    => $result[0]->business_name,
+                    'guideName'       => $result[0]->guide_name,
+                    'NIT'             => $result[0]->NIT,
+                    'date_ini'        => explode(" ", $result[0]->date_ini)[0],
+                    'date_end'        => explode(" ", $result[0]->date_end)[0],
+                    'pages'           => $pages,
+                    'date'            => date("m-d-Y"),
+                    'month_ini'       => $month,
+                    'year'            => $year,
+                    'daysInMonth'     => cal_days_in_month(CAL_GREGORIAN, $month, $year),
+                    'date-'           => date("F Y", strtotime("2021-05-12")),
+                    'totalMount'      => $total,
+                    'totalSpots'      => $totalSpots,
+                    'billingAddress'  => $result[0]->billingAddress,
+                    'billingPolicies' => empty($result[0]->billingPolicies) ? 'Nombre: '. $result[0]->representative . ' NIT: ' . $result[0]->clientNIT :   $result[0]->billingPolicies,
+                    'observation1'    => $observation[0],
+                    'observation2'    => $observation[1]
+                ];
+
+                //return $response;
+
+                return $this->exportPdf($response, 'reports', 'reports.pdf');
+            } else {
+                return $this->sendError('', 'No tiene materiales', '');
             }
-        }
-
-        $orderNumber = DB::table('order_numbers')
-            ->select('*')
-            ->where('order_numbers.guide_id', '=', $request->guideId)
-            ->get();
-
-        if ($orderNumber) {
-            $max_order   = OrderNumber::where('guide_id', '=', $request->guideId)->max('order_number');
-            $max_version = OrderNumber::where('guide_id', '=', $request->guideId)->max('version');
-            $orderNumber = OrderNumber::create([
-                'order_number'  => $max_order,
-                'version'       => $max_version + 1,
-                'guide_id'      => $request->guideId
-            ]);
         } else {
-            $order = OrderNumber::all()->max('order_number');
-            $orderNumber = OrderNumber::create([
-                'order_number'  => $order + 1,
-                'version'       => 1,
-                'guide_id'      => $request->guideId
-            ]);
+            return $this->sendError('Error de validacion.', $validator->errors());
         }
-
-        $orderNumber = $orderNumber->order_number.'.'.$orderNumber->version;
-
-        $date_ini = new DateTime($result[0]->date_ini);
-        $date_end = new DateTime($result[0]->date_end);
-        $pages = $date_ini->diff($date_end)->m;
-
-
-
-        $response = [
-            'result'       => $result,
-            'order'        => $orderNumber,
-            'businessName' => $result[0]->business_name,
-            'guideName'    => $result[0]->guide_name,
-            'NIT'          => $result[0]->NIT,
-            'date_ini'     => explode(" ", $result[0]->date_ini)[0],
-            'date_end'     => explode(" ", $result[0]->date_end)[0],
-            'pages'        => $pages,
-            'date'         => date("m-d-Y"),
-            'month_ini'    => date("m", strtotime(explode(" ", $result[0]->date_ini)[0])),
-            'date-'         => date("F Y", strtotime("2021-05-12"))
-        ];
-
-        //return $response;
-
-        return $this->exportPdf($response, 'reports', 'reports.pdf');
     }
 
     public function list() {
