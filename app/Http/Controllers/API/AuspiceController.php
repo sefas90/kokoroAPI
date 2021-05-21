@@ -22,9 +22,9 @@ class AuspiceController extends BaseController {
     public function store(Request $request) {
         $validator = Validator::make($request->all(), [
             'auspice_name' => 'required',
-            'cost' => 'required',
-            'duration' => 'required',
-            'client_id' => 'required',
+            'cost'         => 'required',
+            'guide_id'     => 'required',
+            'rate_id'      => 'required',
         ]);
 
         if($validator->fails()){

@@ -100,7 +100,7 @@
                 <th class="md-5">Inversion</th>
             </tr>
             <tr>
-                <th rowspan="2">name</th>
+                <th rowspan="2">{{ $data['clientName'] }}</th>
                 <th rowspan="2">(ninguno)</th>
                 <th>Total</th>
                 <th>{{ $data['totalSpots'] }}</th>

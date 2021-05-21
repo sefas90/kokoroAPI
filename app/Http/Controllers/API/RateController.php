@@ -112,7 +112,7 @@ class RateController extends BaseController {
 
     public function list() {
         return $this->sendResponse(DB::table('rates')
-            ->select('rates.id', 'rates.id as value', 'show as label', 'brod_mo', 'brod_tu', 'brod_we', 'brod_th', 'brod_fr', 'brod_sa', 'brod_su', 'media_types.media_type as mediaType')
+            ->select('rates.id', 'rates.id as value', 'show as label', 'brod_mo', 'brod_tu', 'brod_we', 'brod_th', 'brod_fr', 'brod_sa', 'brod_su', 'media_types.media_type as mediaType', 'cost')
             ->join('media', 'media.id', '=', 'rates.media_id')
             ->join('media_types', 'media_types.id', '=', 'media.media_type')
             ->where('rates.deleted_at', '=', null)

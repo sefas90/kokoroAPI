@@ -197,17 +197,69 @@ class GuideController extends BaseController {
                     'billingAddress'  => $result[0]->billingAddress,
                     'billingPolicies' => empty($result[0]->billingPolicies) ? 'Nombre: '. $result[0]->representative . ' NIT: ' . $result[0]->clientNIT :   $result[0]->billingPolicies,
                     'observation1'    => $observation[0],
-                    'observation2'    => $observation[1]
+                    'observation2'    => $observation[1],
+                    'clientName'      => $result[0]->clientName
                 ];
 
-                //return $response;
+                return !$request->isOrderCampaign ? $this->exportPdf($response, 'orderGuide', 'orderGuide.pdf') : $response;
+            } else {
+                return [];
+            }
+        } else {
+            return $this->sendError('Error de validacion.', $validator->errors());
+        }
+    }
 
-                return $this->exportPdf($response, 'reports', 'reports.pdf');
+    public function orderByCampaign(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'campaignId' => 'required'
+        ]);
+
+        if (!$validator->fails()){
+            $result = DB::table('guides')
+                ->select('guides.id as guide_id')
+                ->join('campaigns', 'campaigns.id', '=', 'guides.campaign_id')
+                ->where('campaigns.id', '=', $request->campaignId)
+                ->get();
+            if (count($result) > 0) {
+                $response = array();
+                foreach ($result as $k => $r) {
+                    $request['guideId'] = $r->guide_id;
+                    $request->observation = empty($request->observation) ? '' : $request->observation;
+                    $request->isOrderCampaign = true;
+                    $res = $this->order($request);
+                    if (count($res) > 0) {
+                        $response[] = $res;
+                    }
+                }
+
+                return $this->exportPdf($response, 'campaign', 'campaña.pdf');
             } else {
                 return $this->sendError('', 'No tiene materiales', '');
             }
         } else {
             return $this->sendError('Error de validacion.', $validator->errors());
+        }
+    }
+
+    public function orderNumber(Request $request) {
+        $orderNumber = DB::table('order_numbers')
+            ->select('*')
+            ->where('order_numbers.guide_id', '=', $request->guideId)
+            ->get();
+
+        if (count($orderNumber) > 0) {
+            $max_order   = OrderNumber::where('guide_id', '=', $request->guideId)->get()->max('order_number');
+            $max_version = OrderNumber::where('guide_id', '=', $request->guideId)->get()->max('version') + 1;
+            $observation[0] = 'Remplaza a la orden ' . $max_order.'.'.$max_version.'';
+            return $this->sendResponse([
+                'order_number'  => ''. $max_order . '.' . $max_version
+            ]);
+        } else {
+            $order = OrderNumber::all()->max('order_number') + 1;
+            return $this->sendResponse([
+                'order_number'  => $order.'.0'
+            ]);
         }
     }
 
