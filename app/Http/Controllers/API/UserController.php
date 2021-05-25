@@ -18,26 +18,32 @@ class UserController extends BaseController {
         $validator = Validator::make($request->all(), [
             'name'     => 'required',
             'lastname' => 'required',
-            'username' => 'required',
+            'userName' => 'required',
             'password' => 'required',
-            'role_id'  => 'required',
+            'role'     => 'required',
+            'email'    => 'required',
         ]);
 
         if($validator->fails()){
             return $this->sendError('Error de validacion.', $validator->errors());
         }
 
-        $user = new User(array(
-            'name'     => trim($request->name),
-            'lastname' => trim($request->lastname),
-            'username' => trim($request->username),
-            'password' => trim($request->password),
-            'role_id'  => trim($request->role_id)
-        ));
+        if ($request->password === $request->confirmPassword) {
+            $user = new User(array(
+                'name'     => trim($request->name),
+                'lastname' => trim($request->lastname),
+                'username' => trim($request->userName),
+                'password' => bcrypt(trim($request->password)),
+                'role_id'  => trim($request->role),
+                'email'    => trim($request->email),
+            ));
 
-        return $user->save() ?
-            $this->sendResponse('', 'El usuario ' . $user->username . ' se guardo correctamente') :
-            $this->sendError('Ocurrio un error al crear un nuevo usuario');
+            return $user->save() ?
+                $this->sendResponse('', 'El usuario ' . $user->username . ' se guardo correctamente') :
+                $this->sendError('Ocurrio un error al crear un nuevo usuario');
+        } else {
+            return $this->sendError('Las contraseñas no coinciden');
+        }
     }
 
     public function show ($id) {
@@ -57,9 +63,10 @@ class UserController extends BaseController {
         $validator = Validator::make($request->all(), [
             'name'     => 'required',
             'lastname' => 'required',
-            'username' => 'required',
+            'userName' => 'required',
             'password' => 'required',
-            'role_id'  => 'required',
+            'role'     => 'required',
+            'email'    => 'required',
         ]);
 
         if($validator->fails()){
@@ -68,9 +75,10 @@ class UserController extends BaseController {
 
         $user->name     = trim($request->name);
         $user->lastname = trim($request->lastname);
-        $user->username = trim($request->username);
+        $user->username = trim($request->userName);
         $user->email    = trim($request->email);
-        $user->role_id  = trim($request->rol['id']);
+        $user->role_id  = trim($request->role);
+        $user->email    = trim($request->email);
 
         return $user->save() ?
             $this->sendResponse('', 'El usuario ' . $user->username . ' se actualizo correctamente') :

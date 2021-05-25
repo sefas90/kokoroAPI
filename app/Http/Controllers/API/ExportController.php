@@ -155,15 +155,15 @@ class ExportController extends BaseController {
         }
     }
 
-    public function orderNumber(Request $request) {
+    public function orderNumber($id) {
         $orderNumber = DB::table('order_numbers')
             ->select('*')
-            ->where('order_numbers.guide_id', '=', $request->guideId)
+            ->where('order_numbers.guide_id', '=', $id)
             ->get();
 
         if (count($orderNumber) > 0) {
-            $max_order   = OrderNumber::where('guide_id', '=', $request->guideId)->get()->max('order_number');
-            $max_version = OrderNumber::where('guide_id', '=', $request->guideId)->get()->max('version') + 1;
+            $max_order   = OrderNumber::where('guide_id', '=', $id)->get()->max('order_number');
+            $max_version = OrderNumber::where('guide_id', '=', $id)->get()->max('version') + 1;
             $observation[0] = 'Remplaza a la orden ' . $max_order.'.'.$max_version.'';
             return $this->sendResponse([
                 'order_number'  => ''. $max_order . '.' . $max_version

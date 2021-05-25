@@ -89,7 +89,7 @@ Route::group($attributes, function () {
     Route::delete('/rate/{id}', [RateController::class, 'destroy']);
 
     Route::get('/resources', [ResourceController::class, 'permissions']);
-    Route::get('/roles', [RoleController::class, 'permissions']);
+    Route::get('/roles', [RoleController::class, 'index']);
 
     Route::get('/user', [UserController::class, 'index']);
     Route::post('/user', [UserController::class, 'store']);
@@ -119,5 +119,5 @@ Route::group($attributes, function () {
     Route::post('/reportExcel', [ExportController::class, 'export']);
 
     //OrderNumber
-    Route::get('/orderNumber', [ExportController::class, 'orderNumber']);
+    Route::get('/orderNumber/{id}', [ExportController::class, 'orderNumber']);
 });
