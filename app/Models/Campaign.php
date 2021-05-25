@@ -10,10 +10,10 @@ class Campaign extends Model {
 
     protected $fillable = [
         'campaign_name',
+        'product',
         'date_ini',
         'date_end',
         'plan_id',
-        'client_id',
         'created_at',
         'updated_at',
         'deleted_at'

@@ -12,8 +12,9 @@ class AuspiceController extends BaseController {
     public function index (Request $request) {
         $sort = explode(":", $request->sort);
         return $this->sendResponse(DB::table('auspices')
-            ->select('auspices.id', 'auspice_name as auspiceName', 'cost', 'duration', 'client_name as clientName')
-            ->join('clients', 'clients.id', '=', 'auspices.client_id')
+            ->select('auspices.id', 'auspice_name as auspiceName', 'auspices.cost', 'rates.show', 'guides.guide_name as guideName')
+            ->join('rates', 'rates.id', '=', 'auspices.rate_id')
+            ->join('guides', 'guides.id', '=', 'auspices.guide_id')
             ->where('auspices.deleted_at', '=', null)
             ->orderBy(empty($sort[0]) ? 'auspices.id' : 'auspices.'.$sort[0], empty($sort[1]) ? 'asc' : $sort[1])
             ->get(), '');
@@ -21,10 +22,10 @@ class AuspiceController extends BaseController {
 
     public function store(Request $request) {
         $validator = Validator::make($request->all(), [
-            'auspice_name' => 'required',
+            'auspiceName' => 'required',
             'cost'         => 'required',
-            'guide_id'     => 'required',
-            'rate_id'      => 'required',
+            'guideId'     => 'required',
+            'rateId'      => 'required',
         ]);
 
         if($validator->fails()){
@@ -32,10 +33,10 @@ class AuspiceController extends BaseController {
         }
 
         $auspice = new Auspice(array(
-            'auspice_name' => trim($request->auspice_name),
+            'auspice_name' => trim($request->auspiceName),
             'cost'         => trim($request->cost),
-            'duration'     => trim($request->duration),
-            'client_id'    => trim($request->client_id)
+            'guide_id'     => trim($request->guideId),
+            'rate_id'      => trim($request->rateId)
         ));
 
         return $auspice->save() ?

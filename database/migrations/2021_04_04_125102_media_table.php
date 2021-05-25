@@ -14,10 +14,12 @@ class MediaTable extends Migration {
             $table->string('NIT');
             $table->bigInteger('city_id')->unsigned();
             $table->bigInteger('media_type')->unsigned();
+            $table->bigInteger('media_parent_id')->unsigned()->nullable();
             $table->timestamps();
             $table->softDeletes();
             $table->foreign('city_id')->references('id')->on('cities');
             $table->foreign('media_type')->references('id')->on('media_types');
+            $table->foreign('media_parent_id')->references('id')->on('media');
             $table->engine = 'InnoDB';
         });
     }

@@ -12,8 +12,8 @@ class ClientsTable extends Migration {
             $table->string('client_name', 50);
             $table->string('representative', 50);
             $table->string('NIT', 11);
-            $table->string('billing_address', 11);
-            $table->string('billing_policies', 11);
+            $table->string('billing_address');
+            $table->string('billing_policies');
             $table->timestamps();
             $table->softDeletes();
             $table->engine = 'InnoDB';

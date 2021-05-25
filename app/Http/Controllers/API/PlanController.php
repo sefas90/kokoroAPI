@@ -87,4 +87,14 @@ class PlanController extends BaseController {
             ->where('deleted_at', '=', null)
             ->get(), '');
     }
+
+    protected function clientsPlanList($id) {
+        return $this->sendResponse(DB::table('plan')
+            ->select('id', 'id as value', 'plan_name as label')
+            ->where([
+                ['deleted_at', '=', null],
+                ['client_id', '=', $id],
+            ])
+            ->get(), '');
+    }
 }

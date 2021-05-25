@@ -12,9 +12,9 @@ class CampaignController extends BaseController {
     public function index (Request $request) {
         $sort = explode(":", $request->sort);
         return $this->sendResponse(DB::table('campaigns')
-            ->select('campaigns.id', 'campaign_name as campaignName', 'clients.client_name as clientName', 'clients.id as clientId', 'date_ini as dateIni', 'date_end as dateEnd', 'plan.plan_name as planName', 'plan.id as planId')
+            ->select('campaigns.id', 'campaign_name as campaignName', 'clients.client_name as clientName', 'clients.id as clientId', 'date_ini as dateIni', 'date_end as dateEnd', 'plan.plan_name as planName', 'plan.id as planId', 'product')
             ->join('plan', 'plan.id', '=', 'campaigns.plan_id')
-            ->join('clients', 'clients.id', '=', 'campaigns.client_id')
+            ->join('clients', 'clients.id', '=', 'plan.client_id')
             ->where('campaigns.deleted_at', '=', null)
             ->orderBy(empty($sort[0]) ? 'campaigns.id' : 'campaigns.'.$sort[0], empty($sort[1]) ? 'asc' : $sort[1])
             ->get(), '');
@@ -23,10 +23,10 @@ class CampaignController extends BaseController {
     public function store(Request $request) {
         $validator = Validator::make($request->all(), [
             'campaignName' => 'required',
+            'product'      => 'required',
             'dateIni'      => 'required',
             'dateEnd'      => 'required',
             'planId'       => 'required',
-            'clientId'     => 'required',
         ]);
 
         if($validator->fails()){
@@ -35,10 +35,10 @@ class CampaignController extends BaseController {
 
         $campaign = new Campaign(array(
             'campaign_name' => trim($request->campaignName),
+            'product'       => trim($request->product),
             'date_ini'      => trim($request->dateIni),
             'date_end'      => trim($request->dateEnd),
             'plan_id'       => trim($request->planId),
-            'client_id'       => trim($request->clientId),
         ));
 
         return $campaign->save() ?
@@ -57,10 +57,10 @@ class CampaignController extends BaseController {
     public function update(Request $request, $id) {
         $validator = Validator::make($request->all(), [
             'campaignName' => 'required',
+            'product'      => 'required',
             'dateIni'      => 'required',
             'dateEnd'      => 'required',
             'planId'       => 'required',
-            'clientId'     => 'required',
         ]);
 
         if($validator->fails()){
@@ -73,10 +73,10 @@ class CampaignController extends BaseController {
         }
 
         $campaign->campaign_name = trim($request->campaignName);
+        $campaign->product       = trim($request->product);
         $campaign->date_ini      = trim($request->dateIni);
         $campaign->date_end      = trim($request->dateEnd);
         $campaign->plan_id       = trim($request->planId);
-        $campaign->plan_id       = trim($request->clientId);
 
         return $campaign->save() ?
             $this->sendResponse('', 'La campaña ' . $campaign->campaign_name . ' se actualizo correctamente') :
@@ -98,6 +98,16 @@ class CampaignController extends BaseController {
         return $this->sendResponse(DB::table('campaigns')
             ->select('id', 'id as value', 'campaign_name as label')
             ->where('deleted_at', '=', null)
+            ->get(), '');
+    }
+
+    protected function plansCampaignsList($id) {
+        return $this->sendResponse(DB::table('campaigns')
+            ->select('id', 'id as value', 'campaign_name as label')
+            ->where([
+                ['deleted_at', '=', null],
+                ['plan_id', '=', $id],
+            ])
             ->get(), '');
     }
 }

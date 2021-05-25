@@ -25,7 +25,6 @@ class MaterialController extends BaseController {
     public function store(Request $request) {
         $validator = Validator::make($request->all(), [
             'materialName' => 'required',
-            'duration'     => 'required',
             'guideId'      => 'required',
             'rateId'       => 'required',
             'timesPerDay'  => 'required'
@@ -37,7 +36,7 @@ class MaterialController extends BaseController {
 
         $material = new Material(array(
             'material_name' => trim($request->materialName),
-            'duration'      => trim($request->duration),
+            'duration'      => empty($request->duration) ? 0 : trim($request->duration),
             'guide_id'      => trim($request->guideId),
             'rate_id'       => trim($request->rateId),
         ));

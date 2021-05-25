@@ -13,7 +13,7 @@ class MediaController extends BaseController {
     public function index (Request $request) {
         $sort = explode(":", $request->sort);
         return $this->sendResponse(DB::table('media')
-            ->select('media.id', 'media_name as mediaName', 'business_name as businessName', 'NIT', 'city', 'cities.id as cityId', 'media_types.media_type as mediaType', 'media_types.id as mediaTypeId')
+            ->select('media.id', 'media_name as mediaName', 'business_name as businessName', 'NIT', 'city', 'cities.id as cityId', 'media_types.media_type as mediaType', 'media_types.id as mediaTypeId', 'media_parent_id as mediaParentId')
             ->join('cities', 'cities.id', '=', 'media.city_id')
             ->join('media_types', 'media_types.id', '=', 'media.media_type')
             ->where('media.deleted_at', '=', null)
@@ -25,7 +25,7 @@ class MediaController extends BaseController {
         $validator = Validator::make($request->all(), [
             'mediaName'     => 'required',
             'businessName'  => 'required',
-            'NIT'            => 'required',
+            'NIT'           => 'required',
             'cityId'        => 'required',
             'mediaType'     => 'required',
         ]);
@@ -35,11 +35,12 @@ class MediaController extends BaseController {
         }
 
         $media = new Media(array(
-            'media_name'    => trim($request->mediaName),
-            'business_name' => trim($request->businessName),
-            'NIT'           => trim($request->NIT),
-            'city_id'       => trim($request->cityId),
-            'media_type'    => trim($request->mediaType)
+            'media_name'      => trim($request->mediaName),
+            'business_name'   => trim($request->businessName),
+            'NIT'             => trim($request->NIT),
+            'city_id'         => trim($request->cityId),
+            'media_type'      => trim($request->mediaType),
+            'media_parent_id' => empty($request->mediaParent) ? null : (trim($request->mediaParent))
         ));
 
         return $media->save() ?
@@ -73,11 +74,12 @@ class MediaController extends BaseController {
             return $this->sendError('No se encontro el media');
         }
 
-        $media->media_name     = trim($request->mediaName);
-        $media->business_name = trim($request->businessName);
-        $media->NIT            = trim($request->NIT);
-        $media->city_id        = trim($request->cityId);
-        $media->media_type     = trim($request->mediaType);
+        $media->media_name      = trim($request->mediaName);
+        $media->business_name   = trim($request->businessName);
+        $media->NIT             = trim($request->NIT);
+        $media->city_id         = trim($request->cityId);
+        $media->media_type      = trim($request->mediaType);
+        $media->media_parent_id = trim($request->mediaParent);
 
         return $media->save() ?
             $this->sendResponse('', 'El media ' . $media->media_name . ' se actualizo correctamente') :
@@ -95,10 +97,34 @@ class MediaController extends BaseController {
             $this->sendError('Ocurrio un error al eliminar un medio');
     }
 
-    public function list() {
+    public function parentList() {
         return $this->sendResponse(DB::table('media')
             ->select('id', 'id as value', 'media_name as label')
-            ->where('deleted_at', '=', null)
+            ->where([
+                ['deleted_at', '=', null],
+                ['media_parent_id', '=', null],
+            ])
             ->get(), '');
+    }
+
+    public function list() {
+        $mediaList = DB::table('media')
+            ->select('id', 'id as value', 'media_name as label')
+            ->where([
+                ['deleted_at', '=', null],
+                ['media_parent_id', '=', null],
+            ])
+            ->get();
+        foreach ($mediaList as $key => $row) {
+            $mediaList[$key]->children = DB::table('media')
+                ->select('id', 'id as value', 'media_name as label')
+                ->where([
+                    ['deleted_at', '=', null],
+                    ['media_parent_id', '=', $row->id],
+                ])
+                ->get();
+        }
+
+        return $this->sendResponse($mediaList);
     }
 }

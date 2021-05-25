@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\ExportController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\AuspiceController;
@@ -105,12 +106,18 @@ Route::group($attributes, function () {
     Route::get('/campaignList', [CampaignController::class, 'list']);
     Route::get('/clientList', [ClientController::class, 'list']);
     Route::get('/mediaList', [MediaController::class, 'list']);
+    Route::get('/mediaParentList', [MediaController::class, 'parentList']);
     Route::get('/showList', [RateController::class, 'showLists']);
+    Route::get('/clientsPlanList/{id}', [PlanController::class, 'clientsPlanList']);
+    Route::get('/plansCampaignsList/{id}', [CampaignController::class, 'plansCampaignsList']);
+
+    // export Orders
+    Route::post('/exportOrder', [ExportController::class, 'order']);
+    Route::post('/exportOrdersByCampaign', [ExportController::class, 'orderByCampaign']);
 
     // Reports
-    Route::post('/exportOrder', [GuideController::class, 'order']);
-    Route::post('/exportOrdersByCampaign', [GuideController::class, 'orderByCampaign']);
+    Route::post('/reportExcel', [ExportController::class, 'export']);
 
     //OrderNumber
-    Route::get('/orderNumber', [GuideController::class, 'orderNumber']);
+    Route::get('/orderNumber', [ExportController::class, 'orderNumber']);
 });

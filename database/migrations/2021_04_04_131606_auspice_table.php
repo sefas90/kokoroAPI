@@ -11,11 +11,12 @@ class AuspiceTable extends Migration {
             $table->bigIncrements('id');
             $table->string('auspice_name');
             $table->float('cost');
-            $table->bigInteger('duration'); // in seconds
-            $table->bigInteger('client_id')->unsigned();
+            $table->bigInteger('guide_id')->unsigned();
+            $table->bigInteger('rate_id')->unsigned();
             $table->timestamps();
             $table->softDeletes();
-            $table->foreign('client_id')->references('id')->on('clients');
+            $table->foreign('guide_id')->references('id')->on('guides');
+            $table->foreign('rate_id')->references('id')->on('rates');
             $table->engine = 'InnoDB';
         });
     }

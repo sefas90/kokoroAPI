@@ -11,8 +11,8 @@ class Auspice extends Model {
     protected $fillable = [
         'auspice_name',
         'cost',
-        'duration',
-        'client_id',
+        'guide_id',
+        'rate_id',
         'created_at',
         'updated_at',
         'deleted_at'

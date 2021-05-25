@@ -14,6 +14,7 @@ class Media extends Model {
         'NIT',
         'city_id',
         'media_type',
+        'media_parent_id',
         'created_at',
         'updated_at',
         'deleted_at'
