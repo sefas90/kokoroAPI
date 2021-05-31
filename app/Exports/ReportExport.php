@@ -49,6 +49,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
         $user = User::find($request->userId);
         $user = empty($user) ? 'System' : $user->name . ' ' .$user->lastname;
         $fila = (object)[];
+        $response = array();
         foreach ($result as $key => $row) {
             $plan = DB::table('material_planing')
                 ->select('*')
