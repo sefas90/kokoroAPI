@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\DB;
 use Validator;
 use DateTime;
 use Maatwebsite\Excel\Facades\Excel;
-// use Excel;
 
 class ExportController extends BaseController {
 
@@ -23,7 +22,7 @@ class ExportController extends BaseController {
         if (!$validator->fails()){
             $observation = [
                 0 => '',
-                1 => $request->observation
+                1 => $request->observations
             ];
 
             $result = DB::table('materials')
@@ -68,6 +67,7 @@ class ExportController extends BaseController {
 
                 if (count($orderNumber) > 0) {
                     $orderNumber = OrderNumber::find($orderNumber[0]->id);
+                    $observation[0] = 'Remplazando a la orden '.$orderNumber->order_number.'.'.$orderNumber->version;
                     $orderNumber->version = $orderNumber->version +1;
                     $orderNumber->observation = $observation[0].' - '.$observation[1];
                     $orderNumber->save();
@@ -90,6 +90,9 @@ class ExportController extends BaseController {
                 $month = date("m", strtotime(explode(" ", $result[0]->date_ini)[0]));
                 $year = date("Y", strtotime(explode(" ", $result[0]->date_ini)[0]));
 
+                $user = User::find($request->userId);
+                $user = empty($user) ? 'System' : $user->name . ' ' .$user->lastname;
+
                 $response = [
                     'result'          => $result,
                     'order'           => $orderNumber,
@@ -110,7 +113,8 @@ class ExportController extends BaseController {
                     'billingPolicies' => empty($result[0]->billingPolicies) ? 'Nombre: '. $result[0]->representative . ' NIT: ' . $result[0]->clientNIT :   $result[0]->billingPolicies,
                     'observation1'    => $observation[0],
                     'observation2'    => $observation[1],
-                    'clientName'      => $result[0]->clientName
+                    'clientName'      => $result[0]->clientName,
+                    'user'            => $user
                 ];
 
                 return !$request->isOrderCampaign ? $this->exportPdf($response, 'orderGuide', 'orderGuide.pdf') : $response;
@@ -186,7 +190,7 @@ class ExportController extends BaseController {
         $response = array();
         if (!$validator->fails()) {
             $result = Client::select('clients.id as client_id', 'client_name', 'representative', 'clients.NIT as clientNit', 'billing_address', 'billing_policies',
-                'plan_name', 'campaigns.id as campaign_id', 'plan.id as plan_id', 'guide_name', 'guides.id as guide_id', 'order_number', 'order_numbers.version',
+                'plan_name', 'campaigns.id as budget', 'plan.id as plan_id', 'guide_name', 'guides.id as guide_id', 'order_number', 'order_numbers.version',
                 'media.id as media_id', 'material_name', 'duration', 'materials.id as material_id', 'product', 'campaign_name',
                 'rates.id as rate_id', 'show', 'cost', 'media_name', 'business_name', 'cities.id as city_id', 'city', 'media_types.media_type')
                 ->join('plan', 'plan.client_id', '=', 'clients.id')

@@ -12,7 +12,7 @@ class GuideController extends BaseController {
     public function index (Request $request) {
         $sort = explode(":", $request->sort);
         return $this->sendResponse(DB::table('guides')
-            ->select('guides.id', 'guide_name as guideName', 'guides.date_ini as dateIni', 'campaigns.id as campaignId',
+            ->select('guides.id', 'guide_name as guideName', 'guides.date_ini as dateIni', 'campaigns.id as budget',
                 'guides.date_end as dateEnd', 'media_name as mediaName', 'campaign_name as campaignName', 'guides.id as guideId', 'editable as status'
             )
             ->join('media', 'media.id', '=', 'guides.media_id')
@@ -36,12 +36,13 @@ class GuideController extends BaseController {
         }
 
         $guide = new Guide(array(
-            'guide_name'  => trim($request->guideName),
-            'date_ini'    => trim($request->dateIni),
-            'date_end'    => trim($request->dateEnd),
-            'media_id'    => trim($request->mediaId),
-            'campaign_id' => trim($request->campaignId),
-            'editable'    => true,
+            'guide_name'     => trim($request->guideName),
+            'date_ini'       => trim($request->dateIni),
+            'date_end'       => trim($request->dateEnd),
+            'media_id'       => trim($request->mediaId),
+            'campaign_id'    => trim($request->campaignId),
+            'billing_number' => null,
+            'editable'       => true,
         ));
 
         return $guide->save() ?
@@ -76,7 +77,10 @@ class GuideController extends BaseController {
         }
 
         $guide->guide_name = trim($request->guide_name);
-        $guide->NIT         = trim($request->NIT);
+        $guide->NIT        = trim($request->NIT);
+        $guide->date_ini   = trim($request->dateIni);
+        $guide->date_end   = trim($request->dateEnd);
+        $guide->media_id   = trim($request->mediaId);
 
         return $guide->save() ?
             $this->sendResponse('', 'El guide ' . $guide->guide_name . ' se actualizo correctamente') :

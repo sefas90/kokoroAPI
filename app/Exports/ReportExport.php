@@ -26,7 +26,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
     public function view(): View {
         $request = $this->req;
         $result = Client::select('clients.id as client_id', 'client_name', 'representative', 'clients.NIT as clientNit', 'billing_address', 'billing_policies',
-            'plan_name', 'campaigns.id as campaign_id', 'plan.id as plan_id', 'guide_name', 'guides.id as guide_id', 'order_number', 'order_numbers.version',
+            'plan_name', 'campaigns.id as budget', 'plan.id as plan_id', 'guide_name', 'guides.id as guide_id', 'order_number', 'order_numbers.version',
             'media.id as media_id', 'material_name', 'duration', 'materials.id as material_id', 'product', 'campaign_name',
             'rates.id as rate_id', 'show', 'cost', 'media_name', 'business_name', 'cities.id as city_id', 'city', 'media_types.media_type')
             ->join('plan', 'plan.client_id', '=', 'clients.id')
@@ -56,9 +56,9 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
                 ->get();
             foreach ($plan as $k => $r) {
                 $fila->broadcast_day = $r->broadcast_day;
-                $fila->day           = $date = date("d", strtotime($r->broadcast_day));
-                $fila->month         = $date = date("m", strtotime($r->broadcast_day));
-                $fila->year          = $date = date("Y", strtotime($r->broadcast_day));
+                $fila->day           = $this->weekOfMonth(strtotime($r->broadcast_day));
+                $fila->month         = date("m", strtotime($r->broadcast_day));
+                $fila->year          = date("Y", strtotime($r->broadcast_day));
                 $fila->times_per_day = $r->times_per_day;
                 $fila->user          = $user;
                 $fila->row           = $row;
@@ -70,5 +70,21 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
         return view('exports.reports', [
             'datas' => $response
         ]);
+    }
+
+    function weekOfMonth($date) {
+        //Get the first day of the month.
+        $firstOfMonth = strtotime(date("Y-m-01", $date));
+        //Apply above formula.
+        return $this->weekOfYear($date) - $this->weekOfYear($firstOfMonth) + 1;
+    }
+
+    function weekOfYear($date) {
+        $weekOfYear = intval(date("W", $date));
+        if (date('n', $date) == "1" && $weekOfYear > 51) {
+            // It's the last week of the previos year.
+            $weekOfYear = 0;
+        }
+        return $weekOfYear;
     }
 }

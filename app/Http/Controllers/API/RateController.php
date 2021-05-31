@@ -44,9 +44,9 @@ class RateController extends BaseController {
             'brod_tu'  => trim($request->emitDays['Martes']) || 0,
             'brod_we'  => trim($request->emitDays['Miercoles']) || 0,
             'brod_th'  => trim($request->emitDays['Jueves']) || 0,
-            'brod_fr'  => trim($request->emitDays['viernes']) || 0,
-            'brod_sa'  => trim($request->emitDays['sabado']) || 0,
-            'brod_su'  => trim($request->emitDays['domingo']) || 0
+            'brod_fr'  => trim($request->emitDays['Viernes']) || 0,
+            'brod_sa'  => trim($request->emitDays['Sabado']) || 0,
+            'brod_su'  => trim($request->emitDays['Domingo']) || 0
         ));
 
         return $rate->save() ?

@@ -12,13 +12,12 @@
             <th>Versión</th>
             <th>Año</th>
             <th>Mes</th>
-            <th>Semana</th>
+            <th>Semana del Mes</th>
             <th>Soporte</th>
             <th>Grupo Publicitario</th>
             <th>Región</th>
             <th>Representante</th>
             <th>Presupuesto</th>
-            <th>Estado Recibido</th>
             <th>Orden</th>
             <th>Spots</th>
             <th>Inversión + IMP</th>
@@ -44,8 +43,7 @@
             <td>{{ $data->row->business_name }}</td>
             <td>{{ $data->row->city }}</td>
             <td>{{ $data->row->representative }}</td>
-            <td></td>
-            <td></td>
+            <td>{{ $data->row->budget }}</td>
             <td>{{ $data->row->order_number }}.{{ $data->row->version }}</td>
             <td>{{ $data->times_per_day }}</td>
             <td></td>

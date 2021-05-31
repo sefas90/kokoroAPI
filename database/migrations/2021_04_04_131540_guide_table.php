@@ -15,6 +15,7 @@ class GuideTable extends Migration {
             $table->bigInteger('media_id')->unsigned();
             $table->bigInteger('campaign_id')->unsigned();
             $table->boolean('editable');
+            $table->string('billing_number', 30)->nullable();
             $table->timestamps();
             $table->softDeletes();
             $table->foreign('campaign_id')->references('id')->on('campaigns');

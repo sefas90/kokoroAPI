@@ -93,15 +93,13 @@
         <table class="data-table">
             <thead>
             <tr>
-                <th class="md-5">Cliente/Agencia</th>
-                <th class="md-5">Recibido</th>
+                <th class="md-5" colspan="2">Cliente/Agencia</th>
                 <th class="md-5">Totales</th>
                 <th class="md-5">Ins.</th>
                 <th class="md-5">Inversion</th>
             </tr>
             <tr>
-                <th rowspan="2">{{ $data['clientName'] }}</th>
-                <th rowspan="2">(ninguno)</th>
+                <th rowspan="2" colspan="2">{{ $data['user'] }}</th>
                 <th>Total</th>
                 <th>{{ $data['totalSpots'] }}</th>
                 <th>{{ number_format($data['totalMount'], 2, '.', '') }}</th>

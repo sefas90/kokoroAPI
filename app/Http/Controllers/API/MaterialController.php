@@ -12,24 +12,23 @@ use Validator;
 class MaterialController extends BaseController {
     public function index (Request $request) {
         $sort = explode(":", $request->sort);
-        $result = $this->sendResponse(DB::table('materials')
+        $result = DB::table('materials')
             ->select('materials.id', 'material_name as materialName', 'duration', 'rates.show', 'guides.guide_name as guideName', 'guides.id as guideId',
-                'rates.id as rateId', 'rates.cost')
+                'rates.id as rateId', 'rates.cost', 'media_types.media_type as mediaType')
             ->join('guides', 'guides.id', '=', 'materials.guide_id')
             ->join('rates', 'rates.id', '=', 'materials.rate_id')
+            ->join('media', 'media.id', '=', 'guides.media_id')
+            ->join('media_types', 'media_types.id', '=', 'media.media_type')
             ->where('materials.deleted_at', '=', null)
             ->orderBy(empty($sort[0]) ? 'materials.id' : 'materials.'.$sort[0], empty($sort[1]) ? 'asc' : $sort[1])
-            ->get(), '');
-
-        foreach ($result as $key => $row) {
-            $media = DB::table('material_planing')
-                ->where('material_id', '=', $row->id)
-                ->sum('times_per_day');
-
-            $result->planification = $media;
-        }
-
-        return $result;
+            ->get();
+            foreach ($result as $key => $row) {
+                $media = DB::table('material_planing')
+                    ->where('material_id', '=', $row->id)
+                    ->sum('times_per_day');
+                $result[$key]->passes = (int)$media;
+            }
+        return $this->sendResponse($result);
     }
 
     public function store(Request $request) {

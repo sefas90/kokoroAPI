@@ -34,7 +34,8 @@ Route::post('login', [AuthController::class, 'login']);
 Route::post('register', [AuthController::class, 'register']);
 // Endpoints
 $attributes = [
-    'prefix' => 'v1'
+    'prefix' => 'v1',
+    'auth' => 'api'
 ];
 
 Route::group($attributes, function () {
