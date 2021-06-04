@@ -106,14 +106,15 @@ class GuideController extends BaseController {
     }
 
     public function finalizeGuide(Request $request) {
-        $guide = Guide::find($request->id);
+        $guide = Guide::find($request->guide_id);
         if (!$guide) {
-            return $this->sendError('No se encontro el guide');
+            return $this->sendError('No se encontro la pauta');
         }
         $guide->editable = false;
+        $guide->billing_number = $request->billing_number;
 
         return $guide->save() ?
             $this->sendResponse('', 'El guide ' . $guide->guide_name . ' se finalizo correctamente') :
-            $this->sendError('Ocurrio un error al finalizar la guia ' . $guide->guide_name . '.');
+            $this->sendError('Ocurrio un error al finalizar la pauta ' . $guide->guide_name . '.');
     }
 }
