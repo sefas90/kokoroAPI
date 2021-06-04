@@ -106,7 +106,7 @@ class GuideController extends BaseController {
     }
 
     public function finalizeGuide(Request $request) {
-        $guide = Guide::find($request->guide_id);
+        $guide = Guide::find($request->guideId);
         if (!$guide) {
             return $this->sendError('No se encontro la pauta');
         }
