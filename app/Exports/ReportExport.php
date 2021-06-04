@@ -55,9 +55,10 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
                 ->select('*')
                 ->where('material_id', '=', $row->material_id)
                 ->get();
+            $week = 0;
             foreach ($plan as $k => $r) {
                 $fila->broadcast_day = $r->broadcast_day;
-                $fila->day           = $this->weekOfMonth(strtotime($r->broadcast_day));
+                $fila->week          = $this->weekOfMonth(strtotime($r->broadcast_day));
                 $fila->month         = date("m", strtotime($r->broadcast_day));
                 $fila->year          = date("Y", strtotime($r->broadcast_day));
                 $fila->times_per_day = $r->times_per_day;

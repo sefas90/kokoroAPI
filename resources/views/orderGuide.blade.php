@@ -58,6 +58,7 @@
             <tr>
                 <td>Medio</td>
                 <td>Programa</td>
+                <td>Horario</td>
                 <td>Material</td>
                 <td>Dur</td>
                 @for ($i = 1; $i <= $data['daysInMonth']; $i++)
@@ -71,6 +72,7 @@
             <tr>
                 <td>{{ $row->media_name }}</td>
                 <td>{{ $row->show }}</td>
+                <td>{{ $row->hourIni }} {{$row->hourEnd}}</td>
                 <td>{{ $row->material_name }}</td>
                 <td>{{ $row->duration }}</td>
                 @for ($i = 1; $i <= $data['daysInMonth']; $i++)
@@ -93,13 +95,15 @@
         <table class="data-table">
             <thead>
             <tr>
-                <th class="md-5" colspan="2">Cliente/Agencia</th>
+                <th class="md-5">Responsable</th>
+                <th class="md-5">Cliente</th>
                 <th class="md-5">Totales</th>
                 <th class="md-5">Ins.</th>
                 <th class="md-5">Inversion</th>
             </tr>
             <tr>
-                <th rowspan="2" colspan="2">{{ $data['user'] }}</th>
+                <th rowspan="2">{{ $data['user'] }}</th>
+                <th rowspan="2">{{ $data['client'] }}</th>
                 <th>Total</th>
                 <th>{{ $data['totalSpots'] }}</th>
                 <th>{{ number_format($data['totalMount'], 2, '.', '') }}</th>
@@ -114,13 +118,15 @@
             <tr>
                 <td>Facturar a:</td>
                 <td>Direccion de facturacion:</td>
-                <td colspan="3">Observaciones</td>
+                <td>Politicas de facturacion:</td>
+                <td colspan="2">Observaciones</td>
             </tr>
             <tr>
-                <td>{{ $data['billingPolicies'] }}</td>
+                <td>{{ $data['billingToName'] }}</td>
                 <td>{{ $data['billingAddress'] }}</td>
+                <td>{{ $data['billingPolicies'] }}</td>
                 <td>{{ $data['observation1'] }}</td>
-                <td colspan="2">{{ $data['observation2'] }}</td>
+                <td>{{ $data['observation2'] }}</td>
             </tr>
             </tbody>
         </table>

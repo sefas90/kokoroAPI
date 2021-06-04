@@ -30,6 +30,7 @@ class ExportController extends BaseController {
                     'guides.guide_name', 'guides.media_id', 'guides.campaign_id', 'guides.editable', 'rates.show',
                     'rates.hour_ini', 'rates.hour_end', 'rates.cost', 'media.media_name', 'media.business_name', 'media.NIT', 'media.media_type',
                     'campaigns.campaign_name', 'campaigns.plan_id', 'plan.client_id', 'campaigns.date_ini', 'campaigns.date_end',
+                    'rates.hour_ini as hourIni', 'rates.hour_end as hourEnd',
                     'clients.id as clientId', 'clients.client_name as clientName', 'clients.representative', 'clients.NIT as clientNIT', 'clients.billing_address as billingAddress', 'clients.billing_policies as billingPolicies')
                 ->join('guides', 'guides.id', '=', 'materials.guide_id')
                 ->join('rates', 'rates.id', '=', 'materials.rate_id')
@@ -96,6 +97,7 @@ class ExportController extends BaseController {
                 $response = [
                     'result'          => $result,
                     'order'           => $orderNumber,
+                    'client'          => $result[0]->clientName,
                     'businessName'    => $result[0]->business_name,
                     'guideName'       => $result[0]->guide_name,
                     'NIT'             => $result[0]->NIT,
@@ -109,8 +111,10 @@ class ExportController extends BaseController {
                     'date-'           => date("F Y", strtotime("2021-05-12")),
                     'totalMount'      => $total,
                     'totalSpots'      => $totalSpots,
+                    'billingToName'   => 'Nombre: '. $result[0]->representative,
+                    'billingToNit'    => ' NIT: ' .$result[0]->clientNIT,
                     'billingAddress'  => $result[0]->billingAddress,
-                    'billingPolicies' => empty($result[0]->billingPolicies) ? 'Nombre: '. $result[0]->representative . ' NIT: ' . $result[0]->clientNIT :   $result[0]->billingPolicies,
+                    'billingPolicies' => $result[0]->billingPolicies,
                     'observation1'    => $observation[0],
                     'observation2'    => $observation[1],
                     'clientName'      => $result[0]->clientName,

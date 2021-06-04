@@ -38,7 +38,7 @@
             <td>{{ $data->row->material_name }}</td>
             <td>{{ $data->year }}</td>
             <td>{{ $data->month }}</td>
-            <td>{{ $data->day }}</td>
+            <td>{{ $data->week }}</td>
             <td>{{ $data->row->media_name }}</td>
             <td>{{ $data->row->business_name }}</td>
             <td>{{ $data->row->city }}</td>

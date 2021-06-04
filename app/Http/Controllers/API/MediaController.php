@@ -13,7 +13,7 @@ class MediaController extends BaseController {
     public function index (Request $request) {
         $sort = explode(":", $request->sort);
         return $this->sendResponse(DB::table('media')
-            ->select('media.id', 'media_name as mediaName', 'business_name as businessName', 'NIT', 'city', 'cities.id as cityId', 'media_types.media_type as mediaType', 'media_types.id as mediaTypeId', 'media_parent_id as mediaParentId')
+            ->select('media.id', 'media_name as mediaName', 'business_name as businessName', 'NIT', 'city', 'cities.id as cityId', 'media_types.media_type as mediaTypeValue', 'media_types.id as mediaType', 'media_parent_id as mediaParentId')
             ->join('cities', 'cities.id', '=', 'media.city_id')
             ->join('media_types', 'media_types.id', '=', 'media.media_type')
             ->where('media.deleted_at', '=', null)

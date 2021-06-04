@@ -12,7 +12,7 @@ class CreateOrderNumbersTable extends Migration {
             $table->string('version');
             $table->string('observation')->nullable();
             $table->bigInteger('guide_id');
-            $table->foreign('guide_id')->references('id')->on('guides');
+            //$table->foreign('guide_id')->references('id')->on('guides');
             $table->timestamps();
             $table->engine = 'InnoDB';
         });

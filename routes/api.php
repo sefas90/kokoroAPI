@@ -111,6 +111,7 @@ Route::group($attributes, function () {
     Route::get('/showList', [RateController::class, 'showLists']);
     Route::get('/clientsPlanList/{id}', [PlanController::class, 'clientsPlanList']);
     Route::get('/plansCampaignsList/{id}', [CampaignController::class, 'plansCampaignsList']);
+    Route::get('/rateGuideList/{id}', [RateController::class, 'rateGuideList']);
 
     // export Orders
     Route::post('/exportOrder', [ExportController::class, 'order']);

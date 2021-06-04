@@ -24,8 +24,8 @@ class CampaignController extends BaseController {
         $validator = Validator::make($request->all(), [
             'campaignName' => 'required',
             'product'      => 'required',
-            'dateIni'      => 'required',
-            'dateEnd'      => 'required',
+            'dateIni'      => ['required', 'before:dateEnd'],
+            'dateEnd'      => ['required', 'after:dateIni'],
             'planId'       => 'required',
         ]);
 
@@ -58,8 +58,8 @@ class CampaignController extends BaseController {
         $validator = Validator::make($request->all(), [
             'campaignName' => 'required',
             'product'      => 'required',
-            'dateIni'      => 'required',
-            'dateEnd'      => 'required',
+            'dateIni'      => ['required', 'before:dateEnd'],
+            'dateEnd'      => ['required', 'after:dateIni'],
             'planId'       => 'required',
         ]);
 
