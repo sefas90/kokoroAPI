@@ -104,4 +104,16 @@ class GuideController extends BaseController {
             ->where('deleted_at', '=', null)
             ->get(), '');
     }
+
+    public function finalizeGuide(Request $request) {
+        $guide = Guide::find($request->id);
+        if (!$guide) {
+            return $this->sendError('No se encontro el guide');
+        }
+        $guide->editable = false;
+
+        return $guide->save() ?
+            $this->sendResponse('', 'El guide ' . $guide->guide_name . ' se finalizo correctamente') :
+            $this->sendError('Ocurrio un error al finalizar la guia ' . $guide->guide_name . '.');
+    }
 }

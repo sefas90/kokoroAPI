@@ -122,4 +122,7 @@ Route::group($attributes, function () {
 
     //OrderNumber
     Route::get('/orderNumber/{id}', [ExportController::class, 'orderNumber']);
+
+    //Finalize guide
+    Route::post('/finalizeGuide', [GuideController::class, 'finalizeGuide']);
 });
