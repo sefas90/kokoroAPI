@@ -13,7 +13,7 @@ class GuideController extends BaseController {
         $sort = explode(":", $request->sort);
         return $this->sendResponse(DB::table('guides')
             ->select('guides.id', 'guide_name as guideName', 'guides.date_ini as dateIni', 'campaigns.id as budget',
-                'guides.date_end as dateEnd', 'media_name as mediaName', 'campaign_name as campaignName', 'guides.id as guideId', 'editable as status'
+                'guides.date_end as dateEnd', 'media.id as mediaId', 'media_name as mediaName', 'campaign.id as campaignId', 'campaign_name as campaignName', 'guides.id as guideId', 'editable as status'
             )
             ->join('media', 'media.id', '=', 'guides.media_id')
             ->join('campaigns', 'campaigns.id', '=', 'guides.campaign_id')
