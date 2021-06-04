@@ -44,7 +44,7 @@
         <table class="data-table">
             <thead>
             <tr>
-                <th class="md-3" rowspan="2"> <img src="{{ public_path('dummy.jpg') }}" style="width: 200px; height: 200px"></th>
+                <th class="md-3" rowspan="2">KOKORO</th>
                 <th class="md-3" rowspan="2">{{$data['businessName']}}</th>
                 <th class="md-3">Numero de orden: {{$data['order']}}</th>
             </tr>
