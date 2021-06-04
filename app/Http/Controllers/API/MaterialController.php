@@ -95,8 +95,10 @@ class MaterialController extends BaseController {
 
     public function update(Request $request, $id) {
         $validator = Validator::make($request->all(), [
-            'material_name' => 'required',
-            'NIT' => 'required',
+            'materialName' => 'required',
+            'guideId'      => 'required',
+            'rateId'       => 'required',
+            'timesPerDay'  => 'required'
         ]);
 
         if($validator->fails()){
@@ -108,12 +110,32 @@ class MaterialController extends BaseController {
             return $this->sendError('No se encontro el material');
         }
 
-        $material->material_name = trim($request->material_name);
-        $material->NIT         = trim($request->NIT);
+        $material->material_name = trim($request->materialName);
+        $material->duration      = trim($request->duration);
+        $material->guide_id      = trim($request->guideId);
+        $material->rate_id       = trim($request->rateId);
 
-        return $material->save() ?
-            $this->sendResponse('', 'El material ' . $material->material_name . ' se actualizo correctamente') :
-            $this->sendError('Ocurrio un error al actualizar el material ' . $material->material_name . '.');
+        if($material->save())  {
+            $success = false;
+            foreach ($request['timesPerDay'] as $key => $row) {
+                $materialPlaning = new PlaningMaterial(array(
+                    'material_id' => $material['id'],
+                    'times_per_day' => $row['timesPerDay'],
+                    'broadcast_day' => $row['date']
+                ));
+
+                if ($materialPlaning->save()) {
+                    $success = true;
+                } else {
+                    $success = false;
+                }
+            }
+            return $success ?
+                $this->sendResponse('', 'El material ' . $material->material_name . ' se actualizo correctamente') :
+                $this->sendError('Ocurrio un error al crear un nuevo material.');
+        } else {
+            return $this->sendError('Ocurrio un error al actualizar un nuevo material.');
+        }
     }
 
     public function destroy($id) {
