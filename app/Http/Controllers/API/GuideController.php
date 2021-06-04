@@ -76,7 +76,7 @@ class GuideController extends BaseController {
             return $this->sendError('No se encontro el guide');
         }
 
-        $guide->guide_name = trim($request->guide_name);
+        $guide->guide_name = trim($request->guideName);
         $guide->date_ini   = trim($request->dateIni);
         $guide->date_end   = trim($request->dateEnd);
         $guide->media_id   = trim($request->mediaId);
