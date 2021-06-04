@@ -101,9 +101,9 @@ class RateController extends BaseController {
         $rate->brod_tu  = trim($request->emitDays['Martes']) || 0;
         $rate->brod_we  = trim($request->emitDays['Miercoles']) || 0;
         $rate->brod_th  = trim($request->emitDays['Jueves']) || 0;
-        $rate->brod_fr  = trim($request->emitDays['viernes']) || 0;
-        $rate->brod_sa  = trim($request->emitDays['sabado']) || 0;
-        $rate->brod_su  = trim($request->emitDays['domingo']) || 0;
+        $rate->brod_fr  = trim($request->emitDays['Viernes']) || 0;
+        $rate->brod_sa  = trim($request->emitDays['Sabado']) || 0;
+        $rate->brod_su  = trim($request->emitDays['Domingo']) || 0;
 
         return $rate->save() ?
             $this->sendResponse('', 'La tarifa ' . $rate->rate_name . ' se actualizo correctamente') :
