@@ -34,7 +34,7 @@ class MaterialController extends BaseController {
                 $aux = [];
                 foreach ($material_planing as $k => $r) {
                     $aux[$r->broadcast_day] = [
-                        'date' => $r->broadcast_day,
+                        'date' => date('d-m-Y h:i:s', strtotime($r->broadcast_day)),
                         'timesPerDay' => $r->times_per_day
                     ];
                 }
