@@ -11,13 +11,28 @@ use Validator;
 class RateController extends BaseController {
     public function index (Request $request) {
         $sort = explode(':', $request->sort);
-        return $this->sendResponse(DB::table('rates')
+        $rates = DB::table('rates')
             ->select('rates.id', 'show', 'hour_ini as hourIni', 'hour_end as hourEnd', 'brod_mo as brodMo', 'brod_tu as brodTu',
                              'brod_we as brodWe', 'brod_th as brodTh', 'brod_fr as brodFr', 'brod_sa as brodSa', 'brod_su as brodSu', 'cost', 'media_name as mediaName', 'media.id as mediaId')
             ->join('media', 'media.id', '=', 'rates.media_id')
             ->where('rates.deleted_at', '=', null)
             ->orderBy(empty($sort[0]) ? 'rates.id' : 'rates.'.$sort[0], empty($sort[1]) ? 'asc' : $sort[1])
-            ->get(), '');
+            ->get();
+
+        foreach ($rates as $key => $row) {
+            $rates[$key]->emitDays = [
+                'Lunes'     => $row->brodMo,
+                'Martes'    => $row->brodTu,
+                'Miercoles' => $row->brodWe,
+                'Jueves'    => $row->brodTh,
+                'Viernes'   => $row->brodFr,
+                'Sabado'    => $row->brodSa,
+                'Domingo'   => $row->brodSu,
+            ];
+        }
+
+
+        return $this->sendResponse($rates, '');
     }
 
     public function store(Request $request) {

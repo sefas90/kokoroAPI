@@ -112,7 +112,7 @@ class ExportController extends BaseController {
                     'totalMount'      => $total,
                     'totalSpots'      => $totalSpots,
                     'billingToName'   => 'Nombre: '. $result[0]->representative,
-                    'billingToNit'    => ' NIT: ' .$result[0]->clientNIT,
+                    'billingToNit'    => 'NIT: ' .$result[0]->clientNIT,
                     'billingAddress'  => $result[0]->billingAddress,
                     'billingPolicies' => $result[0]->billingPolicies,
                     'observation1'    => $observation[0],

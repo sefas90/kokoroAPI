@@ -44,7 +44,7 @@
         <table class="data-table">
             <thead>
             <tr>
-                <th class="md-3" rowspan="2">KOKORO</th>
+                <th class="md-3" rowspan="2"> <img src="{{ public_path('dummy.jpg') }}" style="width: 200px; height: 200px"></th>
                 <th class="md-3" rowspan="2">{{$data['businessName']}}</th>
                 <th class="md-3">Numero de orden: {{$data['order']}}</th>
             </tr>
@@ -122,7 +122,7 @@
                 <td colspan="2">Observaciones</td>
             </tr>
             <tr>
-                <td>{{ $data['billingToName'] }}</td>
+                <td>{{ $data['billingToName'] }}<br>{{ $data['billingToNit'] }}</td>
                 <td>{{ $data['billingAddress'] }}</td>
                 <td>{{ $data['billingPolicies'] }}</td>
                 <td>{{ $data['observation1'] }}</td>
