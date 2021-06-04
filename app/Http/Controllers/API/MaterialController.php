@@ -23,10 +23,22 @@ class MaterialController extends BaseController {
             ->orderBy(empty($sort[0]) ? 'materials.id' : 'materials.'.$sort[0], empty($sort[1]) ? 'asc' : $sort[1])
             ->get();
             foreach ($result as $key => $row) {
-                $media = DB::table('material_planing')
+                $material = DB::table('material_planing')
                     ->where('material_id', '=', $row->id)
                     ->sum('times_per_day');
-                $result[$key]->passes = (int)$media;
+
+                $material_planing = DB::table('material_planing')
+                    ->where('material_id', '=', $row->id)->get();
+
+                $result[$key]->passes = (int)$material;
+                $aux = [];
+                foreach ($material_planing as $k => $r) {
+                    $aux[$r->broadcast_day] = [
+                        'date' => $r->broadcast_day,
+                        'timesPerDay' => $r->times_per_day
+                    ];
+                }
+                $result[$key]->timesPerDay = $aux;
             }
         return $this->sendResponse($result);
     }
