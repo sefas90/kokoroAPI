@@ -117,6 +117,13 @@ class MaterialController extends BaseController {
 
         if($material->save())  {
             $success = false;
+
+            $post = PlaningMaterial::where('id', $id);
+            foreach ($post as $pos => $rew) {
+                $material_planing = PlaningMaterial::find($rew->id);
+                $material_planing->delete();
+            }
+
             foreach ($request['timesPerDay'] as $key => $row) {
                 $materialPlaning = new PlaningMaterial(array(
                     'material_id' => $material['id'],
