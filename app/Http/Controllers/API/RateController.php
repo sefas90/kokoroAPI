@@ -124,7 +124,7 @@ class RateController extends BaseController {
             ->select('rates.id', 'rates.id as value', 'show as label', 'brod_mo', 'brod_tu', 'brod_we', 'brod_th', 'brod_fr', 'brod_sa', 'brod_su', 'media_types.media_type as mediaType', 'cost')
             ->join('media', 'media.id', '=', 'rates.media_id')
             ->join('media_types', 'media_types.id', '=', 'media.media_type')
-            ->join('guides', 'guides.id', '=', 'media.guide_id')
+            ->join('guides', 'guides.media_id', '=', 'media.id')
             ->where([
                 ['rates.deleted_at', '=', null],
                 ['guides.id', '=', $id]
