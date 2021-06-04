@@ -61,8 +61,8 @@ class GuideController extends BaseController {
     public function update(Request $request, $id) {
         $validator = Validator::make($request->all(), [
             'guideName'  => 'required',
-            'dateIni'      => ['required', 'before:dateEnd'],
-            'dateEnd'      => ['required', 'after:dateIni'],
+            'dateIni'    => ['required', 'before:dateEnd'],
+            'dateEnd'    => ['required', 'after:dateIni'],
             'mediaId'    => 'required',
             'campaignId' => 'required',
         ]);
@@ -77,10 +77,10 @@ class GuideController extends BaseController {
         }
 
         $guide->guide_name = trim($request->guide_name);
-        $guide->NIT        = trim($request->NIT);
         $guide->date_ini   = trim($request->dateIni);
         $guide->date_end   = trim($request->dateEnd);
         $guide->media_id   = trim($request->mediaId);
+        $guide->campaign_id   = trim($request->campaignId);
 
         return $guide->save() ?
             $this->sendResponse('', 'El guide ' . $guide->guide_name . ' se actualizo correctamente') :
