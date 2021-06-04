@@ -24,8 +24,6 @@ class RateController extends BaseController {
         $validator = Validator::make($request->all(), [
             'show'     => 'required',
             'mediaId'  => 'required',
-            'hourIni'  => 'required',
-            'hourEnd'  => 'required',
             'cost'     => 'required',
             'emitDays' => 'required',
         ]);
@@ -65,8 +63,6 @@ class RateController extends BaseController {
     public function update(Request $request, $id) {
         $validator = Validator::make($request->all(), [
             'show'     => 'required',
-            'mediaId'  => 'required',
-            'hourIni'  => 'required',
             'hourEnd'  => 'required',
             'cost'     => 'required',
             'emitDays' => 'required',
