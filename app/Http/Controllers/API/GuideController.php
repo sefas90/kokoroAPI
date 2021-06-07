@@ -12,11 +12,13 @@ class GuideController extends BaseController {
     public function index (Request $request) {
         $sort = explode(":", $request->sort);
         return $this->sendResponse(DB::table('guides')
-            ->select('guides.id', 'guide_name as guideName', 'guides.date_ini as dateIni', 'campaigns.id as budget',
+            ->select('guides.id', 'guide_name as guideName', 'guides.date_ini as dateIni', 'campaigns.id as budget', 'clients.client_name as clientName',
                 'guides.date_end as dateEnd', 'media.id as mediaId', 'media_name as mediaName', 'campaigns.id as campaignId', 'campaign_name as campaignName', 'guides.id as guideId', 'editable as status'
             )
             ->join('media', 'media.id', '=', 'guides.media_id')
             ->join('campaigns', 'campaigns.id', '=', 'guides.campaign_id')
+            ->join('plan', 'plan.id', '=', 'campaigns.plan_id')
+            ->join('clients', 'clients.id', '=', 'plan.client_id')
             ->where('guides.deleted_at', '=', null)
             ->orderBy(empty($sort[0]) ? 'guides.id' : 'guides.'.$sort[0], empty($sort[1]) ? 'asc' : $sort[1])
             ->get(), '');
