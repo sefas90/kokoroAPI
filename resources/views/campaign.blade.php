@@ -37,6 +37,13 @@
         margin: 0;
         padding: 0;
     }
+    @font-face {
+        font-family: 'open_sanslight';
+        src: url('opensans-light-webfont.woff2') format('woff2'),
+        url('opensans-light-webfont.woff') format('woff');
+        font-weight: normal;
+        font-style: normal;
+    }
 </style>
 <!DOCTYPE html>
 <html lang="en">
@@ -50,7 +57,7 @@
         <table class="data-table">
             <thead>
             <tr>
-                <th class="md-3" rowspan="2">KOKORO</th>
+                <th class="md-3" rowspan="2"><img src="../public/kokoro_logo.jpg" width="80%"></th>
                 <th class="md-3" rowspan="2">{{$guideRow['businessName']}}</th>
                 <th class="md-3">Numero de orden: {{$guideRow['order']}}</th>
             </tr>

@@ -126,3 +126,15 @@ Route::group($attributes, function () {
     //Finalize guide
     Route::post('/finalizeGuide', [GuideController::class, 'finalizeGuide']);
 });
+
+/*
+const getUnitCost = (unitCost, mediaType, duration) => {
+    mediaType = mediaType.toUpperCase();
+    if (mediaType === "TV" || mediaType === "TV PAGA")
+        return duration * unitCost;
+    else
+        return unitCost;
+};
+
+$this->getUnitCost($row->cost, $row->media_type, $row->duration)
+*/

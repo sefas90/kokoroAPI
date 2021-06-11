@@ -28,7 +28,7 @@ class ExportController extends BaseController {
             $result = DB::table('materials')
                 ->select('materials.id as id', 'materials.material_name', 'materials.duration', 'materials.guide_id', 'materials.rate_id',
                     'guides.guide_name', 'guides.media_id', 'guides.campaign_id', 'guides.editable', 'rates.show',
-                    'rates.hour_ini', 'rates.hour_end', 'rates.cost', 'media.media_name', 'media.business_name', 'media.NIT', 'media.media_type',
+                    'rates.hour_ini', 'rates.hour_end', 'rates.cost', 'media.media_name', 'media.business_name', 'media.NIT', 'media.media_type as mediaTypeId', 'media_types.media_type',
                     'campaigns.campaign_name', 'campaigns.plan_id', 'plan.client_id', 'campaigns.date_ini', 'campaigns.date_end',
                     'rates.hour_ini as hourIni', 'rates.hour_end as hourEnd',
                     'clients.id as clientId', 'clients.client_name as clientName', 'clients.representative', 'clients.NIT as clientNIT', 'clients.billing_address as billingAddress', 'clients.billing_policies as billingPolicies')
@@ -40,6 +40,7 @@ class ExportController extends BaseController {
                 ->join('clients', 'clients.id', '=', 'plan.client_id')
                 ->join('media_types', 'media_types.id', '=', 'media.media_type')
                 ->where('guides.id', '=', $request->guideId)
+                ->where('materials.deleted_at', '=', null)
                 ->get();
 
             if (count($result) > 0) {
@@ -120,6 +121,11 @@ class ExportController extends BaseController {
                     'clientName'      => $result[0]->clientName,
                     'user'            => $user
                 ];
+
+                foreach ($response['result'] as $llave => $fila) {
+                    $response['result'][$llave]->unitCost = $this->getUnitCost($fila->cost, $fila->media_type, $fila->duration);
+                    $response['result'][$llave]->totalCost = $this->getTotalCost($fila->cost, $fila->media_type, $fila->duration, $fila->spots);
+                }
 
                 return !$request->isOrderCampaign ? $this->exportPdf($response, 'orderGuide', 'orderGuide.pdf') : $response;
             } else {
@@ -243,5 +249,25 @@ class ExportController extends BaseController {
 
     public function export(Request $request) {
         return (new ReportExport)->request($request);
+    }
+
+    public function getUnitCost($unitCost, $mediaType, $duration) {
+        $mediaType = strtoupper($mediaType);
+        if ($mediaType === "TV" || $mediaType === "TV PAGA") {
+            return $duration * $unitCost;
+        }
+        else {
+            return $unitCost;
+        }
+    }
+
+    public function getTotalCost($unitCost, $mediaType, $duration, $passes) {
+        $mediaType = strtoupper($mediaType);
+        if ($mediaType === "TV" || $mediaType === "TV PAGA") {
+            return $duration * $unitCost * $passes;
+        }
+        else {
+            return $unitCost * $passes;
+        }
     }
 }

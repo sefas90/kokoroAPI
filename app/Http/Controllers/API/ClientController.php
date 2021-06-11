@@ -29,14 +29,11 @@ class ClientController extends BaseController {
             return $this->sendError('Error de validacion.', $validator->errors());
         }
 
-        $policies = empty(!$request->billingPolicies) ? $request->billingPolicies
-            : 'NIT: ' . $request->NIT . ' Nombre: ' . $request->representative;
-
         $client = new Client(array(
             'client_name'       => trim($request->clientName),
             'representative'    => trim($request->representative),
             'NIT'               => trim($request->NIT),
-            'billing_policies'  => trim($policies),
+            'billing_policies'  => trim($request->billingPolicies),
             'billing_address'   => trim($request->billingAddress),
         ));
 

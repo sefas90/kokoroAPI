@@ -13,7 +13,7 @@
         font-size: 10px;
     }
     .selected {
-        background-color: aquamarine;
+        background-color: #c390ea;
     }
     table {
         border-collapse: collapse;
@@ -30,6 +30,23 @@
     }
     .title{
         width: 100%;
+    }
+    .nowrap {
+        white-space: nowrap
+    }
+
+    .right {
+        text-align: right;
+    }
+    .text-all {
+        font-size: 9px;
+    }
+    @font-face {
+        font-family: 'open_sanslight';
+        src: url('opensans-light-webfont.woff2') format('woff2'),
+        url('opensans-light-webfont.woff') format('woff');
+        font-weight: normal;
+        font-style: normal;
     }
 </style>
 <!DOCTYPE html>
@@ -60,16 +77,16 @@
                 <td>Programa</td>
                 <td>Horario</td>
                 <td>Material</td>
-                <td>Dur</td>
+                <td>Dur (seg.)</td>
                 @for ($i = 1; $i <= $data['daysInMonth']; $i++)
                 <td>{{ $i }}</td>
                 @endfor
                 <td>Spots</td>
-                <td>C. Unitario</td>
-                <td>Inversion</td>
+                <td class="right"><div class="nowrap">C. Unitario</div>Bs.</td>
+                <td class="right"><div class="nowrap">Inversion</div>Bs.</td>
             </tr>
             @foreach($data['result'] as $key => $row)
-            <tr>
+            <tr class="text-all">
                 <td>{{ $row->media_name }}</td>
                 <td>{{ $row->show }}</td>
                 <td>{{ $row->hourIni }} {{$row->hourEnd}}</td>
@@ -85,8 +102,8 @@
                     </td>
                 @endfor
                 <td>{{ $row->spots }}</td>
-                <td>{{ number_format($row->cost, 2, '.', '') }}</td>
-                <td>{{ number_format($row->spots * $row->cost, 2, '.', '') }}</td>
+                <td class="right">{{ number_format($row->unitCost, 2, '.', '') }}</td>
+                <td class="right">{{ number_format($row->totalCost, 2, '.', '') }}</td>
             </tr>
             @endforeach
             </tbody>
