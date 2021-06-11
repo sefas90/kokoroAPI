@@ -79,7 +79,7 @@ class MediaController extends BaseController {
         $media->NIT             = trim($request->NIT);
         $media->city_id         = trim($request->cityId);
         $media->media_type      = trim($request->mediaType);
-        $media->media_parent_id = trim($request->mediaParent);
+        $media->media_parent_id = trim($request->mediaParentId);
 
         return $media->save() ?
             $this->sendResponse('', 'El media ' . $media->media_name . ' se actualizo correctamente') :
