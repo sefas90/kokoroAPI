@@ -71,6 +71,7 @@
             <tr>
                 <td>Medio</td>
                 <td>Programa</td>
+                <td>Horario</td>
                 <td>Material</td>
                 <td>Dur</td>
                 @for ($i = 1; $i <= $guideRow['daysInMonth']; $i++)
@@ -84,6 +85,7 @@
             <tr>
                 <td>{{ $row->media_name }}</td>
                 <td>{{ $row->show }}</td>
+                <td>{{ $row->hourIni }} {{$row->hourEnd}}</td>
                 <td>{{ $row->material_name }}</td>
                 <td>{{ $row->duration }}</td>
                 @for ($i = 1; $i <= $guideRow['daysInMonth']; $i++)
