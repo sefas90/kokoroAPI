@@ -11,7 +11,7 @@ class MediaTable extends Migration {
             $table->bigIncrements('id')->index();
             $table->string('media_name');
             $table->string('business_name');
-            $table->string('NIT');
+            $table->string('NIT', 13);
             $table->bigInteger('city_id')->unsigned();
             $table->bigInteger('media_type')->unsigned();
             $table->bigInteger('media_parent_id')->unsigned()->nullable();

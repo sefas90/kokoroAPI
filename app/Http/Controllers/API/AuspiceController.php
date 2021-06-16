@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\API;
 
 use App\Models\Auspice;
+use App\Models\AuspiceMaterial;
+use App\Models\PlaningAuspiceMaterial;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -80,6 +82,47 @@ class AuspiceController extends BaseController {
         return $auspice->save() ?
             $this->sendResponse('', 'El auspicee ' . $auspice->auspice_name . ' se actualizo correctamente') :
             $this->sendError('Ocurrio un error al actualizar el auspicee ' . $auspice->auspice_name . '.');
+    }
+
+    public function auspiceMaterial(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'materialName' => 'required',
+            'duration'     => 'required',
+            'auspiceId'    => 'required',
+            'timesPerDay'  => 'required'
+        ]);
+
+        if($validator->fails()){
+            return $this->sendError('Error de validacion.', $validator->errors());
+        }
+
+        $material = new AuspiceMaterial(array(
+            'material_name' => trim($request->materialName),
+            'duration'      => empty($request->duration) ? 0 : trim($request->duration),
+            'auspice_id'    => trim($request->auspiceId)
+        ));
+
+        if($material->save())  {
+            $success = false;
+            foreach ($request['timesPerDay'] as $key => $row) {
+                $materialPlaning = new PlaningAuspiceMaterial(array(
+                    'material_id'   => $material['id'],
+                    'times_per_day' => $row['timesPerDay'],
+                    'broadcast_day' => $row['date']
+                ));
+
+                if ($materialPlaning->save()) {
+                    $success = true;
+                } else {
+                    $success = false;
+                }
+            }
+            return $success ?
+                $this->sendResponse('', 'El material ' . $material->material_name . ' se guardo correctamente') :
+                $this->sendError('Ocurrio un error al crear un nuevo material.');
+        } else {
+            return $this->sendError('Ocurrio un error al crear un nuevo material.');
+        }
     }
 
     public function destroy($id) {

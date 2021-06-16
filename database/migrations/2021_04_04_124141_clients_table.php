@@ -11,7 +11,7 @@ class ClientsTable extends Migration {
             $table->bigIncrements('id');
             $table->string('client_name', 50);
             $table->string('representative', 50);
-            $table->string('NIT', 11);
+            $table->string('NIT', 13);
             $table->string('billing_address');
             $table->string('billing_policies');
             $table->timestamps();

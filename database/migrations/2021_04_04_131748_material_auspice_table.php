@@ -11,11 +11,9 @@ class MaterialAuspiceTable extends Migration {
             $table->bigIncrements('id');
             $table->string('material_name');
             $table->bigInteger('duration'); // in seconds
-            $table->bigInteger('guide_id')->unsigned();
             $table->bigInteger('auspice_id')->unsigned();
             $table->timestamps();
             $table->softDeletes();
-            $table->foreign('guide_id')->references('id')->on('guides');
             $table->foreign('auspice_id')->references('id')->on('auspices');
             $table->engine = 'InnoDB';
         });
