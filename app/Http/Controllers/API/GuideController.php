@@ -3,15 +3,17 @@
 namespace App\Http\Controllers\API;
 
 use App\Models\Guide;
+use App\Models\OrderNumber;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Validator;
+use function PHPUnit\Framework\isEmpty;
 
 class GuideController extends BaseController {
     public function index (Request $request) {
         $sort = explode(":", $request->sort);
-        return $this->sendResponse(DB::table('guides')
+        $result = DB::table('guides')
             ->select('guides.id', 'guide_name as guideName', 'guides.date_ini as dateIni', 'campaigns.id as budget', 'clients.client_name as clientName', 'media.NIT as billingNumber', 'media.business_name as billingName',
                 'guides.date_end as dateEnd', 'media.id as mediaId', 'media_name as mediaName', 'campaigns.id as campaignId', 'campaign_name as campaignName', 'guides.id as guideId', 'editable as status'
             )
@@ -21,7 +23,22 @@ class GuideController extends BaseController {
             ->join('clients', 'clients.id', '=', 'plan.client_id')
             ->where('guides.deleted_at', '=', null)
             ->orderBy(empty($sort[0]) ? 'guides.id' : 'guides.'.$sort[0], empty($sort[1]) ? 'asc' : $sort[1])
-            ->get(), '');
+            ->get();
+
+        foreach ($result as $key => $row) {
+            $orderNumber = OrderNumber::where('guide_id', '=', $row->guideId)->get();
+
+            $number = 'Orden no exportada';
+            if (count($orderNumber) > 0) {
+                $orderNumber = $orderNumber[0];
+                if ($orderNumber->order_number) {
+                    $number = $orderNumber->order_number.'.'.$orderNumber->version;
+                }
+            }
+            $result[$key]->orderNumber = $number;
+        }
+
+        return $this->sendResponse($result);
     }
 
     public function store(Request $request) {
