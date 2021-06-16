@@ -46,6 +46,7 @@ Route::group($attributes, function () {
     Route::delete('/auspice/{id}', [AuspiceController::class, 'destroy']);
 
     Route::post('/auspiceMaterial', [AuspiceController::class, 'auspiceMaterial']);
+    Route::get('/auspiceMaterial/{id}', [AuspiceController::class, 'getAuspiceMaterial']);
 
     Route::get('/campaign', [CampaignController::class, 'index']);
     Route::post('/campaign', [CampaignController::class, 'store']);

@@ -6,7 +6,6 @@ use App\Models\Auspice;
 use App\Models\AuspiceMaterial;
 use App\Models\PlaningAuspiceMaterial;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Validator;
 
@@ -123,6 +122,45 @@ class AuspiceController extends BaseController {
         } else {
             return $this->sendError('Ocurrio un error al crear un nuevo material.');
         }
+    }
+
+    public function getAuspiceMaterial($id) {
+        $aus = Auspice::where('auspices.id', '=', $id)
+            ->select('auspices.id', 'auspice_name as auspiceName', 'auspices.cost', 'rates.show', 'guides.guide_name as guideName',
+                'guides.date_ini as dateIni', 'guides.date_end as dateEnd', 'brod_mo', 'brod_tu', 'brod_we', 'brod_th', 'brod_fr', 'brod_sa', 'brod_su', 'media_types.media_type as mediaType')
+            ->join('rates', 'rates.id', '=', 'auspices.rate_id')
+            ->join('guides', 'guides.id', '=', 'auspices.guide_id')
+            ->join('media', 'media.id', '=', 'guides.media_id')
+            ->join('media_types', 'media_types.id', '=', 'media.media_type')
+            ->get();
+
+        $aus = $aus[0];
+        $auspice = AuspiceMaterial::find($id)->get();
+        if (!$auspice) {
+            return $this->sendError('No se encontro el auspicio');
+        }
+
+        foreach ($auspice as $key => $row) {
+            $material = DB::table('material_auspice_planing')
+                ->where('material_auspice_id', '=', $row->id)
+                ->sum('times_per_day');
+
+            $material_planing = DB::table('material_auspice_planing')
+                ->where('material_auspice_id', '=', $row->id)->get();
+
+            $auspice[$key]->passes = (int)$material;
+            $auspice[$key]->cost = $aus->cost;
+            $auspice[$key]->mediaType = $aus->mediaType;
+            $aux = [];
+            foreach ($material_planing as $k => $r) {
+                $aux[$r->broadcast_day] = [
+                    'date' => date('Y-m-d h:i:s', strtotime($r->broadcast_day)),
+                    'timesPerDay' => $r->times_per_day
+                ];
+            }
+            $auspice[$key]->timesPerDay = $aux;
+        }
+        return $this->sendResponse($auspice);
     }
 
     public function destroy($id) {
