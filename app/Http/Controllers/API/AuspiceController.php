@@ -13,9 +13,11 @@ class AuspiceController extends BaseController {
         $sort = explode(":", $request->sort);
         return $this->sendResponse(DB::table('auspices')
             ->select('auspices.id', 'auspice_name as auspiceName', 'auspices.cost', 'rates.show', 'guides.guide_name as guideName',
-                'guides.date_ini as dateIni', 'guides.date_end as dateEnd', 'brod_mo', 'brod_tu', 'brod_we', 'brod_th', 'brod_fr', 'brod_sa', 'brod_su')
+                'guides.date_ini as dateIni', 'guides.date_end as dateEnd', 'brod_mo', 'brod_tu', 'brod_we', 'brod_th', 'brod_fr', 'brod_sa', 'brod_su', 'media_types.media_type as mediaType')
             ->join('rates', 'rates.id', '=', 'auspices.rate_id')
             ->join('guides', 'guides.id', '=', 'auspices.guide_id')
+            ->join('media', 'media.id', '=', 'guides.media_id')
+            ->join('media_types', 'media_types.id', '=', 'media.media_type')
             ->where('auspices.deleted_at', '=', null)
             ->orderBy(empty($sort[0]) ? 'auspices.id' : 'auspices.'.$sort[0], empty($sort[1]) ? 'asc' : $sort[1])
             ->get(), '');
