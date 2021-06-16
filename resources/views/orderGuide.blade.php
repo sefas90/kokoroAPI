@@ -42,11 +42,8 @@
         font-size: 9px;
     }
     @font-face {
-        font-family: 'open_sanslight';
-        src: url('opensans-light-webfont.woff2') format('woff2'),
-        url('opensans-light-webfont.woff') format('woff');
-        font-weight: normal;
-        font-style: normal;
+        font-family: 'OpenSans-Light';
+        src: local('../public/fonts/OpenSans-Light.ttf');
     }
 </style>
 <!DOCTYPE html>

@@ -148,6 +148,7 @@ class ExportController extends BaseController {
                 ->select('guides.id as guide_id')
                 ->join('campaigns', 'campaigns.id', '=', 'guides.campaign_id')
                 ->where('campaigns.id', '=', $request->campaignId)
+                ->where('guides.deleted_at', '=', null)
                 ->get();
             if (count($result) > 0) {
                 $response = array();

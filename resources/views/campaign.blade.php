@@ -13,7 +13,7 @@
         font-size: 10px;
     }
     .selected {
-        background-color: aquamarine;
+        background-color: #c390ea;
     }
     table {
         border-collapse: collapse;
@@ -37,12 +37,19 @@
         margin: 0;
         padding: 0;
     }
+    .nowrap {
+        white-space: nowrap
+    }
+
+    .right {
+        text-align: right;
+    }
+    .text-all {
+        font-size: 9px;
+    }
     @font-face {
-        font-family: 'open_sanslight';
-        src: url('opensans-light-webfont.woff2') format('woff2'),
-        url('opensans-light-webfont.woff') format('woff');
-        font-weight: normal;
-        font-style: normal;
+        font-family: 'sweet sans';
+        src: local('../public/fonts/OpenSans-Light.ttf');
     }
 </style>
 <!DOCTYPE html>
@@ -78,8 +85,8 @@
                 <td>{{ $i }}</td>
                 @endfor
                 <td>Spots</td>
-                <td>C. Unitario</td>
-                <td>Inversion</td>
+                <td class="right"><div class="nowrap">C. Unitario</div>Bs.</td>
+                <td class="right"><div class="nowrap">Inversion</div>Bs.</td>
             </tr>
             @foreach($guideRow['result'] as $key => $row)
             <tr>

@@ -12,7 +12,8 @@ class AuspiceController extends BaseController {
     public function index (Request $request) {
         $sort = explode(":", $request->sort);
         return $this->sendResponse(DB::table('auspices')
-            ->select('auspices.id', 'auspice_name as auspiceName', 'auspices.cost', 'rates.show', 'guides.guide_name as guideName')
+            ->select('auspices.id', 'auspice_name as auspiceName', 'auspices.cost', 'rates.show', 'guides.guide_name as guideName',
+                'guides.date_ini as dateIni', 'guides.date_end as dateEnd')
             ->join('rates', 'rates.id', '=', 'auspices.rate_id')
             ->join('guides', 'guides.id', '=', 'auspices.guide_id')
             ->where('auspices.deleted_at', '=', null)
