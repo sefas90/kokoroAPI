@@ -106,7 +106,7 @@ class AuspiceController extends BaseController {
             $success = false;
             foreach ($request['timesPerDay'] as $key => $row) {
                 $materialPlaning = new PlaningAuspiceMaterial(array(
-                    'material_id'   => $material['id'],
+                    'material_auspice_id'   => $material['id'],
                     'times_per_day' => $row['timesPerDay'],
                     'broadcast_day' => $row['date']
                 ));

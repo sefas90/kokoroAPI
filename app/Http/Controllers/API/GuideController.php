@@ -104,6 +104,7 @@ class GuideController extends BaseController {
         return $this->sendResponse(DB::table('guides')
             ->select('id', 'id as value', 'guide_name as label', 'date_ini as dateIni', 'date_end as dateEnd')
             ->where('deleted_at', '=', null)
+            ->where('editable', '=', 1)
             ->get(), '');
     }
 
