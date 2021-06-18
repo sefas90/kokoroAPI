@@ -99,8 +99,8 @@
                 <td>{{ $i }}</td>
                 @endfor
                 <td>Spots</td>
-                <td class="right"><div class="nowrap">C. Unitario</div>BOB</td>
-                <td class="right"><div class="nowrap">Inversión</div>BOB</td>
+                <td class="right"><div class="nowrap">C. Unitario</div>{{$data['currency']}}</td>
+                <td class="right"><div class="nowrap">Inversión</div>{{$data['currency']}}</td>
             </tr>
             @foreach($guideRow['result'] as $key => $row)
             <tr>
@@ -119,8 +119,8 @@
                 </td>
                 @endfor
                 <td>{{ $row->spots }}</td>
-                <td>{{ number_format($row->cost, 2, '.', '') }}</td>
-                <td>{{ number_format($row->spots * $row->cost, 2, '.', '') }}</td>
+                <td>{{ number_format($row->cost, 2, ',', '.') }}</td>
+                <td>{{ number_format($row->spots * $row->cost, 2, ',', '.') }}</td>
             </tr>
             @endforeach
             </tbody>
@@ -132,18 +132,18 @@
                 <th class="md-5" colspan="2">Cliente/Agencia</th>
                 <th class="md-5">Totales</th>
                 <th class="md-5">Ins.</th>
-                <th class="md-5">Inversión</th>
+                <th class="md-5 right"><div class="nowrap">Inversión {{$data['currency']}}</div></th>
             </tr>
             <tr>
                 <th rowspan="2" colspan="2">{{ $guideRow['user'] }}</th>
                 <th>Total</th>
                 <th>{{ $guideRow['totalSpots'] }}</th>
-                <th>{{ number_format($guideRow['totalMount'], 2, '.', '') }}</th>
+                <th>{{ number_format($guideRow['totalMount'], 2, ',', '.') }}</th>
             </tr>
             <tr>
                 <th>Total Orden</th>
                 <th>{{ $guideRow['totalSpots'] }}</th>
-                <th>{{ number_format($guideRow['totalMount'], 2, '.', '') }}</th>
+                <th>{{ number_format($guideRow['totalMount'], 2, ',', '.') }}</th>
             </tr>
             </thead>
             <tbody>
