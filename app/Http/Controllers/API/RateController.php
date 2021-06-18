@@ -39,8 +39,10 @@ class RateController extends BaseController {
         $validator = Validator::make($request->all(), [
             'show'     => 'required',
             'mediaId'  => 'required',
-            'cost'     => 'required',
+            'cost'     => 'required|numeric|gt:0',
             'emitDays' => 'required',
+            'hourIni'  => 'before:hourEnd',
+            'hourEnd'  => 'after:hourIni',
         ]);
 
         if($validator->fails()){
@@ -79,7 +81,7 @@ class RateController extends BaseController {
         $validator = Validator::make($request->all(), [
             'show'     => 'required',
             'hourEnd'  => 'required',
-            'cost'     => 'required',
+            'cost'     => 'required|numeric|gt:0',
             'emitDays' => 'required',
         ]);
 

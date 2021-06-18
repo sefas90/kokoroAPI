@@ -48,6 +48,7 @@ class MaterialController extends BaseController {
             'materialName' => 'required',
             'guideId'      => 'required',
             'rateId'       => 'required',
+            'duration'     => 'numeric|gt:0',
             'timesPerDay'  => 'required'
         ]);
 
@@ -98,6 +99,7 @@ class MaterialController extends BaseController {
             'materialName' => 'required',
             'guideId'      => 'required',
             'rateId'       => 'required',
+            'duration'     => 'numeric|gt:0',
             'timesPerDay'  => 'required'
         ]);
 

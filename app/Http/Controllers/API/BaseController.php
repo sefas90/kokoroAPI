@@ -30,6 +30,7 @@ class BaseController extends Controller {
     public function exportPdf($response, $view, $downloadName) {
         view()->share('data', $response);
         $pdf = PDF::loadView($view)->setPaper('letter', 'landscape');
+        // $pdf = setOptions(['fontDir' => 'sweet_sans_prolight']);
         $pdf->getDomPDF()->set_option("enable_php", true);
         return $pdf->download($downloadName);
     }

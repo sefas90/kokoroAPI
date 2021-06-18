@@ -5,10 +5,8 @@ namespace App\Http\Controllers\API;
 use App\Models\Guide;
 use App\Models\OrderNumber;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Validator;
-use function PHPUnit\Framework\isEmpty;
 
 class GuideController extends BaseController {
     public function index (Request $request) {

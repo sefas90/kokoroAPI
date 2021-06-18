@@ -12,8 +12,12 @@
         width: 100%;
         font-size: 10px;
     }
+    .data-table-info {
+        width: 100%;
+        font-size: 9px;
+    }
     .selected {
-        background-color: #c390ea;
+        background-color: #d6baec;
     }
     table {
         border-collapse: collapse;
@@ -42,8 +46,17 @@
         font-size: 9px;
     }
     @font-face {
-        font-family: 'OpenSans-Light';
-        src: local('../public/fonts/OpenSans-Light.ttf');
+        font-family: 'sweet_sans_prolight';
+        src: url('storage/app/public/fonts/sweetsansprolight-webfont.woff2') format('woff2'),
+        url('storage/app/public/fonts/sweetsansprolight-webfont.woff') format('woff');
+        font-weight: normal;
+        font-style: normal;
+    }
+    body {
+        font-family: 'sweet_sans_prolight', sans-serif;
+    }
+    .center {
+        text-align: center;
     }
 </style>
 <!DOCTYPE html>
@@ -58,8 +71,8 @@
         <table class="data-table">
             <thead>
             <tr>
-                <th class="md-3" rowspan="2"><img src="../public/kokoro_logo.jpg" width="80%"></th>
-                <th class="md-3" rowspan="2">{{$data['businessName']}}</th>
+                <th class="md-3" rowspan="2"><img src="../public/kokoro_log.svg" width="100%"></th>
+                <th class="md-3 center" rowspan="2"><h1>{{$data['businessName']}}</h1></th>
                 <th class="md-3">Numero de orden: {{$data['order']}}</th>
             </tr>
             <tr>
@@ -67,7 +80,8 @@
             </tr>
             </thead>
         </table>
-        <table class="data-table">
+        <br>
+        <table class="data-table-info">
             <tbody>
             <tr>
                 <td>Medio</td>
@@ -79,14 +93,14 @@
                 <td>{{ $i }}</td>
                 @endfor
                 <td>Spots</td>
-                <td class="right"><div class="nowrap">C. Unitario</div>Bs.</td>
-                <td class="right"><div class="nowrap">Inversion</div>Bs.</td>
+                <td class="right"><div class="nowrap">C. Unitario</div>{{$data['currency']}}</td>
+                <td class="right"><div class="nowrap">Inversión</div>{{$data['currency']}}</td>
             </tr>
             @foreach($data['result'] as $key => $row)
             <tr class="text-all">
                 <td>{{ $row->media_name }}</td>
                 <td>{{ $row->show }}</td>
-                <td>{{ $row->hourIni }} {{$row->hourEnd}}</td>
+                <td>{{ substr($row->hourIni,0,-3) }} {{ substr($row->hourEnd,0,-3) }}</td>
                 <td>{{ $row->material_name }}</td>
                 <td>{{ $row->duration }}</td>
                 @for ($i = 1; $i <= $data['daysInMonth']; $i++)
@@ -99,13 +113,13 @@
                     </td>
                 @endfor
                 <td>{{ $row->spots }}</td>
-                <td class="right">{{ number_format($row->unitCost, 2, '.', '') }}</td>
-                <td class="right">{{ number_format($row->totalCost, 2, '.', '') }}</td>
+                <td class="right">{{ number_format($row->unitCost, 2, ',', '.') }}</td>
+                <td class="right">{{ number_format($row->totalCost, 2, ',', '.') }}</td>
             </tr>
             @endforeach
             </tbody>
         </table>
-
+        <br>
         <table class="data-table">
             <thead>
             <tr>
@@ -113,19 +127,19 @@
                 <th class="md-5">Cliente</th>
                 <th class="md-5">Totales</th>
                 <th class="md-5">Ins.</th>
-                <th class="md-5">Inversion</th>
+                <th class="md-5 right"><div class="nowrap">Inversión {{$data['currency']}}</div></th>
             </tr>
             <tr>
                 <th rowspan="2">{{ $data['user'] }}</th>
                 <th rowspan="2">{{ $data['client'] }}</th>
                 <th>Total</th>
                 <th>{{ $data['totalSpots'] }}</th>
-                <th>{{ number_format($data['totalMount'], 2, '.', '') }}</th>
+                <th class="right">{{ number_format($data['totalMount'], 2, ',', '.') }}</th>
             </tr>
             <tr>
                 <th>Total Orden</th>
                 <th>{{ $data['totalSpots'] }}</th>
-                <th>{{ number_format($data['totalMount'], 2, '.', '') }}</th>
+                <th class="right">{{ number_format($data['totalMount'], 2, ',', '.') }}</th>
             </tr>
             </thead>
             <tbody>

@@ -48,8 +48,17 @@
         font-size: 9px;
     }
     @font-face {
-        font-family: 'sweet sans';
-        src: local('../public/fonts/OpenSans-Light.ttf');
+        font-family: 'sweet_sans_prolight';
+        src: url('storage/app/public/fonts/sweetsansprolight-webfont.woff2') format('woff2'),
+        url('storage/app/public/fonts/sweetsansprolight-webfont.woff') format('woff');
+        font-weight: normal;
+        font-style: normal;
+    }
+    body {
+        font-family: 'sweet_sans_prolight', sans-serif;
+    }
+    .center {
+        text-align: center;
     }
 </style>
 <!DOCTYPE html>
@@ -65,7 +74,7 @@
             <thead>
             <tr>
                 <th class="md-3" rowspan="2"><img src="../public/kokoro_logo.jpg" width="80%"></th>
-                <th class="md-3" rowspan="2">{{$guideRow['businessName']}}</th>
+                <th class="md-3 center" rowspan="2"><h1>{{$guideRow['businessName']}}</h1></th>
                 <th class="md-3">Numero de orden: {{$guideRow['order']}}</th>
             </tr>
             <tr>
@@ -73,6 +82,7 @@
             </tr>
             </thead>
         </table>
+        <br>
         <table class="data-table">
             <tbody>
             <tr>
@@ -85,8 +95,8 @@
                 <td>{{ $i }}</td>
                 @endfor
                 <td>Spots</td>
-                <td class="right"><div class="nowrap">C. Unitario</div>Bs.</td>
-                <td class="right"><div class="nowrap">Inversion</div>Bs.</td>
+                <td class="right"><div class="nowrap">C. Unitario</div>BOB</td>
+                <td class="right"><div class="nowrap">Inversion</div>BOB</td>
             </tr>
             @foreach($guideRow['result'] as $key => $row)
             <tr>
@@ -111,7 +121,7 @@
             @endforeach
             </tbody>
         </table>
-
+        <br>
         <table class="data-table">
             <thead>
             <tr>

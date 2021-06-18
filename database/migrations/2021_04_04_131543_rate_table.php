@@ -20,7 +20,7 @@ class RateTable extends Migration {
             $table->boolean('brod_fr');
             $table->boolean('brod_sa');
             $table->boolean('brod_su');
-            $table->float('cost');
+            $table->float('cost', 15, 2);
             $table->timestamps();
             $table->softDeletes();
             $table->foreign('media_id')->references('id')->on('media');

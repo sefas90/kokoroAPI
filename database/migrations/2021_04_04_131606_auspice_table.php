@@ -10,7 +10,7 @@ class AuspiceTable extends Migration {
         Schema::create('auspices', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('auspice_name');
-            $table->float('cost');
+            $table->float('cost', 15, 2);
             $table->bigInteger('guide_id')->unsigned();
             $table->bigInteger('rate_id')->unsigned();
             $table->timestamps();
