@@ -12,6 +12,10 @@
         width: 100%;
         font-size: 10px;
     }
+    .data-table-info {
+        width: 100%;
+        font-size: 9px;
+    }
     .selected {
         background-color: #efdfab;
     }
@@ -83,7 +87,7 @@
             </thead>
         </table>
         <br>
-        <table class="data-table">
+        <table class="data-table-info">
             <tbody>
             <tr>
                 <td>Medio</td>
