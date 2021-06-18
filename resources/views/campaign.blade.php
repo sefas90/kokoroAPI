@@ -96,7 +96,7 @@
                 @endfor
                 <td>Spots</td>
                 <td class="right"><div class="nowrap">C. Unitario</div>BOB</td>
-                <td class="right"><div class="nowrap">Inversion</div>BOB</td>
+                <td class="right"><div class="nowrap">Inversión</div>BOB</td>
             </tr>
             @foreach($guideRow['result'] as $key => $row)
             <tr>
@@ -128,7 +128,7 @@
                 <th class="md-5" colspan="2">Cliente/Agencia</th>
                 <th class="md-5">Totales</th>
                 <th class="md-5">Ins.</th>
-                <th class="md-5">Inversion</th>
+                <th class="md-5">Inversión</th>
             </tr>
             <tr>
                 <th rowspan="2" colspan="2">{{ $guideRow['user'] }}</th>
