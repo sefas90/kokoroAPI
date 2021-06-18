@@ -18,6 +18,8 @@ class ExportController extends BaseController {
             'guideId'    => 'required'
         ]);
 
+        $currency = $request->currency ? true : false;
+
         if (!$validator->fails()){
             $observation = [
                 0 => '',
@@ -93,8 +95,6 @@ class ExportController extends BaseController {
 
                 $user = User::find($request->userId);
                 $user = empty($user) ? 'System' : $user->name . ' ' .$user->lastname;
-
-                $currency = true;
 
                 $response = [
                     'result'          => $result,
