@@ -17,7 +17,7 @@
         font-size: 9px;
     }
     .selected {
-        background-color: #d6baec;
+        background-color: #efdfab;
     }
     table {
         border-collapse: collapse;

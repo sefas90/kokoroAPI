@@ -13,7 +13,7 @@
         font-size: 10px;
     }
     .selected {
-        background-color: #c390ea;
+        background-color: #efdfab;
     }
     table {
         border-collapse: collapse;
