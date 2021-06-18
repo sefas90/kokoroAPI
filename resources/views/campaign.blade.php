@@ -99,8 +99,8 @@
                 <td>{{ $i }}</td>
                 @endfor
                 <td>Spots</td>
-                <td class="right"><div class="nowrap">C. Unitario</div>{{$data['currency']}}</td>
-                <td class="right"><div class="nowrap">Inversión</div>{{$data['currency']}}</td>
+                <td class="right"><div class="nowrap">C. Unitario</div>{{$guideRow['currency']}}</td>
+                <td class="right"><div class="nowrap">Inversión</div>{{$guideRow['currency']}}</td>
             </tr>
             @foreach($guideRow['result'] as $key => $row)
             <tr>
@@ -132,7 +132,7 @@
                 <th class="md-5" colspan="2">Cliente/Agencia</th>
                 <th class="md-5">Totales</th>
                 <th class="md-5">Ins.</th>
-                <th class="md-5 right"><div class="nowrap">Inversión {{$data['currency']}}</div></th>
+                <th class="md-5 right"><div class="nowrap">Inversión {{$guideRow['currency']}}</div></th>
             </tr>
             <tr>
                 <th rowspan="2" colspan="2">{{ $guideRow['user'] }}</th>
