@@ -138,12 +138,12 @@
                 <th rowspan="2" colspan="2">{{ $guideRow['user'] }}</th>
                 <th>Total</th>
                 <th>{{ $guideRow['totalSpots'] }}</th>
-                <th>{{ number_format($guideRow['totalMount'], 2, ',', '.') }}</th>
+                <th class="md-5 right">{{ number_format($guideRow['totalMount'], 2, ',', '.') }}</th>
             </tr>
             <tr>
                 <th>Total Orden</th>
                 <th>{{ $guideRow['totalSpots'] }}</th>
-                <th>{{ number_format($guideRow['totalMount'], 2, ',', '.') }}</th>
+                <th class="md-5 right">{{ number_format($guideRow['totalMount'], 2, ',', '.') }}</th>
             </tr>
             </thead>
             <tbody>
