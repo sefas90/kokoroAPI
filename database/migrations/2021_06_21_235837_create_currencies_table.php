@@ -13,6 +13,7 @@ class CreateCurrenciesTable extends Migration {
             $table->string('currency_value');
             $table->string('symbol');
             $table->timestamps();
+            $table->softDeletes();
             $table->engine = 'InnoDB';
         });
     }
