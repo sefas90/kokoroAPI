@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Models\Guide;
 use App\Models\Media;
 use App\Models\PlaningMaterial;
 use Illuminate\Http\Request;
@@ -91,6 +92,11 @@ class MediaController extends BaseController {
         if (!$media) {
             return $this->sendError('No se encontro el medio');
         }
+
+        if (count(Guide::where('media_id', '=', $media->id)->get()) > 0) {
+            return $this->sendError('unD_Guide');
+        }
+
 
         return $media->delete() ?
             $this->sendResponse('', 'El media ' . $media->media_name . ' se elimino correctamente.') :

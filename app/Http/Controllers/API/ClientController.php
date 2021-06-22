@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Models\Client;
+use App\Models\Plan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -81,6 +82,10 @@ class ClientController extends BaseController {
         $client = Client::find($id);
         if (!$client) {
             return $this->sendError('No se encontro el cliente');
+        }
+
+        if (count(Plan::where('client_id', '=', $client->id)->get()) > 0) {
+            return $this->sendError('unD_Plan');
         }
 
         return $client->delete() ?

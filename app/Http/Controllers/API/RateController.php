@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Models\Material;
 use App\Models\Rate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -133,6 +134,10 @@ class RateController extends BaseController {
         $rate = Rate::find($id);
         if (!$rate) {
             return $this->sendError('No se encontro la tarifa');
+        }
+
+        if (count(Material::where('rate_id', '=', $rate->id)->get()) > 0) {
+            return $this->sendError('unD_Rate');
         }
 
         return $rate->delete() ?

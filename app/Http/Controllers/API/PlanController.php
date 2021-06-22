@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Models\Campaign;
 use App\Models\Plan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -74,6 +75,10 @@ class PlanController extends BaseController {
         $plan = Plan::find($id);
         if (!$plan) {
             return $this->sendError('No se encontro el plan');
+        }
+
+        if (count(Campaign::where('plan_id', '=', $plan->id)->get()) > 0) {
+            return $this->sendError('unD_Campaign');
         }
 
         return $plan->delete() ?

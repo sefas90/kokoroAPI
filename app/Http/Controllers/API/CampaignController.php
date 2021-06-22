@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Models\Campaign;
+use App\Models\Guide;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -87,6 +88,10 @@ class CampaignController extends BaseController {
         $campaign = Campaign::find($id);
         if (!$campaign) {
             return $this->sendError('No se encontro la campaña');
+        }
+
+        if (count(Guide::where('campaign_id', '=', $campaign->id)->get()) > 0) {
+            return $this->sendError('unD_Guide');
         }
 
         return $campaign->delete() ?

@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Models\Auspice;
 use App\Models\Guide;
+use App\Models\Material;
 use App\Models\OrderNumber;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -110,6 +112,14 @@ class GuideController extends BaseController {
             return $this->sendError('No se encontro la guia');
         }
 
+        if (count(Material::where('guide_id', '=', $guide->id)->get()) > 0) {
+            return $this->sendError('unD_Material');
+        }
+
+        if (count(Auspice::where('guide_id', '=', $guide->id)->get()) > 0) {
+            return $this->sendError('unD_Auspice');
+        }
+
         return $guide->delete() ?
             $this->sendResponse('', 'El guide ' . $guide->guide_name . ' se elimino correctamente.') :
             $this->sendError('El guide ' . $guide->guide_name .' no se pudo eliminar.');
@@ -118,8 +128,10 @@ class GuideController extends BaseController {
     public function list() {
         return $this->sendResponse(DB::table('guides')
             ->select('id', 'id as value', 'guide_name as label', 'date_ini as dateIni', 'date_end as dateEnd')
-            ->where('deleted_at', '=', null)
-            ->where('editable', '=', 1)
+            ->where([
+                ['deleted_at', '=', null],
+                ['editable', '=', 1],
+            ])
             ->get(), '');
     }
 
