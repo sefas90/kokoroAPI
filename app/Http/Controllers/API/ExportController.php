@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Exports\ReportExport;
 use App\Models\Client;
+use App\Models\Currency;
 use App\Models\OrderNumber;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -18,7 +19,7 @@ class ExportController extends BaseController {
             'guideId'    => 'required'
         ]);
 
-        $currency = $request->currency ? true : false;
+        $currency = Currency::find($request->currencyId) ? Currency::find($request->currencyId) : (object)['currency_value' => 1, 'symbol' => 'BOB'];
 
         if (!$validator->fails()){
             $observation = [
@@ -63,7 +64,6 @@ class ExportController extends BaseController {
                         $totalSpots += $spots;
                         $result[$key]->planing = $planing;
                     }
-                    $total += $result[$key]->spots * $result[$key]->cost;
                 }
 
                 $orderNumber = OrderNumber::where('guide_id', '=', $request->guideId)->get();
@@ -124,12 +124,14 @@ class ExportController extends BaseController {
                     'observation2'    => $observation[1],
                     'clientName'      => $result[0]->clientName,
                     'user'            => $user,
-                    'currency'        => $currency ? '$us' : 'BOB'
+                    'currency'        => $currency->symbol,
+                    'currencyValue'   => $currency->currency_value
                 ];
 
                 foreach ($response['result'] as $llave => $fila) {
                     $response['result'][$llave]->unitCost = $this->getUnitCost($fila->cost, $fila->media_type, $fila->duration);
                     $response['result'][$llave]->totalCost = $this->getTotalCost($fila->cost, $fila->media_type, $fila->duration, $fila->spots);
+                    $response['totalMount'] += $this->getTotalCost($fila->cost, $fila->media_type, $fila->duration, $fila->spots);
                 }
 
                 return !$request->isOrderCampaign ? $this->exportPdf($response, 'orderGuide', 'orderGuide.pdf') : $response;
@@ -182,8 +184,8 @@ class ExportController extends BaseController {
             ->where('order_numbers.guide_id', '=', $id)
             ->get();
 
-        if($orderNumber[0]->editable == 1) {
-            if (count($orderNumber) > 0) {
+        if (count($orderNumber) > 0) {
+            if($orderNumber[0]->editable == 1) {
                 $max_order   = OrderNumber::where('guide_id', '=', $id)->get()->max('order_number');
                 $max_version = OrderNumber::where('guide_id', '=', $id)->get()->max('version') + 1;
                 $observation[0] = 'Remplaza a la orden ' . $max_order.'.'.$max_version.'';
@@ -191,16 +193,16 @@ class ExportController extends BaseController {
                     'order_number'  => ''. $max_order . '.' . $max_version
                 ]);
             } else {
-                $order = OrderNumber::all()->max('order_number') + 1;
+                $max_order   = OrderNumber::where('guide_id', '=', $id)->get()->max('order_number');
+                $max_version = OrderNumber::where('guide_id', '=', $id)->get()->max('version');
                 return $this->sendResponse([
-                    'order_number'  => $order.'.0'
+                    'order_number'  => ''. $max_order . '.' . $max_version
                 ]);
             }
         } else {
-            $max_order   = OrderNumber::where('guide_id', '=', $id)->get()->max('order_number');
-            $max_version = OrderNumber::where('guide_id', '=', $id)->get()->max('version');
+            $order = OrderNumber::all()->max('order_number') + 1;
             return $this->sendResponse([
-                'order_number'  => ''. $max_order . '.' . $max_version
+                'order_number'  => $order.'.0'
             ]);
         }
     }

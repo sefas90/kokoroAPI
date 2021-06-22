@@ -119,8 +119,8 @@
                 </td>
                 @endfor
                 <td>{{ $row->spots }}</td>
-                <td>{{ number_format($row->cost, 2, ',', '.') }}</td>
-                <td>{{ number_format($row->spots * $row->cost, 2, ',', '.') }}</td>
+                <td class="right">{{ number_format($row->unitCost * $guideRow['currencyValue'], 2, ',', '.') }}</td>
+                <td class="right">{{ number_format($row->totalCost * $guideRow['currencyValue'], 2, ',', '.') }}</td>
             </tr>
             @endforeach
             </tbody>
@@ -138,12 +138,12 @@
                 <th rowspan="2" colspan="2">{{ $guideRow['user'] }}</th>
                 <th>Total</th>
                 <th>{{ $guideRow['totalSpots'] }}</th>
-                <th class="md-5 right">{{ number_format($guideRow['totalMount'], 2, ',', '.') }}</th>
+                <th class="md-5 right">{{ number_format($guideRow['totalMount'] * $guideRow['currencyValue'], 2, ',', '.') }}</th>
             </tr>
             <tr>
                 <th>Total Orden</th>
                 <th>{{ $guideRow['totalSpots'] }}</th>
-                <th class="md-5 right">{{ number_format($guideRow['totalMount'], 2, ',', '.') }}</th>
+                <th class="md-5 right">{{ number_format($guideRow['totalMount'] * $guideRow['currencyValue'], 2, ',', '.') }}</th>
             </tr>
             </thead>
             <tbody>
