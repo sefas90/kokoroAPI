@@ -9,7 +9,7 @@ use Validator;
 class CurrencyController extends BaseController {
 
     public function index() {
-        return $this->sendResponse(Currency::all('currency_name as currencyName', 'currency_value as currencyValue', 'symbol'));
+        return $this->sendResponse(Currency::all('id', 'currency_name as currencyName', 'currency_value as currencyValue', 'symbol'));
     }
 
     public function store(Request $request) {
