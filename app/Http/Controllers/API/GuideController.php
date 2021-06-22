@@ -61,7 +61,7 @@ class GuideController extends BaseController {
             'media_id'       => trim($request->mediaId),
             'campaign_id'    => trim($request->campaignId),
             'billing_number' => null,
-            'editable'       => true,
+            'editable'       => 1,
         ));
 
         return $guide->save() ?
@@ -140,11 +140,23 @@ class GuideController extends BaseController {
         if (!$guide) {
             return $this->sendError('No se encontro la pauta');
         }
-        $guide->editable = false;
+        $guide->editable = 0;
         $guide->billing_number = $request->billing_number;
 
         return $guide->save() ?
             $this->sendResponse('', 'El guide ' . $guide->guide_name . ' se finalizo correctamente') :
             $this->sendError('Ocurrio un error al finalizar la pauta ' . $guide->guide_name . '.');
+    }
+
+    public function cancelGuide(Request $request) {
+        $guide = Guide::find($request->guideId);
+        if (!$guide) {
+            return $this->sendError('No se encontro la pauta');
+        }
+
+        $guide->editable = 2;
+        return $guide->save() ?
+            $this->sendResponse('', 'El guide ' . $guide->guide_name . ' se cancelo correctamente') :
+            $this->sendError('Ocurrio un error al cancelar la pauta ' . $guide->guide_name . '.');
     }
 }

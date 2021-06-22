@@ -128,4 +128,5 @@ Route::group($attributes, function () {
 
     //Finalize guide
     Route::post('/finalizeGuide', [GuideController::class, 'finalizeGuide']);
+    Route::post('/cancelGuide', [GuideController::class, 'cancelGuide']);
 });
