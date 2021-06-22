@@ -77,7 +77,7 @@ class CurrencyController extends BaseController {
 
     public function list() {
         return $this->sendResponse(DB::table('currencies')
-            ->select('id', 'currency_value as value', 'currency_name as label')
+            ->select('id', 'id as value', 'currency_name as label')
             ->where('deleted_at', '=', null)
             ->get(), '');
     }
