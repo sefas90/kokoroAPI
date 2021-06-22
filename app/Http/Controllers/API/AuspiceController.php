@@ -75,8 +75,8 @@ class AuspiceController extends BaseController {
 
         $auspice->auspice_name = trim($request->auspice_name);
         $auspice->cost         = trim($request->cost);
-        $auspice->duration     = trim($request->duration);
-        $auspice->client_id    = trim($request->client_id);
+        $auspice->guide_id     = trim($request->guideId);
+        $auspice->rate_id      = trim($request->rateId);
 
         return $auspice->save() ?
             $this->sendResponse('', 'El auspicee ' . $auspice->auspice_name . ' se actualizo correctamente') :
