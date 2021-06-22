@@ -122,7 +122,7 @@ Route::group($attributes, function () {
     Route::get('/clientsPlanList/{id}', [PlanController::class, 'clientsPlanList']);
     Route::get('/plansCampaignsList/{id}', [CampaignController::class, 'plansCampaignsList']);
     Route::get('/rateGuideList/{id}', [RateController::class, 'rateGuideList']);
-    Route::get('/currencyList/{id}', [CurrencyController::class, 'list']);
+    Route::get('/currencyList', [CurrencyController::class, 'list']);
 
     // export Orders
     Route::post('/exportOrder', [ExportController::class, 'order']);
