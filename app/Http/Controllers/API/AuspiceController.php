@@ -73,7 +73,7 @@ class AuspiceController extends BaseController {
             return $this->sendError('No se encontro el auspicee');
         }
 
-        $auspice->auspice_name = trim($request->auspice_name);
+        $auspice->auspice_name = trim($request->auspiceName);
         $auspice->cost         = trim($request->cost);
         $auspice->guide_id     = trim($request->guideId);
         $auspice->rate_id      = trim($request->rateId);
