@@ -36,14 +36,21 @@ class RateController extends BaseController {
     }
 
     public function store(Request $request) {
-        $validator = Validator::make($request->all(), [
-            'show'     => 'required',
-            'mediaId'  => 'required',
-            'cost'     => 'required|numeric|gt:0',
-            'emitDays' => 'required',
-            'hourIni'  => 'before:hourEnd',
-            'hourEnd'  => 'after:hourIni',
-        ]);
+        if(!empty($request->hourIni) || !empty($request->hourEnd)) {
+            $validator = Validator::make($request->all(), [
+                'show'     => 'required',
+                'hourIni'  => 'before:hourEnd',
+                'hourEnd'  => 'after:hourIni',
+                'cost'     => 'required|numeric|gt:0',
+                'emitDays' => 'required',
+            ]);
+        } else {
+            $validator = Validator::make($request->all(), [
+                'show'     => 'required',
+                'cost'     => 'required|numeric|gt:0',
+                'emitDays' => 'required',
+            ]);
+        }
 
         if($validator->fails()){
             return $this->sendError('Error de validacion.', $validator->errors());
@@ -78,12 +85,22 @@ class RateController extends BaseController {
     }
 
     public function update(Request $request, $id) {
-        $validator = Validator::make($request->all(), [
-            'show'     => 'required',
-            'hourEnd'  => 'required',
-            'cost'     => 'required|numeric|gt:0',
-            'emitDays' => 'required',
-        ]);
+        if(!empty($request->hourIni) || !empty($request->hourEnd)) {
+            $validator = Validator::make($request->all(), [
+                'show'     => 'required',
+                'hourIni'  => 'before:hourEnd',
+                'hourEnd'  => 'after:hourIni',
+                'cost'     => 'required|numeric|gt:0',
+                'emitDays' => 'required',
+            ]);
+        } else {
+            $validator = Validator::make($request->all(), [
+                'show'     => 'required',
+                'cost'     => 'required|numeric|gt:0',
+                'emitDays' => 'required',
+            ]);
+        }
+
 
         if($validator->fails()){
             return $this->sendError('Error de validacion.', $validator->errors());
@@ -133,8 +150,8 @@ class RateController extends BaseController {
     }
 
     public function rateGuideList($id) {
-        return $this->sendResponse(DB::table('rates')
-            ->select('rates.id', 'rates.id as value', 'show as label', 'brod_mo', 'brod_tu', 'brod_we', 'brod_th', 'brod_fr', 'brod_sa', 'brod_su', 'media_types.media_type as mediaType', 'cost')
+        $rates = DB::table('rates')
+            ->select('rates.id', 'rates.id as value', 'show as label', 'brod_mo', 'brod_tu', 'brod_we', 'brod_th', 'brod_fr', 'brod_sa', 'brod_su', 'media_types.media_type as mediaType', 'cost', 'media.id as mediaId')
             ->join('media', 'media.id', '=', 'rates.media_id')
             ->join('media_types', 'media_types.id', '=', 'media.media_type')
             ->join('guides', 'guides.media_id', '=', 'media.id')
@@ -142,6 +159,19 @@ class RateController extends BaseController {
                 ['rates.deleted_at', '=', null],
                 ['guides.id', '=', $id]
             ])
-            ->get(), '');
+            ->get();
+        foreach ($rates as $key => $row) {
+            $rates[$key]->children = DB::table('rates')
+                ->select('rates.id', 'rates.id as value', 'show as label', 'brod_mo', 'brod_tu', 'brod_we', 'brod_th', 'brod_fr', 'brod_sa', 'brod_su', 'media_types.media_type as mediaType', 'cost', 'media.id as mediaId')
+                ->join('media', 'media.id', '=', 'rates.media_id')
+                ->join('media_types', 'media_types.id', '=', 'media.media_type')
+                ->join('guides', 'guides.media_id', '=', 'media.id')
+                ->where([
+                    ['rates.deleted_at', '=', null],
+                    ['media_parent_id', '=', $row->mediaId],
+                ])
+                ->get();
+        }
+        return $this->sendResponse($rates);
     }
 }
