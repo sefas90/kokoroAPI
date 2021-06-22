@@ -88,7 +88,6 @@ class AuspiceController extends BaseController {
     public function auspiceMaterial(Request $request) {
         $validator = Validator::make($request->all(), [
             'materialName' => 'required',
-            'duration'     => 'required',
             'auspiceId'    => 'required',
             'timesPerDay'  => 'required'
         ]);

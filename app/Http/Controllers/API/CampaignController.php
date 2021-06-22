@@ -91,7 +91,7 @@ class CampaignController extends BaseController {
         }
 
         if (count(Guide::where('campaign_id', '=', $campaign->id)->get()) > 0) {
-            return $this->sendError('unD_Guide');
+            return $this->sendError('unD_Guide', null, 200);
         }
 
         return $campaign->delete() ?

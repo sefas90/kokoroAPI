@@ -85,7 +85,7 @@ class ClientController extends BaseController {
         }
 
         if (count(Plan::where('client_id', '=', $client->id)->get()) > 0) {
-            return $this->sendError('unD_Plan');
+            return $this->sendError('unD_Plan', null, 200);
         }
 
         return $client->delete() ?

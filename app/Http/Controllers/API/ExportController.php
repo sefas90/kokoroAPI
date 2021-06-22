@@ -28,7 +28,7 @@ class ExportController extends BaseController {
 
             $result = DB::table('materials')
                 ->select('materials.id as id', 'materials.material_name', 'materials.duration', 'materials.guide_id', 'materials.rate_id',
-                    'guides.guide_name', 'guides.media_id', 'guides.campaign_id', 'guides.editable', 'rates.show',
+                    'guides.guide_name', 'guides.media_id', 'guides.campaign_id', 'guides.editable as editable', 'rates.show',
                     'rates.hour_ini', 'rates.hour_end', 'rates.cost', 'media.media_name', 'media.business_name', 'media.NIT', 'media.media_type as mediaTypeId', 'media_types.media_type',
                     'campaigns.campaign_name', 'campaigns.plan_id', 'plan.client_id', 'campaigns.date_ini', 'campaigns.date_end',
                     'rates.hour_ini as hourIni', 'rates.hour_end as hourEnd',
@@ -68,22 +68,25 @@ class ExportController extends BaseController {
 
                 $orderNumber = OrderNumber::where('guide_id', '=', $request->guideId)->get();
 
-                if (count($orderNumber) > 0) {
-                    $orderNumber = OrderNumber::find($orderNumber[0]->id);
-                    $observation[0] = 'Remplazando a la orden '.$orderNumber->order_number.'.'.$orderNumber->version;
-                    $orderNumber->version = $orderNumber->version +1;
-                    $orderNumber->observation = $observation[0].' - '.$observation[1];
-                    $orderNumber->save();
+                if($result[0]->editable == 1) {
+                    if (count($orderNumber) > 0) {
+                        $orderNumber = OrderNumber::find($orderNumber[0]->id);
+                        $observation[0] = 'Remplazando a la orden '.$orderNumber->order_number.'.'.$orderNumber->version;
+                        $orderNumber->version = $orderNumber->version +1;
+                        $orderNumber->observation = $observation[0].' - '.$observation[1];
+                        $orderNumber->save();
+                    } else {
+                        $order = OrderNumber::all()->max('order_number');
+                        $orderNumber = OrderNumber::create([
+                            'order_number'  => $order + 1,
+                            'version'       => 0,
+                            'guide_id'      => $request->guideId,
+                            'observation'  => $observation[1]
+                        ]);
+                    }
                 } else {
-                    $order = OrderNumber::all()->max('order_number');
-                    $orderNumber = OrderNumber::create([
-                        'order_number'  => $order + 1,
-                        'version'       => 0,
-                        'guide_id'      => $request->guideId,
-                        'observation'  => $observation[1]
-                    ]);
+                    $orderNumber = OrderNumber::find($orderNumber[0]->id);
                 }
-
                 $orderNumber = $orderNumber->order_number.'.'.$orderNumber->version;
 
                 $date_ini = new DateTime($result[0]->date_ini);
@@ -175,20 +178,29 @@ class ExportController extends BaseController {
     public function orderNumber($id) {
         $orderNumber = DB::table('order_numbers')
             ->select('*')
+            ->join('guides', 'guides.id', '=', 'order_numbers.guide_id')
             ->where('order_numbers.guide_id', '=', $id)
             ->get();
 
-        if (count($orderNumber) > 0) {
+        if($orderNumber[0]->editable == 1) {
+            if (count($orderNumber) > 0) {
+                $max_order   = OrderNumber::where('guide_id', '=', $id)->get()->max('order_number');
+                $max_version = OrderNumber::where('guide_id', '=', $id)->get()->max('version') + 1;
+                $observation[0] = 'Remplaza a la orden ' . $max_order.'.'.$max_version.'';
+                return $this->sendResponse([
+                    'order_number'  => ''. $max_order . '.' . $max_version
+                ]);
+            } else {
+                $order = OrderNumber::all()->max('order_number') + 1;
+                return $this->sendResponse([
+                    'order_number'  => $order.'.0'
+                ]);
+            }
+        } else {
             $max_order   = OrderNumber::where('guide_id', '=', $id)->get()->max('order_number');
-            $max_version = OrderNumber::where('guide_id', '=', $id)->get()->max('version') + 1;
-            $observation[0] = 'Remplaza a la orden ' . $max_order.'.'.$max_version.'';
+            $max_version = OrderNumber::where('guide_id', '=', $id)->get()->max('version');
             return $this->sendResponse([
                 'order_number'  => ''. $max_order . '.' . $max_version
-            ]);
-        } else {
-            $order = OrderNumber::all()->max('order_number') + 1;
-            return $this->sendResponse([
-                'order_number'  => $order.'.0'
             ]);
         }
     }

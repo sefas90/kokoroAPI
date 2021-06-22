@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\CurrencyController;
 use App\Http\Controllers\API\ExportController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
@@ -44,6 +45,12 @@ Route::group($attributes, function () {
     Route::get('/auspice/{id}', [AuspiceController::class, 'show']);
     Route::post('/auspice/{id}', [AuspiceController::class, 'update']);
     Route::delete('/auspice/{id}', [AuspiceController::class, 'destroy']);
+
+    Route::get('/currency', [CurrencyController::class, 'index']);
+    Route::post('/currency', [CurrencyController::class, 'store']);
+    Route::get('/currency/{id}', [CurrencyController::class, 'show']);
+    Route::post('/currency/{id}', [CurrencyController::class, 'update']);
+    Route::delete('/currency/{id}', [CurrencyController::class, 'destroy']);
 
     Route::post('/auspiceMaterial', [AuspiceController::class, 'auspiceMaterial']);
     Route::get('/auspiceMaterial/{id}', [AuspiceController::class, 'getAuspiceMaterial']);
@@ -129,4 +136,5 @@ Route::group($attributes, function () {
     //Finalize guide
     Route::post('/finalizeGuide', [GuideController::class, 'finalizeGuide']);
     Route::post('/cancelGuide', [GuideController::class, 'cancelGuide']);
+    Route::post('/activateGuide', [GuideController::class, 'activateGuide']);
 });

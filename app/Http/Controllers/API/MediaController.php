@@ -94,7 +94,7 @@ class MediaController extends BaseController {
         }
 
         if (count(Guide::where('media_id', '=', $media->id)->get()) > 0) {
-            return $this->sendError('unD_Guide');
+            return $this->sendError('unD_Guide', null, 200);
         }
 
 

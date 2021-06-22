@@ -137,7 +137,7 @@ class RateController extends BaseController {
         }
 
         if (count(Material::where('rate_id', '=', $rate->id)->get()) > 0) {
-            return $this->sendError('unD_Rate');
+            return $this->sendError('unD_Rate', null, 200);
         }
 
         return $rate->delete() ?
@@ -170,7 +170,6 @@ class RateController extends BaseController {
                 ->select('rates.id', 'rates.id as value', 'show as label', 'brod_mo', 'brod_tu', 'brod_we', 'brod_th', 'brod_fr', 'brod_sa', 'brod_su', 'media_types.media_type as mediaType', 'cost', 'media.id as mediaId')
                 ->join('media', 'media.id', '=', 'rates.media_id')
                 ->join('media_types', 'media_types.id', '=', 'media.media_type')
-                ->join('guides', 'guides.media_id', '=', 'media.id')
                 ->where([
                     ['rates.deleted_at', '=', null],
                     ['media_parent_id', '=', $row->mediaId],

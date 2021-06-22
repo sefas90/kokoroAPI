@@ -11,8 +11,8 @@ class CreateOrderNumbersTable extends Migration {
             $table->string('order_number');
             $table->string('version');
             $table->string('observation')->nullable();
-            $table->bigInteger('guide_id');
-            //$table->foreign('guide_id')->references('id')->on('guides');
+            $table->bigInteger('guide_id')->unsigned();
+            $table->foreign('guide_id')->references('id')->on('guides');
             $table->timestamps();
             $table->engine = 'InnoDB';
         });

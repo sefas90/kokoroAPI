@@ -113,11 +113,11 @@ class GuideController extends BaseController {
         }
 
         if (count(Material::where('guide_id', '=', $guide->id)->get()) > 0) {
-            return $this->sendError('unD_Material');
+            return $this->sendError('unD_Material', null, 200);
         }
 
         if (count(Auspice::where('guide_id', '=', $guide->id)->get()) > 0) {
-            return $this->sendError('unD_Auspice');
+            return $this->sendError('unD_Auspice', null, 200);
         }
 
         return $guide->delete() ?
@@ -158,5 +158,17 @@ class GuideController extends BaseController {
         return $guide->save() ?
             $this->sendResponse('', 'El guide ' . $guide->guide_name . ' se cancelo correctamente') :
             $this->sendError('Ocurrio un error al cancelar la pauta ' . $guide->guide_name . '.');
+    }
+
+    public function activateGuide(Request $request) {
+        $guide = Guide::find($request->guideId);
+        if (!$guide) {
+            return $this->sendError('No se encontro la pauta');
+        }
+
+        $guide->editable = 1;
+        return $guide->save() ?
+            $this->sendResponse('', 'El guide ' . $guide->guide_name . ' se activo correctamente') :
+            $this->sendError('Ocurrio un error al activar la pauta ' . $guide->guide_name . '.');
     }
 }

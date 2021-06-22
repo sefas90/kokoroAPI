@@ -78,7 +78,7 @@ class PlanController extends BaseController {
         }
 
         if (count(Campaign::where('plan_id', '=', $plan->id)->get()) > 0) {
-            return $this->sendError('unD_Campaign');
+            return $this->sendError('unD_Campaign', null, 200);
         }
 
         return $plan->delete() ?
