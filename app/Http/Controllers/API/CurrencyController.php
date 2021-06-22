@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Models\Currency;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Validator;
 
 class CurrencyController extends BaseController {
@@ -72,5 +73,12 @@ class CurrencyController extends BaseController {
         return $currency->delete() ?
             $this->sendResponse('', 'El tipo de cambio ' . $currency->currency_name . ' se elimino correctamente.') :
             $this->sendError('Ocurrio un error al eliminar un tipo de cambio');
+    }
+
+    public function list() {
+        return $this->sendResponse(DB::table('currencies')
+            ->select('id', 'currency_value as value', 'currency_name as label')
+            ->where('deleted_at', '=', null)
+            ->get(), '');
     }
 }
