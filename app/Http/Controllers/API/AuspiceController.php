@@ -136,9 +136,9 @@ class AuspiceController extends BaseController {
             ->get();
 
         $aus = $aus[0];
-        $auspice = AuspiceMaterial::find($id)->get();
+        $auspice = AuspiceMaterial::where('auspice_id', '=', $id)->get();
         if (!$auspice) {
-            return $this->sendError('No se encontro el auspicio');
+            return $this->sendResponse([]);
         }
 
         foreach ($auspice as $key => $row) {

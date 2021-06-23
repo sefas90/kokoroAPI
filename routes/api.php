@@ -127,6 +127,7 @@ Route::group($attributes, function () {
     // export Orders
     Route::post('/exportOrder', [ExportController::class, 'order']);
     Route::post('/exportOrdersByCampaign', [ExportController::class, 'orderByCampaign']);
+    Route::post('/exportAuspice', [ExportController::class, 'auspice']);
 
     // Reports
     Route::post('/reportExcel', [ExportController::class, 'export']);
