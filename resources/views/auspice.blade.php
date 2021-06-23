@@ -35,12 +35,6 @@
     .title{
         width: 100%;
     }
-    hr{
-        page-break-after: always;
-        border: none;
-        margin: 0;
-        padding: 0;
-    }
     .nowrap {
         white-space: nowrap
     }
@@ -71,18 +65,18 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 </head>
 <body>
-@foreach($data as $guide => $guideRow)
+
 <div class="container">
     <div>
         <table class="data-table">
             <thead>
             <tr>
-                <th class="md-3" rowspan="2"><img src="../public/kokoro_logo.jpg" width="80%"></th>
-                <th class="md-3 center" rowspan="2"><h1>{{$guideRow['businessName']}}</h1></th>
-                <th class="md-3">Numero de orden: {{$guideRow['order']}}</th>
+                <th class="md-3" rowspan="2"><img src="../public/kokoro_log.svg" width="100%"></th>
+                <th class="md-3 center" rowspan="2"><h1>{{$data['businessName']}}</h1></th>
+                <th class="md-3">Numero de orden: {{$data['order']}}</th>
             </tr>
             <tr>
-                <th>Fecha de emision: {{$guideRow['date']}}</th>
+                <th>Fecha de emision: {{$data['date']}}</th>
             </tr>
             </thead>
         </table>
@@ -94,22 +88,21 @@
                 <td>Programa</td>
                 <td>Horario</td>
                 <td>Material</td>
-                <td>Dur</td>
-                @for ($i = 1; $i <= $guideRow['daysInMonth']; $i++)
+                <td>Dur (seg.)</td>
+                @for ($i = 1; $i <= $data['daysInMonth']; $i++)
                 <td>{{ $i }}</td>
                 @endfor
                 <td>Spots</td>
-                <td class="right"><div class="nowrap">C. Unitario</div>{{$guideRow['currency']}}</td>
-                <td class="right"><div class="nowrap">Inversión</div>{{$guideRow['currency']}}</td>
+                <td class="right"><div class="nowrap">Inversión</div>{{$data['currency']}}</td>
             </tr>
-            @foreach($guideRow['result'] as $key => $row)
-            <tr>
+            @foreach($data['result'] as $key => $row)
+            <tr class="text-all">
                 <td>{{ $row->media_name }}</td>
                 <td>{{ $row->show }}</td>
-                <td>{{ $row->hourIni }} {{$row->hourEnd}}</td>
+                <td>{{ substr($row->hourIni,0,-3) }} {{ substr($row->hourEnd,0,-3) }}</td>
                 <td>{{ $row->material_name }}</td>
                 <td>{{ $row->duration }}</td>
-                @for ($i = 1; $i <= $guideRow['daysInMonth']; $i++)
+                @for ($i = 1; $i <= $data['daysInMonth']; $i++)
                 <td class="border-table">
                     @foreach($row->planing as $k => $r)
                     @if ($i == $r->day)
@@ -119,8 +112,7 @@
                 </td>
                 @endfor
                 <td>{{ $row->spots }}</td>
-                <td class="right">{{ number_format($row->unitCost / $guideRow['currencyValue'], 2, ',', '.') }}</td>
-                <td class="right">{{ number_format($row->totalCost / $guideRow['currencyValue'], 2, ',', '.') }}</td>
+                <td class="right">{{ number_format($row->totalCost * $data['currencyValue'], 2, ',', '.') }}</td>
             </tr>
             @endforeach
             </tbody>
@@ -129,43 +121,43 @@
         <table class="data-table">
             <thead>
             <tr>
-                <th class="md-5" colspan="2">Cliente/Agencia</th>
+                <th class="md-5">Responsable</th>
+                <th class="md-5">Cliente</th>
                 <th class="md-5">Totales</th>
                 <th class="md-5">Ins.</th>
-                <th class="md-5 right"><div class="nowrap">Inversión {{$guideRow['currency']}}</div></th>
+                <th class="md-5 right"><div class="nowrap">Inversión {{$data['currency']}}</div></th>
             </tr>
             <tr>
-                <th rowspan="2" colspan="2">{{ $guideRow['user'] }}</th>
+                <th rowspan="2">{{ $data['user'] }}</th>
+                <th rowspan="2">{{ $data['client'] }}</th>
                 <th>Total</th>
-                <th>{{ $guideRow['totalSpots'] }}</th>
-                <th class="md-5 right">{{ number_format($guideRow['totalMount'] / $guideRow['currencyValue'], 2, ',', '.') }}</th>
+                <th>{{ $data['totalSpots'] }}</th>
+                <th class="right">{{ number_format($data['totalMount'] * $data['currencyValue'], 2, ',', '.') }}</th>
             </tr>
             <tr>
                 <th>Total Orden</th>
-                <th>{{ $guideRow['totalSpots'] }}</th>
-                <th class="md-5 right">{{ number_format($guideRow['totalMount'] / $guideRow['currencyValue'], 2, ',', '.') }}</th>
+                <th>{{ $data['totalSpots'] }}</th>
+                <th class="right">{{ number_format($data['totalMount'] * $data['currencyValue'], 2, ',', '.') }}</th>
             </tr>
             </thead>
             <tbody>
             <tr>
                 <td>Facturar a:</td>
                 <td>Direccion de facturacion:</td>
-                <td colspan="3">Observaciones</td>
+                <td>Politicas de facturacion:</td>
+                <td colspan="2">Observaciones</td>
             </tr>
             <tr>
-                <td>{{ $guideRow['billingPolicies'] }}</td>
-                <td>{{ $guideRow['billingAddress'] }}</td>
-                <td>{{ $guideRow['observation1'] }}</td>
-                <td colspan="2">{{ $guideRow['observation2'] }}</td>
+                <td>{{ $data['billingToName'] }}<br>{{ $data['billingToNit'] }}</td>
+                <td>{{ $data['billingAddress'] }}</td>
+                <td>{{ $data['billingPolicies'] }}</td>
+                <td>{{ $data['observation1'] }}</td>
+                <td>{{ $data['observation2'] }}</td>
             </tr>
             </tbody>
         </table>
     </div>
 </div>
-@if ($guide < count($data)-1)
-<hr>
-@endif
-@endforeach
 <script type="text/php">
     if (isset($pdf)) {
         $text = "Página {PAGE_NUM} / {PAGE_COUNT}";

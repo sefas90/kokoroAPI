@@ -209,7 +209,7 @@ class ExportController extends BaseController {
 
     public function auspice(Request $request) {
         $validator = Validator::make($request->all(), [
-            'guideId'    => 'required'
+            'auspiceId'    => 'required'
         ]);
 
         $currency = Currency::find($request->currencyId) ? Currency::find($request->currencyId) : (object)['currency_value' => 1, 'symbol' => 'BOB'];
@@ -221,12 +221,13 @@ class ExportController extends BaseController {
             ];
 
             $result = DB::table('auspices')
-                ->select('auspices.id as id', 'auspices.auspice_name', 'auspices.guide_id', 'auspices.rate_id',
-                    'guides.guide_name', 'guides.media_id', 'guides.campaign_id', 'guides.editable as editable', 'rates.show',
-                    'rates.hour_ini', 'rates.hour_end', 'rates.cost', 'media.media_name', 'media.business_name', 'media.NIT', 'media.media_type as mediaTypeId', 'media_types.media_type',
-                    'campaigns.campaign_name', 'campaigns.plan_id', 'plan.client_id', 'campaigns.date_ini', 'campaigns.date_end',
+                ->select('auspices.id as id', 'auspice_materials.id as auspiceMaterialsId', 'auspices.auspice_name', 'auspices.guide_id', 'auspices.rate_id',
+                    'guides.guide_name', 'guides.media_id', 'guides.campaign_id', 'guides.editable as editable', 'rates.show', 'auspice_materials.duration', 'auspice_materials.material_name',
+                    'rates.hour_ini', 'rates.hour_end', 'auspices.cost', 'media.media_name', 'media.business_name', 'media.NIT', 'media.media_type as mediaTypeId', 'media_types.media_type',
+                    'campaigns.campaign_name', 'campaigns.plan_id', 'plan.client_id', 'campaigns.date_ini', 'campaigns.date_end', 'campaigns.product',
                     'rates.hour_ini as hourIni', 'rates.hour_end as hourEnd',
                     'clients.id as clientId', 'clients.client_name as clientName', 'clients.representative', 'clients.NIT as clientNIT', 'clients.billing_address as billingAddress', 'clients.billing_policies as billingPolicies')
+                ->join('auspice_materials', 'auspice_materials.auspice_id', '=', 'auspices.id')
                 ->join('guides', 'guides.id', '=', 'auspices.guide_id')
                 ->join('rates', 'rates.id', '=', 'auspices.rate_id')
                 ->join('media', 'media.id', '=', 'rates.media_id')
@@ -234,7 +235,7 @@ class ExportController extends BaseController {
                 ->join('plan', 'plan.id', '=', 'campaigns.plan_id')
                 ->join('clients', 'clients.id', '=', 'plan.client_id')
                 ->join('media_types', 'media_types.id', '=', 'media.media_type')
-                ->where('guides.id', '=', $request->guideId)
+                ->where('auspices.id', '=', $request->auspiceId)
                 ->where('auspices.deleted_at', '=', null)
                 ->get();
 
@@ -242,10 +243,10 @@ class ExportController extends BaseController {
                 $total = 0;
                 $totalSpots = 0;
                 foreach ($result as $key => $row) {
-                    $id = $result[$key]->id;
+                    $id = $result[$key]->auspiceMaterialsId;
                     $planing = DB::table('material_auspice_planing')
                         ->select('broadcast_day', 'times_per_day')
-                        ->where('material_planing.material_id', '=', $id)
+                        ->where('material_auspice_planing.material_auspice_id', '=', $id)
                         ->get();
                     if (count($planing)) {
                         $spots = 0;
@@ -259,13 +260,12 @@ class ExportController extends BaseController {
                     }
                 }
 
-                $orderNumber = OrderNumber::where('guide_id', '=', $request->guideId)->get();
+                $orderNumber = OrderNumber::where('guide_id', '=', $result[0]->guide_id)->get();
 
                 if($result[0]->editable == 1) {
                     if (count($orderNumber) > 0) {
                         $orderNumber = OrderNumber::find($orderNumber[0]->id);
                         $observation[0] = 'Remplazando a la orden '.$orderNumber->order_number.'.'.$orderNumber->version;
-                        $orderNumber->version = $orderNumber->version +1;
                         $orderNumber->observation = $observation[0].' - '.$observation[1];
                         $orderNumber->save();
                     } else {
@@ -273,8 +273,8 @@ class ExportController extends BaseController {
                         $orderNumber = OrderNumber::create([
                             'order_number'  => $order + 1,
                             'version'       => 0,
-                            'guide_id'      => $request->guideId,
-                            'observation'  => $observation[1]
+                            'guide_id'      => $result[0]->guide_id,
+                            'observation'   => $observation[1]
                         ]);
                     }
                 } else {
@@ -294,6 +294,7 @@ class ExportController extends BaseController {
 
                 $response = [
                     'result'          => $result,
+                    'product'         => $result[0]->product,
                     'order'           => $orderNumber,
                     'client'          => $result[0]->clientName,
                     'businessName'    => strtoupper($result[0]->business_name),
@@ -322,12 +323,12 @@ class ExportController extends BaseController {
                 ];
 
                 foreach ($response['result'] as $llave => $fila) {
-                    $response['result'][$llave]->unitCost = $this->getUnitCost($fila->cost, $fila->media_type, $fila->duration);
-                    $response['result'][$llave]->totalCost = $this->getTotalCost($fila->cost, $fila->media_type, $fila->duration, $fila->spots);
-                    $response['totalMount'] += $this->getTotalCost($fila->cost, $fila->media_type, $fila->duration, $fila->spots);
+                    $response['result'][$llave]->unitCost = $result[0]->cost / count($result) / $fila->spots;
+                    $response['result'][$llave]->totalCost = $result[0]->cost / count($result);
+                    $response['totalMount'] += $result[0]->cost / count($result);
                 }
 
-                return !$request->isOrderCampaign ? $this->exportPdf($response, 'orderGuide', 'orderGuide.pdf') : $response;
+                return !$request->isOrderCampaign ? $this->exportPdf($response, 'auspice', 'auspice.pdf') : $response;
             } else {
                 $request['isOrderCampaign'] = !!$request->isOrderCampaign;
                 return !$request->isOrderCampaign ? $this->sendError('No tiene materiales') : [];

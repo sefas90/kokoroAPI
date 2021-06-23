@@ -150,7 +150,7 @@ class AuspiceController extends BaseController {
                 ->where('material_auspice_id', '=', $row->id)->get();
 
             $auspice[$key]->passes = (int)$material;
-            $auspice[$key]->cost = $aus->cost;
+            $auspice[$key]->cost = number_format($aus->cost / count($auspice), 2, '.', '');
             $auspice[$key]->mediaType = $aus->mediaType;
             $aux = [];
             foreach ($material_planing as $k => $r) {
