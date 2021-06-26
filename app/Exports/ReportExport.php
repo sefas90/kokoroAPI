@@ -2,9 +2,8 @@
 
 namespace App\Exports;
 
-use App\Http\Controllers\API\ExportController;
-use App\Models\City;
 use App\Models\Client;
+use App\Models\Currency;
 use App\Models\User;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Contracts\View\View;
@@ -25,6 +24,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
 
     public function view(): View {
         $request = $this->req;
+        $currency = Currency::find($request->currencyId) ? Currency::find($request->currencyId) : Currency::find(1);
         $result = Client::select('clients.id as client_id', 'client_name', 'representative', 'clients.NIT as clientNit', 'billing_address', 'billing_policies',
             'plan_name', 'campaigns.id as budget', 'plan.id as plan_id', 'guide_name', 'guides.id as guide_id', 'order_number', 'order_numbers.version',
             'media.id as media_id', 'material_name', 'duration', 'materials.id as material_id', 'product', 'campaign_name',
@@ -34,7 +34,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
             ->join('guides', 'guides.campaign_id', '=', 'campaigns.id')
             ->join('materials', 'materials.guide_id', '=', 'guides.id')
             ->join('rates', 'rates.id', '=', 'materials.rate_id')
-            ->join('media', 'media.id', '=', 'guides.media_id')
+            ->join('media', 'media.id', '=', 'rates.media_id')
             ->join('media_types', 'media_types.id', '=', 'media.media_type')
             ->join('cities', 'cities.id', '=', 'media.city_id')
             ->join('order_numbers', 'order_numbers.guide_id', '=', 'guides.id')
@@ -49,28 +49,44 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
         $user = User::find($request->userId);
         $user = empty($user) ? 'System' : $user->name . ' ' .$user->lastname;
         $fila = (object)[];
+        $aux = null;
         $response = array();
         foreach ($result as $key => $row) {
             $plan = DB::table('material_planing')
                 ->select('*')
                 ->where('material_id', '=', $row->material_id)
                 ->get();
-            $week = 0;
+            $week = 1;
+            $times_per_day = 0;
             foreach ($plan as $k => $r) {
-                $fila->broadcast_day = $r->broadcast_day;
                 $fila->week          = $this->weekOfMonth(strtotime($r->broadcast_day));
-                $fila->month         = date("m", strtotime($r->broadcast_day));
-                $fila->year          = date("Y", strtotime($r->broadcast_day));
-                $fila->times_per_day = $r->times_per_day;
+                if ($week == $fila->week){
+
+                } else {
+                    $times_per_day       = 0;
+                    $response[]          = $aux;
+                    $aux                 = null;
+                    $week++;
+                }
                 $fila->user          = $user;
                 $fila->row           = $row;
-                $response[]          = $fila;
-                $fila                = (object)[];
+                $fila->cost          = $this->getUnitCost($row->cost, $row->media_type, $row->duration);
+                $fila->badge         = $fila->cost / $currency->currency_value;
+                $fila->duration      = $row->duration;
+                $fila->broadcast_day = $r->broadcast_day;
+                $fila->month         = date("m", strtotime($r->broadcast_day));
+                $fila->year          = date("Y", strtotime($r->broadcast_day));
+                $times_per_day       += $r->times_per_day;
+                $fila->times_per_day = $times_per_day;
+                $aux   = $fila;
+                $fila  = (object)[];
             }
         }
 
+        $datas = [$response, $currency];
+
         return view('exports.reports', [
-            'datas' => $response
+            'datas' => $datas
         ]);
     }
 
@@ -88,5 +104,25 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
             $weekOfYear = 0;
         }
         return $weekOfYear;
+    }
+
+    public function getUnitCost($unitCost, $mediaType, $duration) {
+        $mediaType = strtoupper($mediaType);
+        if ($mediaType === "TV" || $mediaType === "TV PAGA") {
+            return $duration * $unitCost;
+        }
+        else {
+            return $unitCost;
+        }
+    }
+
+    public function getTotalCost($unitCost, $mediaType, $duration, $passes) {
+        $mediaType = strtoupper($mediaType);
+        if ($mediaType === "TV" || $mediaType === "TV PAGA") {
+            return $duration * $unitCost * $passes;
+        }
+        else {
+            return $unitCost * $passes;
+        }
     }
 }

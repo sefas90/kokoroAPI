@@ -345,7 +345,6 @@ class ExportController extends BaseController {
             'campaignId' => 'required'
         ]);
 
-        $response = array();
         if (!$validator->fails()) {
             $result = Client::select('clients.id as client_id', 'client_name', 'representative', 'clients.NIT as clientNit', 'billing_address', 'billing_policies',
                 'plan_name', 'campaigns.id as budget', 'plan.id as plan_id', 'guide_name', 'guides.id as guide_id', 'order_number', 'order_numbers.version',
@@ -356,7 +355,7 @@ class ExportController extends BaseController {
                 ->join('guides', 'guides.campaign_id', '=', 'campaigns.id')
                 ->join('materials', 'materials.guide_id', '=', 'guides.id')
                 ->join('rates', 'rates.id', '=', 'materials.rate_id')
-                ->join('media', 'media.id', '=', 'guides.media_id')
+                ->join('media', 'media.id', '=', 'rates.media_id')
                 ->join('media_types', 'media_types.id', '=', 'media.media_type')
                 ->join('cities', 'cities.id', '=', 'media.city_id')
                 ->join('order_numbers', 'order_numbers.guide_id', '=', 'guides.id')
@@ -371,21 +370,36 @@ class ExportController extends BaseController {
             $user = User::find($request->userId);
             $user = empty($user) ? 'System' : $user->name . ' ' .$user->lastname;
             $fila = (object)[];
+            $aux = null;
+            $response = array();
             foreach ($result as $key => $row) {
                 $plan = DB::table('material_planing')
                     ->select('*')
                     ->where('material_id', '=', $row->material_id)
                     ->get();
+                $week = 1;
+                $times_per_day = 0;
                 foreach ($plan as $k => $r) {
-                    $fila->broadcast_day = $r->broadcast_day;
-                    $fila->day           = $date = date("d", strtotime($r->broadcast_day));
-                    $fila->month         = $date = date("m", strtotime($r->broadcast_day));
-                    $fila->year          = $date = date("Y", strtotime($r->broadcast_day));
-                    $fila->times_per_day = $r->times_per_day;
+                    $fila->week          = $this->weekOfMonth(strtotime($r->broadcast_day));
+                    if ($week == $fila->week){
+
+                    } else {
+                        $times_per_day       = 0;
+                        $response[]          = $aux;
+                        $aux                 = null;
+                        $week++;
+                    }
                     $fila->user          = $user;
                     $fila->row           = $row;
-                    $response[]          = $fila;
-                    $fila                = (object)[];
+                    $fila->cost          = $this->getUnitCost($row->cost, $row->media_type, $row->duration);
+                    $fila->duration      = $row->duration;
+                    $fila->broadcast_day = $r->broadcast_day;
+                    $fila->month         = date("m", strtotime($r->broadcast_day));
+                    $fila->year          = date("Y", strtotime($r->broadcast_day));
+                    $times_per_day       += $r->times_per_day;
+                    $fila->times_per_day = $times_per_day;
+                    $aux   = $fila;
+                    $fila  = (object)[];
                 }
             }
 
@@ -417,5 +431,21 @@ class ExportController extends BaseController {
         else {
             return $unitCost * $passes;
         }
+    }
+
+    function weekOfMonth($date) {
+        //Get the first day of the month.
+        $firstOfMonth = strtotime(date("Y-m-01", $date));
+        //Apply above formula.
+        return $this->weekOfYear($date) - $this->weekOfYear($firstOfMonth) + 1;
+    }
+
+    function weekOfYear($date) {
+        $weekOfYear = intval(date("W", $date));
+        if (date('n', $date) == "1" && $weekOfYear > 51) {
+            // It's the last week of the previos year.
+            $weekOfYear = 0;
+        }
+        return $weekOfYear;
     }
 }

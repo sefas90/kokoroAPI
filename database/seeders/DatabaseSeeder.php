@@ -14,7 +14,8 @@ class DatabaseSeeder extends Seeder {
             PermissionTableSeeder::class,
             UsersTableSeeder::class,
             CitySeederTable::class,
-            MediaTypeSeederTable::class
+            MediaTypeSeederTable::class,
+            CurrencySeeder::class,
             ]);
         Model::reguard();
     }

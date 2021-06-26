@@ -20,12 +20,12 @@
             <th>Presupuesto</th>
             <th>Orden</th>
             <th>Spots</th>
-            <th>Inversión + IMP</th>
-            <th>Divisa + IMP</th>
+            <th>Inversión + IMP BOB</th>
+            <th>Divisa + IMP {{$datas[1]->symbol}}</th>
         </tr>
     </thead>
     <tbody>
-    @foreach ($datas as $data)
+    @foreach ($datas[0] as $data)
         <tr>
             <td>{{ $data->row->client_name }}</td>
             <td>{{ $data->user }}</td>
@@ -45,9 +45,17 @@
             <td>{{ $data->row->representative }}</td>
             <td>{{ $data->row->budget }}</td>
             <td>{{ $data->row->order_number }}.{{ $data->row->version }}</td>
+            @if (!empty($data->times_per_day))
             <td>{{ $data->times_per_day }}</td>
-            <td></td>
-            <td></td>
+            @else
+            <td>0</td>
+            @endif
+            @if (!empty($data->times_per_day))
+            <td>{{ number_format($data->times_per_day * $data->cost, 2, ',', '.') }}</td>
+            @else
+            <td>0</td>
+            @endif
+            <td>{{ number_format($data->badge, 2, ',', '.') }}</td>
         </tr>
     @endforeach
     </tbody>
