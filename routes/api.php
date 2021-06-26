@@ -52,8 +52,10 @@ Route::group($attributes, function () {
     Route::post('/currency/{id}', [CurrencyController::class, 'update']);
     Route::delete('/currency/{id}', [CurrencyController::class, 'destroy']);
 
-    Route::post('/auspiceMaterial', [AuspiceController::class, 'auspiceMaterial']);
     Route::get('/auspiceMaterial/{id}', [AuspiceController::class, 'getAuspiceMaterial']);
+    Route::post('/auspiceMaterial', [AuspiceController::class, 'auspiceMaterial']);
+    Route::post('/auspiceMaterial/{id}', [AuspiceController::class, 'updateMaterial']);
+    Route::delete('/auspiceMaterial/{id}', [AuspiceController::class, 'deleteAuspiceMaterial']);
 
     Route::get('/campaign', [CampaignController::class, 'index']);
     Route::post('/campaign', [CampaignController::class, 'store']);

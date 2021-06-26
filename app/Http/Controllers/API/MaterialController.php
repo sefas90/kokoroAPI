@@ -122,7 +122,7 @@ class MaterialController extends BaseController {
             $success = false;
 
             $post = PlaningMaterial::where('material_id', $id)->get();
-            // return $this->sendResponse($post, '');
+
             foreach ($post as $pos => $rew) {
                 $material_planing = PlaningMaterial::find($rew->id);
                 $material_planing->delete();

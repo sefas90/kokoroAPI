@@ -125,6 +125,57 @@ class AuspiceController extends BaseController {
         }
     }
 
+    public function updateMaterial(Request $request, $id) {
+        $validator = Validator::make($request->all(), [
+            'materialName' => 'required',
+            'auspiceId'    => 'required',
+            'timesPerDay'  => 'required'
+        ]);
+
+        if($validator->fails()){
+            return $this->sendError('Error de validacion.', $validator->errors());
+        }
+
+        $material = AuspiceMaterial::find($id);
+        if (!$material) {
+            return $this->sendError('No se encontro el auspicee');
+        }
+
+        $material->material_name = trim($request->materialName);
+        $material->duration      = empty($request->duration) ? 0 : trim($request->duration);
+        $material->auspice_id    = trim($request->auspiceId);
+
+        if($material->save())  {
+            $success = false;
+
+            $post = PlaningAuspiceMaterial::where('material_auspice_id', $id)->get();
+
+            foreach ($post as $pos => $rew) {
+                $material_planing = PlaningAuspiceMaterial::find($rew->id);
+                $material_planing->delete();
+            }
+
+            foreach ($request['timesPerDay'] as $key => $row) {
+                $materialPlaning = new PlaningAuspiceMaterial(array(
+                    'material_auspice_id'   => $material['id'],
+                    'times_per_day' => $row['timesPerDay'],
+                    'broadcast_day' => $row['date']
+                ));
+
+                if ($materialPlaning->save()) {
+                    $success = true;
+                } else {
+                    $success = false;
+                }
+            }
+            return $success ?
+                $this->sendResponse('', 'El material ' . $material->material_name . ' se guardo correctamente') :
+                $this->sendError('Ocurrio un error al crear un nuevo material.');
+        } else {
+            return $this->sendError('Ocurrio un error al crear un nuevo material.');
+        }
+    }
+
     public function getAuspiceMaterial($id) {
         $aus = Auspice::where('auspices.id', '=', $id)
             ->select('auspices.id', 'auspice_name as auspiceName', 'auspices.cost', 'rates.show', 'guides.guide_name as guideName',
@@ -173,5 +224,16 @@ class AuspiceController extends BaseController {
         return $auspice->delete() ?
             $this->sendResponse('', 'El auspicio ' . $auspice->auspice_name . ' se elimino correctamente.') :
             $this->sendError('Ocurrio un error al eliminar un auspicio');
+    }
+
+    public function deleteAuspiceMaterial($id) {
+        $auspice = AuspiceMaterial::find($id);
+        if (!$auspice) {
+            return $this->sendError('No se encontro el material');
+        }
+
+        return $auspice->delete() ?
+            $this->sendResponse('', 'El material ' . $auspice->auspice_name . ' se elimino correctamente.') :
+            $this->sendError('Ocurrio un error al eliminar un material');
     }
 }
