@@ -105,7 +105,7 @@ class MediaController extends BaseController {
 
     public function parentList() {
         return $this->sendResponse(DB::table('media')
-            ->select('id', 'id as value', 'media_name as label')
+            ->select('id', 'id as value', 'media_name as label', 'NIT', 'city_id as cityId', 'business_name as businessName', 'media_type as mediaType')
             ->where([
                 ['deleted_at', '=', null],
                 ['media_parent_id', '=', null],

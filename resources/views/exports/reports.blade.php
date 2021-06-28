@@ -51,11 +51,11 @@
             <td>0</td>
             @endif
             @if (!empty($data->times_per_day))
-            <td>{{ number_format($data->times_per_day * $data->cost, 2, ',', '.') }}</td>
+            <td>{{ number_format($data->times_per_day * $data->cost, 2, '.', '') }}</td>
             @else
             <td>0</td>
             @endif
-            <td>{{ number_format($data->badge, 2, ',', '.') }}</td>
+            <td>{{ number_format($data->badge, 2, '.', '') }}</td>
         </tr>
     @endforeach
     </tbody>
