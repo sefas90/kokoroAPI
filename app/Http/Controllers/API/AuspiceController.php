@@ -187,7 +187,7 @@ class AuspiceController extends BaseController {
             ->get();
 
         $aus = $aus[0];
-        $auspice = AuspiceMaterial::where('auspice_id', '=', $id)->get();
+        $auspice = AuspiceMaterial::select('id', 'material_name as materialName', 'duration', 'auspice_id as auspiceId')->where('auspice_id', '=', $id)->get();
         if (!$auspice) {
             return $this->sendResponse([]);
         }
