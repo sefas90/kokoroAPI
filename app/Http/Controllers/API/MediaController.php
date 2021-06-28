@@ -22,8 +22,8 @@ class MediaController extends BaseController {
             $response[$key]->isParent = !!empty($row->mediaParentId);
             if(!empty($row->mediaParentId)) {
                 $media_parent = Media::find($row->mediaParentId);
-                $response[$key]->mediaParent = $media_parent->media_name;
-                $response[$key]->mediaParentId = $row->mediaParentId;
+                $response[$key]->mediaParentName = $media_parent->media_name;
+                $response[$key]->mediaParent = $row->mediaParentId;
             }
         }
         return $this->sendResponse($response);
