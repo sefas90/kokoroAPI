@@ -114,7 +114,7 @@ class MaterialController extends BaseController {
         }
 
         $material->material_name = trim($request->materialName);
-        $material->duration      = trim($request->duration);
+        $material->duration      = empty($request->duration) ? 0 : trim($request->duration);
         $material->guide_id      = trim($request->guideId);
         $material->rate_id       = trim($request->rateId);
 
