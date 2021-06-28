@@ -22,7 +22,7 @@ class MediaController extends BaseController {
             $response[$key]->isParent = !!empty($row->mediaParentId);
             if(!empty($row->mediaParentId)) {
                 $media_parent = Media::find($row->mediaParentId);
-                $response[$key]->mediaParent = $media_parent->mediaName;
+                $response[$key]->mediaParent = $media_parent->media_name;
             }
         }
         return $this->sendResponse($response);
