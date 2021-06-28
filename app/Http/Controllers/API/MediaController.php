@@ -4,22 +4,24 @@ namespace App\Http\Controllers\API;
 
 use App\Models\Guide;
 use App\Models\Media;
-use App\Models\PlaningMaterial;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Validator;
 
 class MediaController extends BaseController {
     public function index (Request $request) {
         $sort = explode(":", $request->sort);
-        return $this->sendResponse(DB::table('media')
+        $response = DB::table('media')
             ->select('media.id', 'media_name as mediaName', 'business_name as businessName', 'NIT', 'city', 'cities.id as cityId', 'media_types.media_type as mediaTypeValue', 'media_types.id as mediaType', 'media_parent_id as mediaParentId')
             ->join('cities', 'cities.id', '=', 'media.city_id')
             ->join('media_types', 'media_types.id', '=', 'media.media_type')
             ->where('media.deleted_at', '=', null)
             ->orderBy(empty($sort[0]) ? 'media.id' : 'media.'.$sort[0], empty($sort[1]) ? 'asc' : $sort[1])
-            ->get(), '');
+            ->get();
+        foreach ($response as $key => $row) {
+            $response[$key]->isParent = !!empty($row->mediaParentId);
+        }
+        return $this->sendResponse($response);
     }
 
     public function store(Request $request) {
@@ -103,12 +105,13 @@ class MediaController extends BaseController {
             $this->sendError('Ocurrio un error al eliminar un medio');
     }
 
-    public function parentList() {
+    public function parentList($id = 0) {
         return $this->sendResponse(DB::table('media')
             ->select('id', 'id as value', 'media_name as label', 'NIT', 'city_id as cityId', 'business_name as businessName', 'media_type as mediaType')
             ->where([
                 ['deleted_at', '=', null],
                 ['media_parent_id', '=', null],
+                ['media.id', '<>', $id],
             ])
             ->get(), '');
     }

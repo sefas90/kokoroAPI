@@ -120,6 +120,7 @@ Route::group($attributes, function () {
     Route::get('/clientList', [ClientController::class, 'list']);
     Route::get('/mediaList', [MediaController::class, 'list']);
     Route::get('/mediaParentList', [MediaController::class, 'parentList']);
+    Route::get('/mediaParentList/{id}', [MediaController::class, 'parentList']);
     Route::get('/showList', [RateController::class, 'showLists']);
     Route::get('/clientsPlanList/{id}', [PlanController::class, 'clientsPlanList']);
     Route::get('/plansCampaignsList/{id}', [CampaignController::class, 'plansCampaignsList']);
