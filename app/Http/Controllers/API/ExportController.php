@@ -237,7 +237,7 @@ class ExportController extends BaseController {
                 ->join('media_types', 'media_types.id', '=', 'media.media_type')
                 ->where([
                     ['auspices.id', '=', $request->auspiceId],
-                    ['auspices.deleted_at', '=', null]
+                    ['auspice_materials.deleted_at', '=', null]
                 ])
                 ->get();
 
@@ -249,8 +249,7 @@ class ExportController extends BaseController {
                     $planing = DB::table('material_auspice_planing')
                         ->select('broadcast_day', 'times_per_day')
                         ->where([
-                            ['material_auspice_planing.material_auspice_id', '=', $id],
-                            ['material_auspice_planing.deleted_at', '=', null]
+                            ['material_auspice_planing.material_auspice_id', '=', $id]
                         ])
                         ->get();
                     if (count($planing)) {
