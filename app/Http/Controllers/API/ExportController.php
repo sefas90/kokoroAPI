@@ -32,7 +32,7 @@ class ExportController extends BaseController {
                     'guides.guide_name', 'guides.media_id', 'guides.campaign_id', 'guides.editable as editable', 'rates.show',
                     'rates.hour_ini', 'rates.hour_end', 'rates.cost', 'media.media_name', 'media.business_name', 'media.NIT', 'media.media_type as mediaTypeId', 'media_types.media_type',
                     'campaigns.campaign_name', 'campaigns.plan_id', 'plan.client_id', 'campaigns.date_ini', 'campaigns.date_end',
-                    'rates.hour_ini as hourIni', 'rates.hour_end as hourEnd',
+                    'rates.hour_ini as hourIni', 'rates.hour_end as hourEnd', 'guides.date_ini as guideDateIni',
                     'clients.id as clientId', 'clients.client_name as clientName', 'clients.representative', 'clients.NIT as clientNIT', 'clients.billing_address as billingAddress', 'clients.billing_policies as billingPolicies')
                 ->join('guides', 'guides.id', '=', 'materials.guide_id')
                 ->join('rates', 'rates.id', '=', 'materials.rate_id')
@@ -45,9 +45,13 @@ class ExportController extends BaseController {
                 ->where('materials.deleted_at', '=', null)
                 ->get();
 
+            $pla = array();
+            $months = array();
+
             if (count($result) > 0) {
                 $total = 0;
                 $totalSpots = 0;
+
                 foreach ($result as $key => $row) {
                     $id = $result[$key]->id;
                     $planing = DB::table('material_planing')
@@ -56,13 +60,18 @@ class ExportController extends BaseController {
                         ->get();
                     if (count($planing)) {
                         $spots = 0;
+                        $m = date("m", strtotime($planing[0]->broadcast_day));
+                        $pla[$m] = array();
                         foreach ($planing as $k => $r) {
-                            $planing[$k]->day = date("d", strtotime($planing[$k]->broadcast_day));
-                            $spots += $planing[$k]->times_per_day;
+                            $r->day = date("d", strtotime($planing[$k]->broadcast_day));
+                            $m = date("m", strtotime($planing[$k]->broadcast_day));
+                            $spots += $r->times_per_day;
+                            $pla[$m][] = $r;
                         }
+                        $months[$m] = $m;
                         $result[$key]->spots = $spots;
                         $totalSpots += $spots;
-                        $result[$key]->planing = $planing;
+                        $result[$key]->planing = $pla;
                     }
                 }
 
@@ -111,6 +120,7 @@ class ExportController extends BaseController {
                     'pages'           => $pages,
                     'date'            => date("m-d-Y"),
                     'month_ini'       => $month,
+                    'months'          => $months,
                     'year'            => $year,
                     'daysInMonth'     => cal_days_in_month(CAL_GREGORIAN, $month, $year),
                     'date-'           => date("F Y", strtotime("2021-05-12")),
@@ -133,6 +143,8 @@ class ExportController extends BaseController {
                     $response['result'][$llave]->totalCost = $this->getTotalCost($fila->cost, $fila->media_type, $fila->duration, $fila->spots);
                     $response['totalMount'] += $this->getTotalCost($fila->cost, $fila->media_type, $fila->duration, $fila->spots);
                 }
+
+                //return $response;
 
                 return !$request->isOrderCampaign ? $this->exportPdf($response, 'orderGuide', 'orderGuide.pdf') : $response;
             } else {

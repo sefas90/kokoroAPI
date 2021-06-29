@@ -35,6 +35,12 @@
     .title{
         width: 100%;
     }
+    hr{
+        page-break-after: always;
+        border: none;
+        margin: 0;
+        padding: 0;
+    }
     .nowrap {
         white-space: nowrap
     }
@@ -58,6 +64,9 @@
     .center {
         text-align: center;
     }
+    .hidden {
+        display: none;
+    }
 </style>
 <!DOCTYPE html>
 <html lang="en">
@@ -65,101 +74,113 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 </head>
 <body>
-
-<div class="container">
-    <div>
-        <table class="data-table">
-            <thead>
-            <tr>
-                <th class="md-3" rowspan="2"><img src="../public/kokoro_log.svg" width="100%"></th>
-                <th class="md-3 center" rowspan="2"><h1>{{$data['businessName']}}</h1></th>
-                <th class="md-3">Numero de orden: {{$data['order']}}</th>
-            </tr>
-            <tr>
-                <th>Fecha de emision: {{$data['date']}}</th>
-            </tr>
-            </thead>
-        </table>
-        <br>
-        <table class="data-table-info">
-            <tbody>
-            <tr>
-                <td>Medio</td>
-                <td>Programa</td>
-                <td>Horario</td>
-                <td>Material</td>
-                <td>Dur (seg.)</td>
-                @for ($i = 1; $i <= $data['daysInMonth']; $i++)
-                <td>{{ $i }}</td>
-                @endfor
-                <td>Spots</td>
-                <td class="right"><div class="nowrap">C. Unitario</div>{{$data['currency']}}</td>
-                <td class="right"><div class="nowrap">Inversión</div>{{$data['currency']}}</td>
-            </tr>
-            @foreach($data['result'] as $key => $row)
-            <tr class="text-all">
-                <td>{{ $row->media_name }}</td>
-                <td>{{ $row->show }}</td>
-                <td>{{ substr($row->hourIni,0,-3) }} {{ substr($row->hourEnd,0,-3) }}</td>
-                <td>{{ $row->material_name }}</td>
-                <td>{{ $row->duration }}</td>
-                @for ($i = 1; $i <= $data['daysInMonth']; $i++)
+<span class="hidden">{{$count = 0}}</span>
+@foreach($data['months'] as $months => $monthRow)
+    <div class="container">
+        <div>
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th class="md-3" rowspan="2"><img src="../public/kokoro_log.svg" width="100%"></th>
+                    <th class="md-3 center" rowspan="2"><h1>{{$data['businessName']}}</h1></th>
+                    <th class="md-3" colspan="2">Numero de orden: {{$data['order']}}</th>
+                </tr>
+                <tr>
+                    <th>Fecha de emision: {{$data['date']}}</th>
+                    <th>
+                        <span class="hidden">{{setlocale(LC_TIME, "spanish")}}</span>
+                        Mes: {{ucfirst(strftime("%B", DateTime::createFromFormat('!m', $monthRow)->getTimestamp()))}}
+                    </th>
+                </tr>
+                </thead>
+            </table>
+            <br>
+            <table class="data-table-info">
+                <tbody>
+                <tr>
+                    <td>Medio</td>
+                    <td>Programa</td>
+                    <td>Horario</td>
+                    <td>Material</td>
+                    <td>Dur (seg.)</td>
+                    @for ($i = 1; $i <= cal_days_in_month(CAL_GREGORIAN, $months, $data['year']); $i++)
+                    <td>{{ $i }}</td>
+                    @endfor
+                    <td>Spots</td>
+                    <td class="right"><div class="nowrap">C. Unitario</div>{{$data['currency']}}</td>
+                    <td class="right"><div class="nowrap">Inversión</div>{{$data['currency']}}</td>
+                </tr>
+                @foreach($data['result'] as $key => $row)
+                @if(isset($row->planing[$monthRow]))
+                <tr class="text-all">
+                    <td>{{ $row->media_name }}</td>
+                    <td>{{ $row->show }}</td>
+                    <td>{{ substr($row->hourIni,0,-3) }} {{ substr($row->hourEnd,0,-3) }}</td>
+                    <td>{{ $row->material_name }}</td>
+                    <td>{{ $row->duration }}</td>
+                    @for ($i = 1; $i <= cal_days_in_month(CAL_GREGORIAN, $months, $data['year']); $i++)
                     <td class="border-table">
-                    @foreach($row->planing as $k => $r)
+                        @foreach($row->planing[$monthRow] as $k => $r)
                         @if ($i == $r->day)
                         <span class="selected">{{ $r->times_per_day }}</span>
                         @endif
-                    @endforeach
+                        @endforeach
                     </td>
-                @endfor
-                <td>{{ $row->spots }}</td>
-                <td class="right">{{ number_format($row->unitCost / $data['currencyValue'], 2, ',', '.') }}</td>
-                <td class="right">{{ number_format($row->totalCost / $data['currencyValue'], 2, ',', '.') }}</td>
-            </tr>
-            @endforeach
-            </tbody>
-        </table>
-        <br>
-        <table class="data-table">
-            <thead>
-            <tr>
-                <th class="md-5">Responsable</th>
-                <th class="md-5">Cliente</th>
-                <th class="md-5">Totales</th>
-                <th class="md-5">Ins.</th>
-                <th class="md-5 right"><div class="nowrap">Inversión {{$data['currency']}}</div></th>
-            </tr>
-            <tr>
-                <th rowspan="2">{{ $data['user'] }}</th>
-                <th rowspan="2">{{ $data['client'] }}</th>
-                <th>Total</th>
-                <th>{{ $data['totalSpots'] }}</th>
-                <th class="right">{{ number_format($data['totalMount'] / $data['currencyValue'], 2, ',', '.') }}</th>
-            </tr>
-            <tr>
-                <th>Total Orden</th>
-                <th>{{ $data['totalSpots'] }}</th>
-                <th class="right">{{ number_format($data['totalMount'] / $data['currencyValue'], 2, ',', '.') }}</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>Facturar a:</td>
-                <td>Direccion de facturacion:</td>
-                <td>Politicas de facturacion:</td>
-                <td colspan="2">Observaciones</td>
-            </tr>
-            <tr>
-                <td>{{ $data['billingToName'] }}<br>{{ $data['billingToNit'] }}</td>
-                <td>{{ $data['billingAddress'] }}</td>
-                <td>{{ $data['billingPolicies'] }}</td>
-                <td>{{ $data['observation1'] }}</td>
-                <td>{{ $data['observation2'] }}</td>
-            </tr>
-            </tbody>
-        </table>
+                    @endfor
+                    <td>{{ $row->spots }}</td>
+                    <td class="right">{{ number_format($row->unitCost / $data['currencyValue'], 2, ',', '.') }}</td>
+                    <td class="right">{{ number_format($row->totalCost / $data['currencyValue'], 2, ',', '.') }}</td>
+                </tr>
+                @endif
+                @endforeach
+                </tbody>
+            </table>
+            <br>
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th class="md-5">Responsable</th>
+                    <th class="md-5">Cliente</th>
+                    <th class="md-5">Totales</th>
+                    <th class="md-5">Ins.</th>
+                    <th class="md-5 right"><div class="nowrap">Inversión {{$data['currency']}}</div></th>
+                </tr>
+                <tr>
+                    <th rowspan="2">{{ $data['user'] }}</th>
+                    <th rowspan="2">{{ $data['client'] }}</th>
+                    <th>Total</th>
+                    <th>{{ $data['totalSpots'] }}</th>
+                    <th class="right">{{ number_format($data['totalMount'] / $data['currencyValue'], 2, ',', '.') }}</th>
+                </tr>
+                <tr>
+                    <th>Total Orden</th>
+                    <th>{{ $data['totalSpots'] }}</th>
+                    <th class="right">{{ number_format($data['totalMount'] / $data['currencyValue'], 2, ',', '.') }}</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Facturar a:</td>
+                    <td>Direccion de facturacion:</td>
+                    <td>Politicas de facturacion:</td>
+                    <td colspan="2">Observaciones</td>
+                </tr>
+                <tr>
+                    <td>{{ $data['billingToName'] }}<br>{{ $data['billingToNit'] }}</td>
+                    <td>{{ $data['billingAddress'] }}</td>
+                    <td>{{ $data['billingPolicies'] }}</td>
+                    <td>{{ $data['observation1'] }}</td>
+                    <td>{{ $data['observation2'] }}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
+    @if ($count < count($data['months']) - 1)
+    <span class="hidden">{{$count++}}</span>
+    <hr>
+    @endif
+@endforeach
 <script type="text/php">
     if (isset($pdf)) {
         $text = "Página {PAGE_NUM} / {PAGE_COUNT}";
