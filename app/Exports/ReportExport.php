@@ -61,8 +61,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
             $times_per_day = 0;
             foreach ($plan as $k => $r) {
                 $fila->week          = $this->weekOfMonth(strtotime($r->broadcast_day));
-                if ($week == $fila->week){
-
+                if ($this->verifyWeek($aux) == $fila->week){
                 } else {
                     $times_per_day       = 0;
                     $response[]          = $aux;
@@ -72,7 +71,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
                 $fila->user          = $user;
                 $fila->row           = $row;
                 $fila->cost          = $this->getUnitCost($row->cost, $row->media_type, $row->duration);
-                $fila->badge         = $this->getUnitCost($row->cost, $row->media_type, $row->duration) / $currency->currency_value;
+                $fila->currencyValue = $currency->currency_value;
                 $fila->duration      = $row->duration;
                 $fila->broadcast_day = $r->broadcast_day;
                 $fila->month         = date("m", strtotime($r->broadcast_day));
@@ -125,5 +124,9 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
         else {
             return $unitCost * $passes;
         }
+    }
+
+    function verifyWeek($aux) {
+        return isset($aux->week) ? $aux->week : 1;
     }
 }

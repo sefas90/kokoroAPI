@@ -21,6 +21,7 @@
             <th>Orden</th>
             <th>Spots</th>
             <th>Inversión + IMP BOB</th>
+            <th>Tipo de cambio</th>
             <th>Divisa + IMP {{$datas[1]->symbol}}</th>
         </tr>
     </thead>
@@ -55,7 +56,8 @@
             @else
             <td>0</td>
             @endif
-            <td>{{ number_format($data->badge, 2, '.', '') }}</td>
+            <td>{{ number_format($data->currencyValue, 2, '.', '') }}</td>
+            <td>{{ number_format($data->times_per_day * $data->cost / $data->currencyValue, 2, '.', '') }}</td>
         </tr>
     @endforeach
     </tbody>

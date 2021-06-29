@@ -269,7 +269,12 @@ class ExportController extends BaseController {
                 if($result[0]->editable == 1) {
                     if (count($orderNumber) > 0) {
                         $orderNumber = OrderNumber::find($orderNumber[0]->id);
-                        $observation[0] = 'Remplazando a la orden '.$orderNumber->order_number.'.'.$orderNumber->version;
+                        if ($orderNumber->version > 0) {
+                            $version = $orderNumber->version - 1;
+                            $observation[0] = 'Remplazando a la orden '.$orderNumber->order_number.'.'.$version;
+                        } else {
+                            $observation[0] = '';
+                        }
                         $orderNumber->observation = $observation[0].' - '.$observation[1];
                         $orderNumber->save();
                     } else {
@@ -348,7 +353,7 @@ class ExportController extends BaseController {
             'planId'     => 'required',
             'campaignId' => 'required'
         ]);
-
+        $currency = Currency::find($request->currencyId) ? Currency::find($request->currencyId) : Currency::find(1);
         if (!$validator->fails()) {
             $result = Client::select('clients.id as client_id', 'client_name', 'representative', 'clients.NIT as clientNit', 'billing_address', 'billing_policies',
                 'plan_name', 'campaigns.id as budget', 'plan.id as plan_id', 'guide_name', 'guides.id as guide_id', 'order_number', 'order_numbers.version',
@@ -385,17 +390,20 @@ class ExportController extends BaseController {
                 $times_per_day = 0;
                 foreach ($plan as $k => $r) {
                     $fila->week          = $this->weekOfMonth(strtotime($r->broadcast_day));
-                    if ($week == $fila->week){
+                    //var_dump($this->verifyWeek($aux).' - '.$this->weekOfMonth(strtotime($r->broadcast_day)));
+                    if ($this->verifyWeek($aux) == $fila->week){
 
                     } else {
+                        var_dump('if '.$this->weekOfMonth(strtotime($r->broadcast_day)));
                         $times_per_day       = 0;
                         $response[]          = $aux;
                         $aux                 = null;
                         $week++;
                     }
                     $fila->user          = $user;
-                    $fila->row           = $row;
+                    // $fila->row           = $row;
                     $fila->cost          = $this->getUnitCost($row->cost, $row->media_type, $row->duration);
+                    $fila->currencyValue = $currency->currency_value;
                     $fila->duration      = $row->duration;
                     $fila->broadcast_day = $r->broadcast_day;
                     $fila->month         = date("m", strtotime($r->broadcast_day));
@@ -441,15 +449,23 @@ class ExportController extends BaseController {
         //Get the first day of the month.
         $firstOfMonth = strtotime(date("Y-m-01", $date));
         //Apply above formula.
-        return $this->weekOfYear($date) - $this->weekOfYear($firstOfMonth) + 1;
+        var_dump('first day '.$firstOfMonth. ' '.$date);
+        return $this->weekOfYear($date) - $this->weekOfYear($firstOfMonth);
     }
 
     function weekOfYear($date) {
         $weekOfYear = intval(date("W", $date));
+        if (date('w') == 0) {            // 0 = Sunday
+            $weekOfYear++;
+        }
         if (date('n', $date) == "1" && $weekOfYear > 51) {
             // It's the last week of the previos year.
             $weekOfYear = 0;
         }
         return $weekOfYear;
+    }
+
+    function verifyWeek($aux) {
+        return isset($aux->week) ? $aux->week : 1;
     }
 }
