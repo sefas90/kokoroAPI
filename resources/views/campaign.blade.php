@@ -129,34 +129,38 @@
         <table class="data-table">
             <thead>
             <tr>
-                <th class="md-5" colspan="2">Cliente/Agencia</th>
+                <th class="md-5">Responsable</th>
+                <th class="md-5">Cliente</th>
                 <th class="md-5">Totales</th>
                 <th class="md-5">Ins.</th>
                 <th class="md-5 right"><div class="nowrap">Inversión {{$guideRow['currency']}}</div></th>
             </tr>
             <tr>
-                <th rowspan="2" colspan="2">{{ $guideRow['user'] }}</th>
+                <th rowspan="2">{{ $guideRow['user'] }}</th>
+                <th rowspan="2">{{ $guideRow['client'] }}</th>
                 <th>Total</th>
                 <th>{{ $guideRow['totalSpots'] }}</th>
-                <th class="md-5 right">{{ number_format($guideRow['totalMount'] / $guideRow['currencyValue'], 2, ',', '.') }}</th>
+                <th class="right">{{ number_format($guideRow['totalMount'] / $guideRow['currencyValue'], 2, ',', '.') }}</th>
             </tr>
             <tr>
                 <th>Total Orden</th>
                 <th>{{ $guideRow['totalSpots'] }}</th>
-                <th class="md-5 right">{{ number_format($guideRow['totalMount'] / $guideRow['currencyValue'], 2, ',', '.') }}</th>
+                <th class="right">{{ number_format($guideRow['totalMount'] / $guideRow['currencyValue'], 2, ',', '.') }}</th>
             </tr>
             </thead>
             <tbody>
             <tr>
                 <td>Facturar a:</td>
                 <td>Direccion de facturacion:</td>
-                <td colspan="3">Observaciones</td>
+                <td>Politicas de facturacion:</td>
+                <td colspan="2">Observaciones</td>
             </tr>
             <tr>
-                <td>{{ $guideRow['billingPolicies'] }}</td>
+                <td>{{ $guideRow['billingToName'] }}<br>{{ $guideRow['billingToNit'] }}</td>
                 <td>{{ $guideRow['billingAddress'] }}</td>
+                <td>{{ $guideRow['billingPolicies'] }}</td>
                 <td>{{ $guideRow['observation1'] }}</td>
-                <td colspan="2">{{ $guideRow['observation2'] }}</td>
+                <td>{{ $guideRow['observation2'] }}</td>
             </tr>
             </tbody>
         </table>

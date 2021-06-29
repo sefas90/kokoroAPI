@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Models\Auspice;
 use App\Models\AuspiceMaterial;
+use App\Models\OrderNumber;
 use App\Models\PlaningAuspiceMaterial;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,7 +13,7 @@ use Validator;
 class AuspiceController extends BaseController {
     public function index (Request $request) {
         $sort = explode(":", $request->sort);
-        return $this->sendResponse(DB::table('auspices')
+        $auspice = DB::table('auspices')
             ->select('auspices.id', 'auspice_name as auspiceName', 'auspices.cost', 'rates.show', 'rates.id as rateId', 'guides.guide_name as guideName', 'guides.id as guideId', 'guides.editable',
                 'guides.date_ini as dateIni', 'guides.date_end as dateEnd', 'brod_mo', 'brod_tu', 'brod_we', 'brod_th', 'brod_fr', 'brod_sa', 'brod_su', 'media_types.media_type as mediaType')
             ->join('rates', 'rates.id', '=', 'auspices.rate_id')
@@ -23,7 +24,22 @@ class AuspiceController extends BaseController {
                 ['auspices.deleted_at', '=', null]
             ])
             ->orderBy(empty($sort[0]) ? 'auspices.id' : 'auspices.'.$sort[0], empty($sort[1]) ? 'asc' : $sort[1])
-            ->get(), '');
+            ->get();
+
+        foreach ($auspice as $key => $row) {
+            $orderNumber = OrderNumber::where('guide_id', '=', $row->guideId)->get();
+
+            $number = 'Orden no exportada';
+            if (count($orderNumber) > 0) {
+                $orderNumber = $orderNumber[0];
+                if ($orderNumber->order_number) {
+                    $number = $orderNumber->order_number.'.'.$orderNumber->version;
+                }
+            }
+            $auspice[$key]->orderNumber = $number;
+        }
+
+        return $this->sendResponse($auspice);
     }
 
     public function store(Request $request) {

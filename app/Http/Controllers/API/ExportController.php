@@ -235,8 +235,10 @@ class ExportController extends BaseController {
                 ->join('plan', 'plan.id', '=', 'campaigns.plan_id')
                 ->join('clients', 'clients.id', '=', 'plan.client_id')
                 ->join('media_types', 'media_types.id', '=', 'media.media_type')
-                ->where('auspices.id', '=', $request->auspiceId)
-                ->where('auspices.deleted_at', '=', null)
+                ->where([
+                    ['auspices.id', '=', $request->auspiceId],
+                    ['auspices.deleted_at', '=', null]
+                ])
                 ->get();
 
             if (count($result) > 0) {

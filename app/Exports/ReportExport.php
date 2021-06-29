@@ -44,6 +44,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
                 ['plan.id', '=', $request->planId],
                 ['campaigns.id', '=', $request->campaignId]
             ])
+            ->orderBy('materials.id')
             ->get();
 
         $user = User::find($request->userId);
@@ -71,7 +72,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
                 $fila->user          = $user;
                 $fila->row           = $row;
                 $fila->cost          = $this->getUnitCost($row->cost, $row->media_type, $row->duration);
-                $fila->badge         = $fila->cost / $currency->currency_value;
+                $fila->badge         = $this->getUnitCost($row->cost, $row->media_type, $row->duration) / $currency->currency_value;
                 $fila->duration      = $row->duration;
                 $fila->broadcast_day = $r->broadcast_day;
                 $fila->month         = date("m", strtotime($r->broadcast_day));
