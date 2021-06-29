@@ -248,7 +248,10 @@ class ExportController extends BaseController {
                     $id = $result[$key]->auspiceMaterialsId;
                     $planing = DB::table('material_auspice_planing')
                         ->select('broadcast_day', 'times_per_day')
-                        ->where('material_auspice_planing.material_auspice_id', '=', $id)
+                        ->where([
+                            ['material_auspice_planing.material_auspice_id', '=', $id],
+                            ['material_auspice_planing.deleted_at', '=', null]
+                        ])
                         ->get();
                     if (count($planing)) {
                         $spots = 0;
