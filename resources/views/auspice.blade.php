@@ -58,6 +58,9 @@
     .center {
         text-align: center;
     }
+    .hidden {
+        display: none;
+    }
 </style>
 <!DOCTYPE html>
 <html lang="en">
@@ -73,10 +76,13 @@
             <tr>
                 <th class="md-3" rowspan="2"><img src="../public/kokoro_log.svg" width="100%"></th>
                 <th class="md-3 center" rowspan="2"><h1>{{$data['businessName']}}</h1></th>
-                <th class="md-3">Numero de orden: {{$data['order']}}</th>
+                <th class="md-3" colspan="2">Numero de orden: {{$data['order']}}</th>
             </tr>
             <tr>
-                <th>Fecha de emision: {{$data['date']}}</th>
+                <th>Fecha de emision:<br>{{$data['date']}}</th>
+                <th>
+                    Mes: {{ucfirst(strftime("%B", DateTime::createFromFormat('!m', $data['month_ini'])->getTimestamp()))}}
+                </th>
             </tr>
             </thead>
         </table>
@@ -112,7 +118,7 @@
                 </td>
                 @endfor
                 <td>{{ $row->spots }}</td>
-                <td class="right">{{ number_format($row->totalCost * $data['currencyValue'], 2, ',', '.') }}</td>
+                <td class="right">{{ number_format($row->totalCost / $data['currencyValue'], 2, ',', '.') }}</td>
             </tr>
             @endforeach
             </tbody>
@@ -132,12 +138,12 @@
                 <th rowspan="2">{{ $data['client'] }}</th>
                 <th>Total</th>
                 <th>{{ $data['totalSpots'] }}</th>
-                <th class="right">{{ number_format($data['totalMount'] * $data['currencyValue'], 2, ',', '.') }}</th>
+                <th class="right">{{ number_format($data['totalMount'] / $data['currencyValue'], 2, ',', '.') }}</th>
             </tr>
             <tr>
                 <th>Total Orden</th>
                 <th>{{ $data['totalSpots'] }}</th>
-                <th class="right">{{ number_format($data['totalMount'] * $data['currencyValue'], 2, ',', '.') }}</th>
+                <th class="right">{{ number_format($data['totalMount'] / $data['currencyValue'], 2, ',', '.') }}</th>
             </tr>
             </thead>
             <tbody>

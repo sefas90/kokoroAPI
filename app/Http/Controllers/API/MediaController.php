@@ -89,6 +89,20 @@ class MediaController extends BaseController {
         $media->media_type      = trim($request->mediaType);
         $media->media_parent_id = empty($request->mediaParent) ? null : (trim($request->mediaParent));
 
+        if ($media->media_parent_id === null) {
+            $media_children = Media::where('media_parent_id', '=', $media->id)->get();
+            if ($media_children) {
+                foreach ($media_children as $key => $row) {
+                    $media_child                  = Media::find($row->id);
+                    $media_child->business_name   = trim($media->business_name);
+                    $media_child->NIT             = trim($media->NIT);
+                    $media_child->city_id         = trim($media->city_id);
+                    $media_child->media_type      = trim($media->media_type);
+                    $media_child->save();
+                }
+            }
+        }
+
         return $media->save() ?
             $this->sendResponse('', 'El media ' . $media->media_name . ' se actualizo correctamente') :
             $this->sendError('Ocurrio un error al actualizar el media ' . $media->media_name . '.');

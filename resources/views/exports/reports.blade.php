@@ -12,7 +12,7 @@
             <th>Versión</th>
             <th>Año</th>
             <th>Mes</th>
-            <th>Semana del Mes</th>
+            <th>Semana del Año</th>
             <th>Soporte</th>
             <th>Grupo Publicitario</th>
             <th>Región</th>
@@ -23,6 +23,7 @@
             <th>Inversión + IMP BOB</th>
             <th>Tipo de cambio</th>
             <th>Divisa + IMP {{$datas[1]->symbol}}</th>
+            <th>Nro. Factura</th>
         </tr>
     </thead>
     <tbody>
@@ -39,7 +40,7 @@
             <td>{{ $data->row->material_name }}</td>
             <td>{{ $data->year }}</td>
             <td>{{ $data->month }}</td>
-            <td>{{ $data->week }}</td>
+            <td>{{ $data->weekOfYear }}</td>
             <td>{{ $data->row->media_name }}</td>
             <td>{{ $data->row->business_name }}</td>
             <td>{{ $data->row->city }}</td>
@@ -58,6 +59,7 @@
             @endif
             <td>{{ number_format($data->currencyValue, 2, '.', '') }}</td>
             <td>{{ number_format($data->times_per_day * $data->cost / $data->currencyValue, 2, '.', '') }}</td>
+            <td>{{ $data->row->billing_number }}</td>
         </tr>
     @endforeach
     </tbody>

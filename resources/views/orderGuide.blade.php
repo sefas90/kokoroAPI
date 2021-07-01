@@ -67,6 +67,10 @@
     .hidden {
         display: none;
     }
+    .canceled {
+        font-size: 20px;
+        color: red;
+    }
 </style>
 <!DOCTYPE html>
 <html lang="en">
@@ -86,7 +90,7 @@
                     <th class="md-3" colspan="2">Numero de orden: {{$data['order']}}</th>
                 </tr>
                 <tr>
-                    <th>Fecha de emision: {{$data['date']}}</th>
+                    <th>Fecha de emision:<br>{{$data['date']}}</th>
                     <th>
                         <span class="hidden">{{setlocale(LC_TIME, "spanish")}}</span>
                         Mes: {{ucfirst(strftime("%B", DateTime::createFromFormat('!m', $monthRow)->getTimestamp()))}}
@@ -170,7 +174,12 @@
                     <td>{{ $data['billingAddress'] }}</td>
                     <td>{{ $data['billingPolicies'] }}</td>
                     <td>{{ $data['observation1'] }}</td>
-                    <td>{{ $data['observation2'] }}</td>
+                    <td>
+                        @if($data['status'] == 2)
+                        <div class="canceled">{{ $data['status_value'] }}</div>
+                        @endif
+                        <div>{{ $data['observation2'] }}</div>
+                    </td>
                 </tr>
                 </tbody>
             </table>

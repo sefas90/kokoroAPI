@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Exports\ReportExport;
 use App\Models\Client;
 use App\Models\Currency;
+use App\Models\Guide;
 use App\Models\OrderNumber;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -32,7 +33,7 @@ class ExportController extends BaseController {
                     'guides.guide_name', 'guides.media_id', 'guides.campaign_id', 'guides.editable as editable', 'rates.show',
                     'rates.hour_ini', 'rates.hour_end', 'rates.cost', 'media.media_name', 'media.business_name', 'media.NIT', 'media.media_type as mediaTypeId', 'media_types.media_type',
                     'campaigns.campaign_name', 'campaigns.plan_id', 'plan.client_id', 'campaigns.date_ini', 'campaigns.date_end',
-                    'rates.hour_ini as hourIni', 'rates.hour_end as hourEnd', 'guides.date_ini as guideDateIni',
+                    'rates.hour_ini as hourIni', 'rates.hour_end as hourEnd', 'guides.date_ini as guideDateIni', 'guides.editable',
                     'clients.id as clientId', 'clients.client_name as clientName', 'clients.representative', 'clients.NIT as clientNIT', 'clients.billing_address as billingAddress', 'clients.billing_policies as billingPolicies')
                 ->join('guides', 'guides.id', '=', 'materials.guide_id')
                 ->join('rates', 'rates.id', '=', 'materials.rate_id')
@@ -110,6 +111,8 @@ class ExportController extends BaseController {
 
                 $response = [
                     'result'          => $result,
+                    'status'          => $result[0]->editable,
+                    'status_value'    => $this->getStatus($result[0]->editable),
                     'order'           => $orderNumber,
                     'client'          => $result[0]->clientName,
                     'businessName'    => strtoupper($result[0]->business_name),
@@ -479,5 +482,16 @@ class ExportController extends BaseController {
 
     function verifyWeek($aux) {
         return isset($aux->week) ? $aux->week : 1;
+    }
+
+    function getStatus($status) {
+        switch ($status) {
+            case Guide::STATUS_ACTIVE:
+                return 'ACTIVO';
+            case Guide::STATUS_FINALIZED:
+                return 'FINALIZADO';
+            case Guide::STATUS_CANCELED:
+                return 'CANCELADO';
+        }
     }
 }

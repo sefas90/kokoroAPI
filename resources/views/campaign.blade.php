@@ -87,7 +87,7 @@
                     <th class="md-3" colspan="2">Numero de orden: {{$guideRow['order']}}</th>
                 </tr>
                 <tr>
-                    <th>Fecha de emision: {{$guideRow['date']}}</th>
+                    <th>Fecha de emision:<br>{{$guideRow['date']}}</th>
                     <th>
                         <span class="hidden">{{setlocale(LC_TIME, "spanish")}}</span>
                         Mes: {{ucfirst(strftime("%B", DateTime::createFromFormat('!m', $monthRow)->getTimestamp()))}}

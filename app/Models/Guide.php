@@ -33,4 +33,8 @@ class Guide extends Model {
         'updated_at',
         'deleted_at',
     ];
+
+    const STATUS_ACTIVE = 0;
+    const STATUS_FINALIZED = 1;
+    const STATUS_CANCELED = 2;
 }

@@ -141,7 +141,7 @@ class GuideController extends BaseController {
             return $this->sendError('No se encontro la pauta');
         }
         $guide->editable = 0;
-        $guide->billing_number = $request->billing_number;
+        $guide->billing_number = $request->billingNumber;
 
         return $guide->save() ?
             $this->sendResponse('', 'El guide ' . $guide->guide_name . ' se finalizo correctamente') :
