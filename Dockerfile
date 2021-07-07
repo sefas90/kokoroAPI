@@ -1,5 +1,9 @@
 FROM php:7.4.9-fpm
 
+# Get argument defined in docker-compose file
+ARG user
+ARG uid
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
@@ -15,7 +19,8 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install pcntl \
     && docker-php-ext-install bcmath \
     && docker-php-ext-install gd \
-    && docker-php-source delete
+    && docker-php-source delete \
+    && apt install net-tools
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -24,7 +29,12 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Create system user to run Composer and Artisan Commands
-RUN mkdir -p /home/kokoroApi/.composer
+RUN useradd -G www-data,root -u $uid -d /home/$user $user
+RUN mkdir -p /home/$user/.composer && \
+    chown -R $user:$user /home/$user
 
 # Set working directory
 WORKDIR /var/www
+CMD php artisan serve --host=0.0.0.0 --port=8000
+EXPOSE 8000
+USER $user
