@@ -32,4 +32,17 @@ class Campaign extends Model {
         'updated_at',
         'deleted_at',
     ];
+
+    const CAMPAIGN_JAN = 'Enero';
+    const CAMPAIGN_FEB = 'Febrero';
+    const CAMPAIGN_MAR = 'Marzo';
+    const CAMPAIGN_APR = 'Abril';
+    const CAMPAIGN_MAY = 'Mayo';
+    const CAMPAIGN_JUN = 'Junio';
+    const CAMPAIGN_JUL = 'Julio';
+    const CAMPAIGN_AUG = 'Agosto';
+    const CAMPAIGN_SEP = 'Septiembre';
+    const CAMPAIGN_OCT = 'Octubre';
+    const CAMPAIGN_NOV = 'Noviembre';
+    const CAMPAIGN_DEC = 'Diciembre';
 }

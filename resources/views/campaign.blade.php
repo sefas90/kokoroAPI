@@ -67,6 +67,10 @@
     .hidden {
         display: none;
     }
+    .canceled {
+        font-size: 20px;
+        color: red;
+    }
 </style>
 <!DOCTYPE html>
 <html lang="en">
@@ -118,17 +122,18 @@
                     <td>{{ $row->show }}</td>
                     <td>{{ $row->hourIni }} {{$row->hourEnd}}</td>
                     <td>{{ $row->material_name }}</td>
-                    <td>{{ $row->duration }}</td>
+                    <td>{{ $row->duration }} <span class="hidden">{{ $spots = 0 }}</span></td>
                     @for ($i = 1; $i <= $guideRow['daysInMonth']; $i++)
                     <td class="border-table">
                         @foreach($row->planing[$monthRow] as $k => $r)
                             @if ($i == $r->day)
                             <span class="selected">{{ $r->times_per_day }}</span>
+                            <span class="hidden">{{ $spots += $r->times_per_day }}</span>
                             @endif
                         @endforeach
                     </td>
                     @endfor
-                    <td>{{ $row->spots }}</td>
+                    <td>{{ $spots }}</td>
                     <td class="right">{{ number_format($row->unitCost / $guideRow['currencyValue'], 2, ',', '.') }}</td>
                     <td class="right">{{ number_format($row->totalCost / $guideRow['currencyValue'], 2, ',', '.') }}</td>
                 </tr>
@@ -171,7 +176,12 @@
                     <td>{{ $guideRow['billingAddress'] }}</td>
                     <td>{{ $guideRow['billingPolicies'] }}</td>
                     <td>{{ $guideRow['observation1'] }}</td>
-                    <td>{{ $guideRow['observation2'] }}</td>
+                    <td>
+                        @if($guideRow['status'] == 2)
+                        <div class="canceled">{{ $guideRow['status_value'] }}</div>
+                        @endif
+                        <div>{{ $guideRow['observation2'] }}</div>
+                    </td>
                 </tr>
                 </tbody>
             </table>

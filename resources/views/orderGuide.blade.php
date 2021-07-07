@@ -121,17 +121,18 @@
                     <td>{{ $row->show }}</td>
                     <td>{{ substr($row->hourIni,0,-3) }} {{ substr($row->hourEnd,0,-3) }}</td>
                     <td>{{ $row->material_name }}</td>
-                    <td>{{ $row->duration }}</td>
+                    <td>{{ $row->duration }} <span class="hidden">{{ $spots = 0}}</span></td>
                     @for ($i = 1; $i <= cal_days_in_month(CAL_GREGORIAN, $months, $data['year']); $i++)
                     <td class="border-table">
                         @foreach($row->planing[$monthRow] as $k => $r)
                         @if ($i == $r->day)
                         <span class="selected">{{ $r->times_per_day }}</span>
+                        <span class="hidden">{{ $spots += $r->times_per_day }}</span>
                         @endif
                         @endforeach
                     </td>
                     @endfor
-                    <td>{{ $row->spots }}</td>
+                    <td>{{ $spots }}</td>
                     <td class="right">{{ number_format($row->unitCost / $data['currencyValue'], 2, ',', '.') }}</td>
                     <td class="right">{{ number_format($row->totalCost / $data['currencyValue'], 2, ',', '.') }}</td>
                 </tr>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Exports\ReportExport;
+use App\Models\Campaign;
 use App\Models\Client;
 use App\Models\Currency;
 use App\Models\Guide;
@@ -19,6 +20,10 @@ class ExportController extends BaseController {
         $validator = Validator::make($request->all(), [
             'guideId'    => 'required'
         ]);
+
+        if ($request->monthsSelected === 'ALL' || !isset($request->monthsSelected)){
+            $request->monthsSelected = [];
+        }
 
         $currency = Currency::find($request->currencyId) ? Currency::find($request->currencyId) : (object)['currency_value' => 1, 'symbol' => 'BOB'];
 
@@ -42,8 +47,11 @@ class ExportController extends BaseController {
                 ->join('plan', 'plan.id', '=', 'campaigns.plan_id')
                 ->join('clients', 'clients.id', '=', 'plan.client_id')
                 ->join('media_types', 'media_types.id', '=', 'media.media_type')
-                ->where('guides.id', '=', $request->guideId)
-                ->where('materials.deleted_at', '=', null)
+                ->where([
+                    ['materials.deleted_at', '=', null],
+                    ['guides.id', '=', $request->guideId],
+                    ['guides.date_ini', '>', date("Y-01-01")]
+                ])
                 ->get();
 
             $pla = array();
@@ -52,21 +60,44 @@ class ExportController extends BaseController {
             if (count($result) > 0) {
                 $total = 0;
                 $totalSpots = 0;
-
                 foreach ($result as $key => $row) {
                     $id = $result[$key]->id;
-                    $planing = DB::table('material_planing')
-                        ->select('broadcast_day', 'times_per_day')
-                        ->where('material_planing.material_id', '=', $id)
-                        ->get();
-                    if (count($planing)) {
-                        $spots = 0;
-                        $m = date("m", strtotime($planing[0]->broadcast_day));
+                    $plan = array();
+                    if(count($request->monthsSelected) > 0) {
+                        foreach ($request->monthsSelected as $ke => $ro) {
+                            var_dump($ke);
+                            $planing = DB::table('material_planing')
+                                ->select('broadcast_day', 'times_per_day')
+                                ->where('material_planing.material_id', '=', $id);
+                            if ($request->monthsSelected[$ke]) {
+                                $month = date($this->getMonth($ke));
+                                $planing->whereMonth('broadcast_day',  $month);
+                            }
+                            $planing = $planing->get();
+                            if(count($planing)) {
+                                $plan[] = $planing;
+                            }
+                        }
+                    } else {
+                        $planing = DB::table('material_planing')
+                            ->select('broadcast_day', 'times_per_day')
+                            ->where('material_planing.material_id', '=', $id)->get();
+                        $plan[] = $planing;
+                    }
+                    if (count($plan)) {
+                        $plan = $plan[0];
+                    }
+
+                    if (count($plan)) {
+                        $m = date("m", strtotime($plan[0]->broadcast_day));
                         $pla[$m] = array();
-                        foreach ($planing as $k => $r) {
-                            $r->day = date("d", strtotime($planing[$k]->broadcast_day));
-                            $m = date("m", strtotime($planing[$k]->broadcast_day));
-                            $spots += $r->times_per_day;
+                        $spots = 0;
+                        foreach ($plan as $k => $r) {
+                            $r->day = date("d", strtotime($plan[$k]->broadcast_day));
+                            $m = date("m", strtotime($plan[$k]->broadcast_day));
+                            if ($m) {
+                                $spots += $r->times_per_day;
+                            }
                             $pla[$m][] = $r;
                         }
                         $months[$m] = $m;
@@ -142,12 +173,15 @@ class ExportController extends BaseController {
                 ];
 
                 foreach ($response['result'] as $llave => $fila) {
-                    $response['result'][$llave]->unitCost = $this->getUnitCost($fila->cost, $fila->media_type, $fila->duration);
-                    $response['result'][$llave]->totalCost = $this->getTotalCost($fila->cost, $fila->media_type, $fila->duration, $fila->spots);
-                    $response['totalMount'] += $this->getTotalCost($fila->cost, $fila->media_type, $fila->duration, $fila->spots);
+                    if (isset($resRow->planing)) {
+                        $response['result'][$llave]->unitCost = $this->getUnitCost($fila->cost, $fila->media_type, $fila->duration);
+                        $response['result'][$llave]->totalCost = $this->getTotalCost($fila->cost, $fila->media_type, $fila->duration, $fila->spots);
+                        $response['totalMount'] += $this->getTotalCost($fila->cost, $fila->media_type, $fila->duration, $fila->spots);
+                    } else {
+                        $response['result'][$llave]->unitCost = 0;
+                        $response['result'][$llave]->totalCost = 0;
+                    }
                 }
-
-                //return $response;
 
                 return !$request->isOrderCampaign ? $this->exportPdf($response, 'orderGuide', 'orderGuide.pdf') : $response;
             } else {
@@ -169,9 +203,12 @@ class ExportController extends BaseController {
             $result = DB::table('guides')
                 ->select('guides.id as guide_id')
                 ->join('campaigns', 'campaigns.id', '=', 'guides.campaign_id')
-                ->where('campaigns.id', '=', $request->campaignId)
-                ->where('guides.deleted_at', '=', null)
+                ->where([
+                    ['guides.deleted_at', '=', null],
+                    ['campaigns.id', '=', $request->campaignId]
+                ])
                 ->get();
+
             if (count($result) > 0) {
                 $response = array();
                 foreach ($result as $k => $r) {
@@ -183,6 +220,7 @@ class ExportController extends BaseController {
                         $response[] = $res;
                     }
                 }
+
                 return $request->isOrderCampaign ? $this->exportPdf($response, 'campaign', 'campaña.pdf') : $response;
             } else {
                 return $request->isOrderCampaign ? $this->sendError('', 'No tiene materiales', '') : [];
@@ -492,6 +530,35 @@ class ExportController extends BaseController {
                 return 'FINALIZADO';
             case Guide::STATUS_CANCELED:
                 return 'CANCELADO';
+        }
+    }
+
+    function getMonth($month) {
+        switch ($month) {
+            case Campaign::CAMPAIGN_JAN:
+                return '01';
+            case Campaign::CAMPAIGN_FEB:
+                return '02';
+            case Campaign::CAMPAIGN_MAR:
+                return '03';
+            case Campaign::CAMPAIGN_APR:
+                return '04';
+            case Campaign::CAMPAIGN_MAY:
+                return '05';
+            case Campaign::CAMPAIGN_JUN:
+                return '06';
+            case Campaign::CAMPAIGN_JUL:
+                return '07';
+            case Campaign::CAMPAIGN_AUG:
+                return '08';
+            case Campaign::CAMPAIGN_SEP:
+                return '09';
+            case Campaign::CAMPAIGN_OCT:
+                return '10';
+            case Campaign::CAMPAIGN_NOV:
+                return '11';
+            case Campaign::CAMPAIGN_DEC:
+                return '12';
         }
     }
 }
