@@ -23,6 +23,8 @@ class ExportController extends BaseController {
 
         if ($request->monthsSelected === 'ALL' || !isset($request->monthsSelected)){
             $request->monthsSelected = [];
+        } else {
+            $request['monthsSelected'] = $this->cleanEmptyValues($request->monthsSelected);
         }
 
         $currency = Currency::find($request->currencyId) ? Currency::find($request->currencyId) : (object)['currency_value' => 1, 'symbol' => 'BOB'];
@@ -62,42 +64,44 @@ class ExportController extends BaseController {
                 $totalSpots = 0;
                 foreach ($result as $key => $row) {
                     $id = $result[$key]->id;
-                    $plan = array();
                     if(count($request->monthsSelected) > 0) {
                         foreach ($request->monthsSelected as $ke => $ro) {
-                            var_dump($ke);
-                            $planing = DB::table('material_planing')
-                                ->select('broadcast_day', 'times_per_day')
-                                ->where('material_planing.material_id', '=', $id);
-                            if ($request->monthsSelected[$ke]) {
-                                $month = date($this->getMonth($ke));
-                                $planing->whereMonth('broadcast_day',  $month);
-                            }
-                            $planing = $planing->get();
-                            if(count($planing)) {
-                                $plan[] = $planing;
+                            if (is_string($ro)) {
+                                $month = date($this->getMonth($ro));
+                                $planing = $planing = DB::table('material_planing')
+                                    ->select('broadcast_day', 'times_per_day')
+                                    ->where('material_planing.material_id', '=', $id)
+                                    ->whereMonth('broadcast_day',  $month)->get();
+                                if(count($planing) > 0) {
+                                    $m = date("m", strtotime($planing[0]->broadcast_day));
+                                    $pla[$m] = array();
+                                    $spots = 0;
+                                    foreach ($planing as $k => $r) {
+                                        $r->day = date("d", strtotime($planing[$k]->broadcast_day));
+                                        $m = date("m", strtotime($planing[$k]->broadcast_day));
+                                        if (date($this->getMonth($ro)) === $m) {
+                                            $spots += $r->times_per_day;
+                                        }
+                                        $pla[$m][] = $r;
+                                    }
+                                    $months[$m] = $m;
+                                    $result[$key]->spots = $spots;
+                                    $totalSpots += $spots;
+                                    $result[$key]->planing = $pla;
+                                }
                             }
                         }
                     } else {
                         $planing = DB::table('material_planing')
                             ->select('broadcast_day', 'times_per_day')
                             ->where('material_planing.material_id', '=', $id)->get();
-                        $plan[] = $planing;
-                    }
-                    if (count($plan)) {
-                        $plan = $plan[0];
-                    }
-
-                    if (count($plan)) {
-                        $m = date("m", strtotime($plan[0]->broadcast_day));
+                        $m = date("m", strtotime($planing[0]->broadcast_day));
                         $pla[$m] = array();
                         $spots = 0;
-                        foreach ($plan as $k => $r) {
-                            $r->day = date("d", strtotime($plan[$k]->broadcast_day));
-                            $m = date("m", strtotime($plan[$k]->broadcast_day));
-                            if ($m) {
-                                $spots += $r->times_per_day;
-                            }
+                        foreach ($planing as $k => $r) {
+                            $r->day = date("d", strtotime($planing[$k]->broadcast_day));
+                            $m = date("m", strtotime($planing[$k]->broadcast_day));
+                            $spots += $r->times_per_day;
                             $pla[$m][] = $r;
                         }
                         $months[$m] = $m;
@@ -173,7 +177,7 @@ class ExportController extends BaseController {
                 ];
 
                 foreach ($response['result'] as $llave => $fila) {
-                    if (isset($resRow->planing)) {
+                    if (isset($fila->planing)) {
                         $response['result'][$llave]->unitCost = $this->getUnitCost($fila->cost, $fila->media_type, $fila->duration);
                         $response['result'][$llave]->totalCost = $this->getTotalCost($fila->cost, $fila->media_type, $fila->duration, $fila->spots);
                         $response['totalMount'] += $this->getTotalCost($fila->cost, $fila->media_type, $fila->duration, $fila->spots);
@@ -443,11 +447,9 @@ class ExportController extends BaseController {
                 $times_per_day = 0;
                 foreach ($plan as $k => $r) {
                     $fila->week          = $this->weekOfMonth(strtotime($r->broadcast_day));
-                    //var_dump($this->verifyWeek($aux).' - '.$this->weekOfMonth(strtotime($r->broadcast_day)));
                     if ($this->verifyWeek($aux) == $fila->week){
 
                     } else {
-                        var_dump('if '.$this->weekOfMonth(strtotime($r->broadcast_day)));
                         $times_per_day       = 0;
                         $response[]          = $aux;
                         $aux                 = null;
@@ -502,7 +504,6 @@ class ExportController extends BaseController {
         //Get the first day of the month.
         $firstOfMonth = strtotime(date("Y-m-01", $date));
         //Apply above formula.
-        var_dump('first day '.$firstOfMonth. ' '.$date);
         return $this->weekOfYear($date) - $this->weekOfYear($firstOfMonth);
     }
 
@@ -560,5 +561,16 @@ class ExportController extends BaseController {
             case Campaign::CAMPAIGN_DEC:
                 return '12';
         }
+    }
+
+    function cleanEmptyValues($months): array {
+        $months = (array)$months;
+        $returnMonths = array();
+        foreach ($months as $month => $m) {
+            if ($m) {
+                $returnMonths[] = $month;
+            }
+        }
+        return $returnMonths;
     }
 }
