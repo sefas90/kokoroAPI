@@ -37,6 +37,7 @@ RUN mkdir -p /home/$user/.composer && \
 WORKDIR /var/www
 CMD php artisan serve --host=0.0.0.0 --port=8000
 EXPOSE 8000
-USER $user
+USER root
 COPY run.sh run.sh
 RUN ./run.sh
+USER $user
