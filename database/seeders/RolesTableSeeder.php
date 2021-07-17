@@ -18,7 +18,7 @@ class RolesTableSeeder extends Seeder {
         Role::create([
             'id' => 2,
             'role' => 'Admin',
-            'description' => 'System Administrator',
+            'description' => 'Administrador de Sistema',
             'created_at' => null,
             'updated_at' => null,
             'deleted_at' => null
@@ -26,7 +26,7 @@ class RolesTableSeeder extends Seeder {
         Role::create([
             'id' => 3,
             'role' => 'User',
-            'description' => 'Normal User',
+            'description' => 'Usuario',
             'created_at' => null,
             'updated_at' => null,
             'deleted_at' => null
