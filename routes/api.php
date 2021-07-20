@@ -31,12 +31,15 @@ use App\Http\Controllers\API\UserController;
 */
 
 // Auth
-Route::post('login', [AuthController::class, 'login']);
-Route::post('register', [AuthController::class, 'register']);
+Route::group(['middleware' => ['cors']], function (){
+    Route::post('login', [AuthController::class, 'login']);
+    Route::post('register', [AuthController::class, 'register']);
+});
 // Endpoints
 $attributes = [
     'prefix' => 'v1',
-    'auth' => 'api'
+    'auth' => 'api',
+    'middleware' => 'cors'
 ];
 
 Route::group($attributes, function () {

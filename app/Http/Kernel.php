@@ -64,6 +64,7 @@ class Kernel extends HttpKernel
         'api' => [
             'throttle:api',
             SubstituteBindings::class,
+            HandleCors::class,
         ],
     ];
 
@@ -85,5 +86,6 @@ class Kernel extends HttpKernel
         'throttle' => ThrottleRequests::class,
         'verified' => EnsureEmailIsVerified::class,
         'kokoro' => KokoroAuth::class,
+        'cors' => HandleCors::class,
     ];
 }
