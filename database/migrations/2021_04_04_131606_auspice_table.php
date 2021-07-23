@@ -13,6 +13,7 @@ class AuspiceTable extends Migration {
             $table->float('cost', 15, 2);
             $table->bigInteger('guide_id')->unsigned();
             $table->bigInteger('rate_id')->unsigned();
+            $table->boolean('manual_apportion')->nullable()->default(0);
             $table->timestamps();
             $table->softDeletes();
             $table->foreign('guide_id')->references('id')->on('guides');
