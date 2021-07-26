@@ -85,7 +85,7 @@
             <table class="data-table">
                 <thead>
                 <tr>
-                    <th class="md-3" rowspan="2"><img src="../public/kokoro_logo.jpg" width="80%"></th>
+                    <th class="md-3" rowspan="2"><img src="../public/kokoro_log.svg" width="80%"></th>
                     <th class="md-3 center" rowspan="2"><h1>{{$data['businessName']}}</h1></th>
                     <th class="md-3" colspan="2">Numero de orden: {{$data['order']}}</th>
                 </tr>
