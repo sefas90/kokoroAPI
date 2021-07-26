@@ -27,6 +27,15 @@ class GuideController extends BaseController {
             ->get();
 
         foreach ($result_guide as $key => $row) {
+            $orderNumber = OrderNumber::where('guide_id', '=', $row->guideId)->get();
+
+            $number = 'Orden no exportada';
+            if (count($orderNumber) > 0) {
+                $orderNumber = $orderNumber[0];
+                if ($orderNumber->order_number) {
+                    $number = $orderNumber->order_number.'.'.$orderNumber->version;
+                }
+            }
             $result = DB::table('materials')
                 ->select('materials.id as id', 'materials.material_name', 'materials.duration', 'materials.guide_id', 'materials.rate_id',
                     'guides.guide_name', 'guides.media_id', 'guides.campaign_id', 'guides.editable as editable', 'rates.show',
@@ -66,8 +75,8 @@ class GuideController extends BaseController {
                 $total_cost += $result[$ke]->totalCost;
             }
 
-            // $result_guide[$key]->material = $result;
             $result_guide[$key]->totalCost = $total_cost;
+            $result_guide[$key]->orderNumber = $number;
         }
 
         return $this->sendResponse($result_guide);
@@ -210,7 +219,7 @@ class GuideController extends BaseController {
             return $this->sendError('No se encontro la pauta');
         }
 
-        $guide->billing_numbrer = $request->billingNumber;
+        $guide->billing_number = $request->billingNumber;
         return $guide->save() ?
             $this->sendResponse('', 'La guia ' . $guide->guide_name . ' se modifico correctamente') :
             $this->sendError('Ocurrio un error al modificar la pauta ' . $guide->guide_name . '.');
