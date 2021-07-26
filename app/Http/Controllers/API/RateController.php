@@ -42,13 +42,13 @@ class RateController extends BaseController {
                 'show'     => 'required',
                 'hourIni'  => 'before:hourEnd',
                 'hourEnd'  => 'after:hourIni',
-                'cost'     => 'required|numeric|gt:0',
+                'cost'     => 'required|numeric',
                 'emitDays' => 'required',
             ]);
         } else {
             $validator = Validator::make($request->all(), [
                 'show'     => 'required',
-                'cost'     => 'required|numeric|gt:0',
+                'cost'     => 'required|numeric',
                 'emitDays' => 'required',
             ]);
         }
@@ -91,13 +91,13 @@ class RateController extends BaseController {
                 'show'     => 'required',
                 'hourIni'  => 'before:hourEnd',
                 'hourEnd'  => 'after:hourIni',
-                'cost'     => 'required|numeric|gt:0',
+                'cost'     => 'required|numeric',
                 'emitDays' => 'required',
             ]);
         } else {
             $validator = Validator::make($request->all(), [
                 'show'     => 'required',
-                'cost'     => 'required|numeric|gt:0',
+                'cost'     => 'required|numeric',
                 'emitDays' => 'required',
             ]);
         }

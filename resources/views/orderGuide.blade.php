@@ -85,7 +85,7 @@
             <table class="data-table">
                 <thead>
                 <tr>
-                    <th class="md-3" rowspan="2"><img src="../public/kokoro_log.svg" width="100%"></th>
+                    <th class="md-3" rowspan="2"><img src="../public/kokoro_logo.jpg" width="80%"></th>
                     <th class="md-3 center" rowspan="2"><h1>{{$data['businessName']}}</h1></th>
                     <th class="md-3" colspan="2">Numero de orden: {{$data['order']}}</th>
                 </tr>
@@ -144,21 +144,21 @@
             <table class="data-table">
                 <thead>
                 <tr>
-                    <th class="md-5">Responsable</th>
-                    <th class="md-5">Cliente</th>
+                    <th class="md-5">Responsable:</th>
+                    <th class="md-5">Cliente:</th>
                     <th class="md-5">Totales</th>
-                    <th class="md-5">Ins.</th>
+                    <th class="md-5">Ins:</th>
                     <th class="md-5 right"><div class="nowrap">Inversión {{$data['currency']}}</div></th>
                 </tr>
                 <tr>
                     <th rowspan="2">{{ $data['user'] }}</th>
                     <th rowspan="2">{{ $data['client'] }}</th>
-                    <th>Total</th>
+                    <th>Total:</th>
                     <th>{{ $data['totalSpots'] }}</th>
                     <th class="right">{{ number_format($data['totalMount'] / $data['currencyValue'], 2, ',', '.') }}</th>
                 </tr>
                 <tr>
-                    <th>Total Orden</th>
+                    <th>Total Orden:</th>
                     <th>{{ $data['totalSpots'] }}</th>
                     <th class="right">{{ number_format($data['totalMount'] / $data['currencyValue'], 2, ',', '.') }}</th>
                 </tr>
@@ -168,7 +168,7 @@
                     <td>Facturar a:</td>
                     <td>Direccion de facturacion:</td>
                     <td>Politicas de facturacion:</td>
-                    <td colspan="2">Observaciones</td>
+                    <td colspan="2">Observaciones:</td>
                 </tr>
                 <tr>
                     <td>{{ $data['billingToName'] }}<br>{{ $data['billingToNit'] }}</td>
