@@ -49,7 +49,7 @@
         text-align: right;
     }
     .text-all {
-        font-size: 9px;
+        font-size: 8px;
     }
     @font-face {
         font-family: 'sweet_sans_prolight';
@@ -86,7 +86,7 @@
             <table class="data-table">
                 <thead>
                 <tr>
-                    <th class="md-3" rowspan="2"><img src="../public/kokoro_logo_2.jpeg" width="80%"></th>
+                    <th class="md-3" rowspan="2"><img src="../public/kokoro_logo3.png" width="80%"></th>
                     <th class="md-3 center" rowspan="2"><h1>{{$guideRow['businessName']}}</h1></th>
                     <th class="md-3" colspan="2">Numero de orden: {{$guideRow['order']}}</th>
                 </tr>

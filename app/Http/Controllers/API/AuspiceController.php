@@ -255,4 +255,21 @@ class AuspiceController extends BaseController {
             $this->sendResponse('', 'El material ' . $auspice->auspice_name . ' se elimino correctamente.') :
             $this->sendError('Ocurrio un error al eliminar un material');
     }
+
+    public function getAuspiceCost($id) {
+        $total_cost = 0;
+        $auspices = Auspice::where('guide_id', '=', $id)->get();
+        if (count($auspices) > 0) {
+            foreach ($auspices as $key => $row) {
+                if (!!$row->manual_apportion) {
+                    //calculated value
+                    $total_cost = 0;
+                } else {
+                    //happy path
+                    $total_cost = $row->cost;
+                }
+            }
+        }
+        return $total_cost;
+    }
 }

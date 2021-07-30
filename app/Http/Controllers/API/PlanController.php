@@ -8,16 +8,27 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Validator;
+use App\Http\Controllers\API\CampaignController;
 
 class PlanController extends BaseController {
+    protected $campaignCtrl;
+    public function __construct(CampaignController $campaignCtrl) {
+        $this->campaignCtrl = $campaignCtrl;
+    }
+
     public function index (Request $request) {
         $sort = explode(":", $request->sort);
-        return $this->sendResponse(DB::table('plan')
+        $result =DB::table('plan')
             ->select('plan.id', 'plan_name as planName', 'client_name as clientName', 'plan.client_id as clientId')
             ->join('clients', 'clients.id', '=', 'plan.client_id')
             ->where('plan.deleted_at', '=', null)
             ->orderBy(empty($sort[0]) ? 'plan.id' : 'plan.'.$sort[0], empty($sort[1]) ? 'asc' : $sort[1])
-            ->get(), '');
+            ->get();
+
+        foreach ($result as $key => $row) {
+            $result[$key]->totalCost = $this->getPlanCost($row->id);
+        }
+        return $this->sendResponse($result, '');
     }
 
     public function store(Request $request) {
@@ -101,5 +112,14 @@ class PlanController extends BaseController {
                 ['client_id', '=', $id],
             ])
             ->get(), '');
+    }
+
+    public function getPlanCost($id) {
+        $total_cost = 0;
+        $guides = Campaign::where('plan_id', '=', $id)->get();
+        foreach ($guides as $key => $row) {
+            $total_cost += $this->campaignCtrl->getCampaignCost($row->id);
+        }
+        return $total_cost;
     }
 }

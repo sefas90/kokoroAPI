@@ -64,7 +64,6 @@ class UserController extends BaseController {
             'name'     => 'required',
             'lastname' => 'required',
             'userName' => 'required',
-            'password' => 'required',
             'role'     => 'required',
             'email'    => 'required',
         ]);
@@ -76,6 +75,9 @@ class UserController extends BaseController {
         $user->name     = trim($request->name);
         $user->lastname = trim($request->lastname);
         $user->username = trim($request->userName);
+        if (!empty($request->password)) {
+            $user->password = bcrypt($request->password);
+        }
         $user->email    = trim($request->email);
         $user->role_id  = trim($request->role);
         $user->email    = trim($request->email);

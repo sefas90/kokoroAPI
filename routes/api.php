@@ -78,6 +78,7 @@ Route::group($attributes, function () {
     Route::post('/guide/{id}', [GuideController::class, 'update']);
     Route::delete('/guide/{id}', [GuideController::class, 'destroy']);
     Route::post('/guide/editInvoice/{id}', [GuideController::class, 'editInvoiceNumber']);
+    Route::get('/guideMediaList/{id}', [GuideController::class, 'getMediaListByGuide']);
 
     Route::get('/material', [MaterialController::class, 'index']);
     Route::post('/material', [MaterialController::class, 'store']);

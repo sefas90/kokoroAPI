@@ -23,7 +23,7 @@ class GuideController extends BaseController {
             ->join('plan', 'plan.id', '=', 'campaigns.plan_id')
             ->join('clients', 'clients.id', '=', 'plan.client_id')
             ->where('guides.deleted_at', '=', null)
-            ->orderBy(empty($sort[0]) ? 'guides.id' : 'guides.'.$sort[0], empty($sort[1]) ? 'asc' : $sort[1])
+            ->orderBy(empty($sort[0]) ? 'guides.id' : 'guides.'.$sort[0], empty($sort[1]) ? 'desc' : $sort[1])
             ->get();
 
         foreach ($result_guide as $key => $row) {
@@ -36,46 +36,8 @@ class GuideController extends BaseController {
                     $number = $orderNumber->order_number.'.'.$orderNumber->version;
                 }
             }
-            $result = DB::table('materials')
-                ->select('materials.id as id', 'materials.material_name', 'materials.duration', 'materials.guide_id', 'materials.rate_id',
-                    'guides.guide_name', 'guides.media_id', 'guides.campaign_id', 'guides.editable as editable', 'rates.show',
-                    'rates.hour_ini', 'rates.hour_end', 'rates.cost', 'media.media_name', 'media.business_name', 'media.NIT',
-                    'media.media_type as mediaTypeId', 'media_types.media_type', 'campaigns.campaign_name', 'campaigns.plan_id',
-                    'plan.client_id', 'campaigns.date_ini', 'campaigns.date_end', 'rates.hour_ini as hourIni', 'rates.hour_end as hourEnd',
-                    'guides.date_ini as guideDateIni', 'guides.editable', 'clients.id as clientId', 'clients.client_name as clientName',
-                    'clients.representative', 'clients.NIT as clientNIT', 'clients.billing_address as billingAddress',
-                    'clients.billing_policies as billingPolicies')
-                ->join('guides', 'guides.id', '=', 'materials.guide_id')
-                ->join('rates', 'rates.id', '=', 'materials.rate_id')
-                ->join('media', 'media.id', '=', 'rates.media_id')
-                ->join('campaigns', 'campaigns.id', '=', 'guides.campaign_id')
-                ->join('plan', 'plan.id', '=', 'campaigns.plan_id')
-                ->join('clients', 'clients.id', '=', 'plan.client_id')
-                ->join('media_types', 'media_types.id', '=', 'media.media_type')
-                ->where([
-                    ['materials.deleted_at', '=', null],
-                    ['guides.id', '=', $row->id]
-                ])
-                ->get();
-            $total_cost = 0;
 
-            foreach ($result as $ke => $ro) {
-                $id = $result[$ke]->id;
-                $planing = DB::table('material_planing')
-                    ->select('broadcast_day', 'times_per_day')
-                    ->where('material_planing.material_id', '=', $id)->get();
-                $spots = 0;
-                foreach ($planing as $k => $r) {
-                    $spots += $r->times_per_day;
-                    $result[$ke]->spots = $spots;
-                }
-                $result[$ke]->spots = $spots;
-                $result[$ke]->unitCost = $this->getUnitCost($result[$ke]->cost, $result[$ke]->media_type, $result[$ke]->duration);
-                $result[$ke]->totalCost = $this->getTotalCost($result[$ke]->cost, $result[$ke]->media_type, $result[$ke]->duration, $result[$ke]->spots);
-                $total_cost += $result[$ke]->totalCost;
-            }
-
-            $result_guide[$key]->totalCost = $total_cost;
+            $result_guide[$key]->totalCost = $this->getGuideCost($row->guideId);
             $result_guide[$key]->orderNumber = $number;
         }
 
@@ -243,5 +205,58 @@ class GuideController extends BaseController {
         else {
             return $unitCost * $passes;
         }
+    }
+
+    public function getMediaListByGuide($id) {
+        return $this->sendResponse(DB::table('guides')
+            ->select('id', 'id as value', 'guide_name as label', 'date_ini as dateIni', 'date_end as dateEnd')
+            ->where([
+                ['media_id', '=', $id],
+                ['deleted_at', '=', null],
+                ['editable', '=', 1],
+            ])
+            ->get(), '');
+    }
+
+    public function getGuideCost($id) {
+        $total_cost = 0;
+        $result = DB::table('materials')
+            ->select('materials.id as id', 'materials.material_name', 'materials.duration', 'materials.guide_id', 'materials.rate_id',
+                'guides.guide_name', 'guides.media_id', 'guides.campaign_id', 'guides.editable as editable', 'rates.show',
+                'rates.hour_ini', 'rates.hour_end', 'rates.cost', 'media.media_name', 'media.business_name', 'media.NIT',
+                'media.media_type as mediaTypeId', 'media_types.media_type', 'campaigns.campaign_name', 'campaigns.plan_id',
+                'plan.client_id', 'campaigns.date_ini', 'campaigns.date_end', 'rates.hour_ini as hourIni', 'rates.hour_end as hourEnd',
+                'guides.date_ini as guideDateIni', 'guides.editable', 'clients.id as clientId', 'clients.client_name as clientName',
+                'clients.representative', 'clients.NIT as clientNIT', 'clients.billing_address as billingAddress',
+                'clients.billing_policies as billingPolicies')
+            ->join('guides', 'guides.id', '=', 'materials.guide_id')
+            ->join('rates', 'rates.id', '=', 'materials.rate_id')
+            ->join('media', 'media.id', '=', 'rates.media_id')
+            ->join('campaigns', 'campaigns.id', '=', 'guides.campaign_id')
+            ->join('plan', 'plan.id', '=', 'campaigns.plan_id')
+            ->join('clients', 'clients.id', '=', 'plan.client_id')
+            ->join('media_types', 'media_types.id', '=', 'media.media_type')
+            ->where([
+                ['materials.deleted_at', '=', null],
+                ['guides.id', '=', $id]
+            ])
+            ->get();
+
+        foreach ($result as $ke => $ro) {
+            $id = $result[$ke]->id;
+            $planing = DB::table('material_planing')
+                ->select('broadcast_day', 'times_per_day')
+                ->where('material_planing.material_id', '=', $id)->get();
+            $spots = 0;
+            foreach ($planing as $k => $r) {
+                $spots += $r->times_per_day;
+                $result[$ke]->spots = $spots;
+            }
+            $result[$ke]->spots = $spots;
+            $result[$ke]->unitCost = $this->getUnitCost($result[$ke]->cost, $result[$ke]->media_type, $result[$ke]->duration);
+            $result[$ke]->totalCost = $this->getTotalCost($result[$ke]->cost, $result[$ke]->media_type, $result[$ke]->duration, $result[$ke]->spots);
+            $total_cost += $result[$ke]->totalCost;
+        }
+        return $total_cost;
     }
 }
