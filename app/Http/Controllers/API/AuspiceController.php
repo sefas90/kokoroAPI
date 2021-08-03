@@ -256,9 +256,12 @@ class AuspiceController extends BaseController {
             $this->sendError('Ocurrio un error al eliminar un material');
     }
 
-    public function getAuspiceCost($id) {
+    public function getAuspiceCost($guide_id) {
         $total_cost = 0;
-        $auspices = Auspice::where('guide_id', '=', $id)->get();
+        $auspices = Auspice::where([
+            ['guide_id', '=', $guide_id],
+            ['deleted_at', '=', null]
+        ])->get();
         if (count($auspices) > 0) {
             foreach ($auspices as $key => $row) {
                 if (!!$row->manual_apportion) {
@@ -266,7 +269,7 @@ class AuspiceController extends BaseController {
                     $total_cost = 0;
                 } else {
                     //happy path
-                    $total_cost = $row->cost;
+                    $total_cost += $row->cost;
                 }
             }
         }
