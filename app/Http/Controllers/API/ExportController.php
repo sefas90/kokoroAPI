@@ -150,7 +150,7 @@ class ExportController extends BaseController {
                     'status_value'    => $this->getStatus($result[0]->editable),
                     'order'           => $orderNumber,
                     'client'          => $result[0]->clientName,
-                    'businessName'    => strtoupper($result[0]->business_name),
+                    'businessName'    => mb_strtoupper($result[0]->business_name),
                     'guideName'       => $result[0]->guide_name,
                     'NIT'             => $result[0]->NIT,
                     'date_ini'        => explode(" ", $result[0]->date_ini)[0],
