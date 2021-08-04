@@ -40,8 +40,8 @@ class RateController extends BaseController {
         if(!empty($request->hourIni) || !empty($request->hourEnd)) {
             $validator = Validator::make($request->all(), [
                 'show'     => 'required',
-                'hourIni'  => 'before:hourEnd',
-                'hourEnd'  => 'after:hourIni',
+                'hourIni'  => 'before_or_equal:hourEnd',
+                'hourEnd'  => 'after_or_equal:hourIni',
                 'cost'     => 'required|numeric',
                 'emitDays' => 'required',
             ]);
@@ -89,8 +89,8 @@ class RateController extends BaseController {
         if(!empty($request->hourIni) || !empty($request->hourEnd)) {
             $validator = Validator::make($request->all(), [
                 'show'     => 'required',
-                'hourIni'  => 'before:hourEnd',
-                'hourEnd'  => 'after:hourIni',
+                'hourIni'  => 'before_or_equal:hourEnd',
+                'hourEnd'  => 'after_or_equal:hourIni',
                 'cost'     => 'required|numeric',
                 'emitDays' => 'required',
             ]);

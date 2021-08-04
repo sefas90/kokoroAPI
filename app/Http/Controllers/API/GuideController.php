@@ -47,8 +47,8 @@ class GuideController extends BaseController {
     public function store(Request $request) {
         $validator = Validator::make($request->all(), [
             'guideName'  => 'required',
-            'dateIni'      => ['required', 'before:dateEnd'],
-            'dateEnd'      => ['required', 'after:dateIni'],
+            'dateIni'      => ['required', 'before_or_equal:dateEnd'],
+            'dateEnd'      => ['required', 'after_or_equal:dateIni'],
             'mediaId'    => 'required',
             'campaignId' => 'required',
         ]);
@@ -83,8 +83,8 @@ class GuideController extends BaseController {
     public function update(Request $request, $id) {
         $validator = Validator::make($request->all(), [
             'guideName'  => 'required',
-            'dateIni'    => ['required', 'before:dateEnd'],
-            'dateEnd'    => ['required', 'after:dateIni'],
+            'dateIni'    => ['required', 'before_or_equal:dateEnd'],
+            'dateEnd'    => ['required', 'after_or_equal:dateIni'],
             'mediaId'    => 'required',
             'campaignId' => 'required',
         ]);

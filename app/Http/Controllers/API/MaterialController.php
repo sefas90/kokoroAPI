@@ -5,12 +5,20 @@ namespace App\Http\Controllers\API;
 use App\Models\Material;
 use App\Models\PlaningMaterial;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Validator;
 
 class MaterialController extends BaseController {
     public function index (Request $request) {
+
+        $guideId = $request->guideId;
+        $where = [
+            ['materials.deleted_at', '=', null]
+        ];
+        if ($guideId) {
+            $guide = ['guides.id', '=', $guideId];
+            array_push($where, $guide);
+        }
         $result = DB::table('materials')
             ->select('materials.id', 'material_name as materialName', 'duration', 'rates.show', 'guides.guide_name as guideName', 'guides.id as guideId',
                 'rates.id as rateId', 'rates.cost', 'media_types.media_type as mediaType', 'guides.editable as isEditable', 'media_types.id as mediaTypeId')
@@ -18,9 +26,7 @@ class MaterialController extends BaseController {
             ->join('rates', 'rates.id', '=', 'materials.rate_id')
             ->join('media', 'media.id', '=', 'rates.media_id')
             ->join('media_types', 'media_types.id', '=', 'media.media_type')
-            ->where([
-                ['materials.deleted_at', '=', null]
-            ])
+            ->where($where)
             ->get();
 
             foreach ($result as $key => $row) {
