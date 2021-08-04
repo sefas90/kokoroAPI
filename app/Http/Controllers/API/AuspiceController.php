@@ -260,8 +260,9 @@ class AuspiceController extends BaseController {
         $total_cost = 0;
         $auspices = Auspice::where([
             ['guide_id', '=', $guide_id],
-            ['deleted_at', '=', null]
-        ])->get();
+            ['deleted_at', '=', null],
+            ['guides.editable', '<>', 2]
+        ])->join('guides', 'guides.id', '=', 'auspices.guide_id')->get();
         if (count($auspices) > 0) {
             foreach ($auspices as $key => $row) {
                 if (!!$row->manual_apportion) {
