@@ -68,7 +68,7 @@ class ExportController extends BaseController {
                         foreach ($request->monthsSelected as $ke => $ro) {
                             if (is_string($ro)) {
                                 $month = date($this->getMonth($ro));
-                                $planing = $planing = DB::table('material_planing')
+                                $planing = DB::table('material_planing')
                                     ->select('broadcast_day', 'times_per_day')
                                     ->where('material_planing.material_id', '=', $id)
                                     ->whereMonth('broadcast_day',  $month)->get();
@@ -103,8 +103,9 @@ class ExportController extends BaseController {
                             $m = date("m", strtotime($planing[$k]->broadcast_day));
                             $spots += $r->times_per_day;
                             $pla[$m][] = $r;
+                            $months[] = $m;
                         }
-                        $months[$m] = $m;
+                        $months = array_unique($months);
                         $result[$key]->spots = $spots;
                         $totalSpots += $spots;
                         $result[$key]->planing = $pla;

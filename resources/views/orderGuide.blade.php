@@ -107,7 +107,7 @@
                     <td>Horario</td>
                     <td>Material</td>
                     <td>Dur (seg.)</td>
-                    @for ($i = 1; $i <= cal_days_in_month(CAL_GREGORIAN, $months, $data['year']); $i++)
+                    @for ($i = 1; $i <= cal_days_in_month(CAL_GREGORIAN, $monthRow, $data['year']); $i++)
                     <td>{{ $i }}</td>
                     @endfor
                     <td>Spots</td>
@@ -122,7 +122,7 @@
                     <td>{{ substr($row->hourIni,0,-3) }} {{ substr($row->hourEnd,0,-3) }}</td>
                     <td>{{ $row->material_name }}</td>
                     <td>{{ $row->duration }} <span class="hidden">{{ $spots = 0}}</span></td>
-                    @for ($i = 1; $i <= cal_days_in_month(CAL_GREGORIAN, $months, $data['year']); $i++)
+                    @for ($i = 1; $i <= cal_days_in_month(CAL_GREGORIAN, $monthRow, $data['year']); $i++)
                     <td class="border-table">
                         @foreach($row->planing[$monthRow] as $k => $r)
                         @if ($i == $r->day)

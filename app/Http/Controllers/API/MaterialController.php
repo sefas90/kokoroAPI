@@ -165,4 +165,9 @@ class MaterialController extends BaseController {
             $this->sendResponse('', 'El material ' . $material->material_name . ' se elimino correctamente.') :
             $this->sendError('El material ' . $material->material_name .' no se pudo eliminar.');
     }
+
+    public function getMaterialCost($materialId) {
+
+    }
+
 }

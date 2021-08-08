@@ -81,7 +81,7 @@
             <tr>
                 <th>Fecha de emision:<br>{{$data['date']}}</th>
                 <th>
-                    Mes: {{ucfirst(strftime("%B", DateTime::createFromFormat('!m', $data['month_ini'])->getTimestamp()))}}
+                    Mes: {{ucfirst(strftime("%B", DateTime::createFromFormat('!m', $data['a'])->getTimestamp()))}}
                 </th>
             </tr>
             </thead>
