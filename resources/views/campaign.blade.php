@@ -192,7 +192,7 @@
     <hr>
     @endif
     @endforeach
-    @if ($guide < count($data)-1)
+    @if ($guide < count($data) - 1)
     <hr>
     @endif
 @endforeach

@@ -20,13 +20,6 @@ class ExportController extends BaseController {
         $validator = Validator::make($request->all(), [
             'guideId'    => 'required'
         ]);
-
-        if ($request->monthsSelected === 'ALL' || !isset($request->monthsSelected)){
-            $request->monthsSelected = [];
-        } else {
-            $request['monthsSelected'] = $this->cleanEmptyValues($request->monthsSelected);
-        }
-
         $currency = Currency::find($request->currencyId) ? Currency::find($request->currencyId) : (object)['currency_value' => 1, 'symbol' => 'BOB'];
 
         if (!$validator->fails()){
@@ -64,27 +57,27 @@ class ExportController extends BaseController {
                 $totalSpots = 0;
                 foreach ($result as $key => $row) {
                     $id = $result[$key]->id;
-                    if(count($request->monthsSelected) > 0) {
-                        foreach ($request->monthsSelected as $ke => $ro) {
+                    if(count($request['monthsSelected']) > 0) {
+                        foreach ($request['monthsSelected'] as $ke => $ro) {
                             if (is_string($ro)) {
                                 $month = date($this->getMonth($ro));
                                 $planing = DB::table('material_planing')
                                     ->select('broadcast_day', 'times_per_day')
                                     ->where('material_planing.material_id', '=', $id)
-                                    ->whereMonth('broadcast_day',  $month)->get();
+                                    ->whereMonth('broadcast_day',  $month)
+                                    ->get();
                                 if(count($planing) > 0) {
-                                    $m = date("m", strtotime($planing[0]->broadcast_day));
-                                    $pla[$m] = array();
+                                    $pla[$month] = array();
                                     $spots = 0;
                                     foreach ($planing as $k => $r) {
                                         $r->day = date("d", strtotime($planing[$k]->broadcast_day));
                                         $m = date("m", strtotime($planing[$k]->broadcast_day));
-                                        if (date($this->getMonth($ro)) === $m) {
+                                        if ($month === $m) {
                                             $spots += $r->times_per_day;
                                         }
-                                        $pla[$m][] = $r;
+                                        $pla[$month][] = $r;
+                                        $months[] = $month;
                                     }
-                                    $months[$m] = $m;
                                     $result[$key]->spots = $spots;
                                     $totalSpots += $spots;
                                     $result[$key]->planing = $pla;
@@ -105,12 +98,13 @@ class ExportController extends BaseController {
                             $pla[$m][] = $r;
                             $months[] = $m;
                         }
-                        $months = array_unique($months);
                         $result[$key]->spots = $spots;
                         $totalSpots += $spots;
                         $result[$key]->planing = $pla;
                     }
                 }
+
+                $months = array_unique($months);
 
                 $orderNumber = OrderNumber::where('guide_id', '=', $request->guideId)->get();
 
@@ -216,6 +210,11 @@ class ExportController extends BaseController {
 
             if (count($result) > 0) {
                 $response = array();
+                if ($request['monthsSelected'] === 'ALL' || !isset($request['monthsSelected'])){
+                    $request['monthsSelected'] = array();
+                } else {
+                    $request['monthsSelected'] = $this->cleanEmptyValues($request['monthsSelected']);
+                }
                 foreach ($result as $k => $r) {
                     $request['guideId'] = $r->guide_id;
                     $request['observation'] = empty($request->observation) ? '' : $request->observation;
@@ -225,7 +224,6 @@ class ExportController extends BaseController {
                         $response[] = $res;
                     }
                 }
-
                 return $request->isOrderCampaign ? $this->exportPdf($response, 'campaign', 'campaña.pdf') : $response;
             } else {
                 return $request->isOrderCampaign ? $this->sendError('', 'No tiene materiales', '') : [];
@@ -569,7 +567,9 @@ class ExportController extends BaseController {
         $returnMonths = array();
         foreach ($months as $month => $m) {
             if ($m) {
-                $returnMonths[] = $month;
+                if (is_string($month)) {
+                    $returnMonths[] = $month;
+                }
             }
         }
         return $returnMonths;
