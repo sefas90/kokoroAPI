@@ -57,7 +57,7 @@ class ExportController extends BaseController {
                 $totalSpots = 0;
                 foreach ($result as $key => $row) {
                     $id = $result[$key]->id;
-                    if(count($request['monthsSelected']) > 0) {
+                    if($request['monthsSelected'] && count($request['monthsSelected']) > 0) {
                         foreach ($request['monthsSelected'] as $ke => $ro) {
                             if (is_string($ro)) {
                                 $month = date($this->getMonth($ro));

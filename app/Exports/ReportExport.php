@@ -16,7 +16,7 @@ use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 class ReportExport implements FromView, Responsable, ShouldAutoSize {
     use Exportable;
 
-    private $fileName = 'something.xlsx';
+    private $fileName = 'reporte.xlsx';
 
     public function request($req) {
         $this->req = $req;
