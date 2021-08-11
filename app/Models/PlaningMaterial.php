@@ -16,4 +16,8 @@ class PlaningMaterial extends Model {
     protected $dates = [
         'broadcast_day',
     ];
+
+    public function material() {
+        return $this->belongsTo(Material::class);
+    }
 }

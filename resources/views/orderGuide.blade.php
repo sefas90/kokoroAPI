@@ -14,7 +14,7 @@
     }
     .data-table-info {
         width: 100%;
-        font-size: 9px;
+        font-size: 7px;
     }
     .selected {
         background-color: #efdfab;
@@ -71,6 +71,14 @@
         font-size: 20px;
         color: red;
     }
+    .days {
+        width: 7px;
+        max-width: 7px;
+    }
+    .glued {
+        width: 9px;
+        max-width: 9px;
+    }
 </style>
 <!DOCTYPE html>
 <html lang="en">
@@ -85,7 +93,7 @@
             <table class="data-table">
                 <thead>
                 <tr>
-                    <th class="md-3" rowspan="2"><img src="../public/kokoro_logo3.png" width="80%"></th>
+                    <th class="md-3" rowspan="2"><img src="../public/logo_kokoro.svg" width="80%"></th>
                     <th class="md-3 center" rowspan="2"><h1>{{$data['businessName']}}</h1></th>
                     <th class="md-3" colspan="2">Numero de orden: {{$data['order']}}</th>
                 </tr>
@@ -106,12 +114,12 @@
                     <td>Programa</td>
                     <td>Horario</td>
                     <td>Material</td>
-                    <td>Dur (seg.)</td>
+                    <td class="glued">Dur (seg.)</td>
                     @for ($i = 1; $i <= cal_days_in_month(CAL_GREGORIAN, $monthRow, $data['year']); $i++)
-                    <td>{{ $i }}</td>
+                    <td class="days">{{ $i }}</td>
                     @endfor
-                    <td>Spots</td>
-                    <td class="right"><div class="nowrap">C. Unitario</div>{{$data['currency']}}</td>
+                    <td class="glued">Spots</td>
+                    <td class="right glued"><div class="nowrap">C. Unitario</div>{{$data['currency']}}</td>
                     <td class="right"><div class="nowrap">Inversión</div>{{$data['currency']}}</td>
                 </tr>
                 @foreach($data['result'] as $key => $row)

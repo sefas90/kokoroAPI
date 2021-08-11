@@ -30,4 +30,8 @@ class Material extends Model {
         'updated_at',
         'deleted_at',
     ];
+
+    public function planingMaterial() {
+        return $this->hasMany(PlaningMaterial::class);
+    }
 }

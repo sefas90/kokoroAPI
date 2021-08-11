@@ -14,7 +14,7 @@
     }
     .data-table-info {
         width: 100%;
-        font-size: 9px;
+        font-size: 7px;
     }
     .selected {
         background-color: #efdfab;
@@ -61,6 +61,18 @@
     .hidden {
         display: none;
     }
+    .canceled {
+        font-size: 20px;
+        color: red;
+    }
+    .days {
+        width: 7px;
+        max-width: 7px;
+    }
+    .glued {
+        width: 9px;
+        max-width: 9px;
+    }
 </style>
 <!DOCTYPE html>
 <html lang="en">
@@ -74,14 +86,14 @@
         <table class="data-table">
             <thead>
             <tr>
-                <th class="md-3" rowspan="2"><img src="../public/kokoro_logo3.png" width="100%"></th>
+                <th class="md-3" rowspan="2"><img src="../public/logo_kokoro.svg" width="80%"></th>
                 <th class="md-3 center" rowspan="2"><h1>{{$data['businessName']}}</h1></th>
                 <th class="md-3" colspan="2">Numero de orden: {{$data['order']}}</th>
             </tr>
             <tr>
                 <th>Fecha de emision:<br>{{$data['date']}}</th>
                 <th>
-                    Mes: {{ucfirst(strftime("%B", DateTime::createFromFormat('!m', $data['a'])->getTimestamp()))}}
+
                 </th>
             </tr>
             </thead>
@@ -94,11 +106,11 @@
                 <td>Programa</td>
                 <td>Horario</td>
                 <td>Material</td>
-                <td>Dur (seg.)</td>
+                <td class="glued">Dur (seg.)</td>
                 @for ($i = 1; $i <= $data['daysInMonth']; $i++)
-                <td>{{ $i }}</td>
+                <td class="days">{{ $i }}</td>
                 @endfor
-                <td>Spots</td>
+                <td class="glued">Spots</td>
                 <td class="right"><div class="nowrap">Inversión</div>{{$data['currency']}}</td>
             </tr>
             @foreach($data['result'] as $key => $row)
@@ -158,7 +170,12 @@
                 <td>{{ $data['billingAddress'] }}</td>
                 <td>{{ $data['billingPolicies'] }}</td>
                 <td>{{ $data['observation1'] }}</td>
-                <td>{{ $data['observation2'] }}</td>
+                <td>
+                    @if($data['status'] == 2)
+                        <div class="canceled">{{ $data['status_value'] }}</div>
+                    @endif
+                    <div>{{ $data['observation2'] }}</div>
+                </td>
             </tr>
             </tbody>
         </table>

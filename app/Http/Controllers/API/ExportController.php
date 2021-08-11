@@ -7,7 +7,9 @@ use App\Models\Campaign;
 use App\Models\Client;
 use App\Models\Currency;
 use App\Models\Guide;
+use App\Models\Material;
 use App\Models\OrderNumber;
+use App\Models\PlaningMaterial;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -28,7 +30,11 @@ class ExportController extends BaseController {
                 1 => $request->observations
             ];
 
-            $result = DB::table('materials')
+            $result = Material::where([
+                    ['materials.deleted_at', '=', null],
+                    ['guides.id', '=', $request->guideId],
+                    ['guides.date_ini', '>', date("Y-01-01")]
+                ])
                 ->select('materials.id as id', 'materials.material_name', 'materials.duration', 'materials.guide_id', 'materials.rate_id',
                     'guides.guide_name', 'guides.media_id', 'guides.campaign_id', 'guides.editable as editable', 'rates.show',
                     'rates.hour_ini', 'rates.hour_end', 'rates.cost', 'media.media_name', 'media.business_name', 'media.NIT', 'media.media_type as mediaTypeId', 'media_types.media_type',
@@ -42,11 +48,6 @@ class ExportController extends BaseController {
                 ->join('plan', 'plan.id', '=', 'campaigns.plan_id')
                 ->join('clients', 'clients.id', '=', 'plan.client_id')
                 ->join('media_types', 'media_types.id', '=', 'media.media_type')
-                ->where([
-                    ['materials.deleted_at', '=', null],
-                    ['guides.id', '=', $request->guideId],
-                    ['guides.date_ini', '>', date("Y-01-01")]
-                ])
                 ->get();
 
             $pla = array();
@@ -61,6 +62,7 @@ class ExportController extends BaseController {
                         foreach ($request['monthsSelected'] as $ke => $ro) {
                             if (is_string($ro)) {
                                 $month = date($this->getMonth($ro));
+                                // $planing = $result->planinfMaterial;
                                 $planing = DB::table('material_planing')
                                     ->select('broadcast_day', 'times_per_day')
                                     ->where('material_planing.material_id', '=', $id)
@@ -85,12 +87,14 @@ class ExportController extends BaseController {
                             }
                         }
                     } else {
-                        $planing = DB::table('material_planing')
+                        // $planing = $result->planingMaterial();
+                        $planing = PlaningMaterial::where('material_planing.material_id', '=', $id)
                             ->select('broadcast_day', 'times_per_day')
-                            ->where('material_planing.material_id', '=', $id)->get();
+                            ->get();
                         $m = date("m", strtotime($planing[0]->broadcast_day));
                         $pla[$m] = array();
                         $spots = 0;
+                        // $micro = microtime(true);
                         foreach ($planing as $k => $r) {
                             $r->day = date("d", strtotime($planing[$k]->broadcast_day));
                             $m = date("m", strtotime($planing[$k]->broadcast_day));
@@ -98,6 +102,7 @@ class ExportController extends BaseController {
                             $pla[$m][] = $r;
                             $months[] = $m;
                         }
+                        // $micro2 = microtime(true);
                         $result[$key]->spots = $spots;
                         $totalSpots += $spots;
                         $result[$key]->planing = $pla;
@@ -360,6 +365,8 @@ class ExportController extends BaseController {
                 $response = [
                     'result'          => $result,
                     'product'         => $result[0]->product,
+                    'status'          => $result[0]->editable,
+                    'status_value'    => $this->getStatus($result[0]->editable),
                     'order'           => $orderNumber,
                     'client'          => $result[0]->clientName,
                     'businessName'    => strtoupper($result[0]->business_name),
