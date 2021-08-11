@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install pcntl \
     && docker-php-ext-install bcmath \
     && docker-php-ext-install gd \
+    && docker-php-ext-install calendar \
     && docker-php-source delete \
     && apt install net-tools
 
@@ -38,6 +39,3 @@ WORKDIR /var/www
 CMD php artisan serve --host=0.0.0.0 --port=8000
 EXPOSE 8000
 USER root
-COPY run.sh run.sh
-RUN ./run.sh
-USER $user

@@ -93,7 +93,7 @@
             <tr>
                 <th>Fecha de emision:<br>{{$data['date']}}</th>
                 <th>
-
+                    <span class="hidden">{{setlocale(LC_ALL, "es_ES", 'Spanish_Spain', 'Spanish')}}</span>
                 </th>
             </tr>
             </thead>
