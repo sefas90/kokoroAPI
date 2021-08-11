@@ -100,7 +100,7 @@
                 <tr>
                     <th>Fecha de emision:<br>{{$data['date']}}</th>
                     <th>
-                        <span class="hidden">{{setlocale(LC_TIME, "spanish")}}</span>
+                        <span class="hidden">{{setlocale(LC_ALL, "es_ES", 'Spanish_Spain', 'Spanish')}}</span>
                         Mes: {{ucfirst(strftime("%B", DateTime::createFromFormat('!m', $monthRow)->getTimestamp()))}}
                     </th>
                 </tr>
