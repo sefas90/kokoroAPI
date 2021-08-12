@@ -62,7 +62,6 @@ class ExportController extends BaseController {
                         foreach ($request['monthsSelected'] as $ke => $ro) {
                             if (is_string($ro)) {
                                 $month = date($this->getMonth($ro));
-                                // $planing = $result->planinfMaterial;
                                 $planing = DB::table('material_planing')
                                     ->select('broadcast_day', 'times_per_day')
                                     ->where('material_planing.material_id', '=', $id)
@@ -87,25 +86,24 @@ class ExportController extends BaseController {
                             }
                         }
                     } else {
-                        // $planing = $result->planingMaterial();
                         $planing = PlaningMaterial::where('material_planing.material_id', '=', $id)
                             ->select('broadcast_day', 'times_per_day')
                             ->get();
                         $m = date("m", strtotime($planing[0]->broadcast_day));
                         $pla[$m] = array();
-                        $spots = 0;
-                        // $micro = microtime(true);
-                        foreach ($planing as $k => $r) {
-                            $r->day = date("d", strtotime($planing[$k]->broadcast_day));
-                            $m = date("m", strtotime($planing[$k]->broadcast_day));
-                            $spots += $r->times_per_day;
-                            $pla[$m][] = $r;
-                            $months[] = $m;
+                        if (count($planing)) {
+                            $spots = 0;
+                            foreach ($planing as $k => $r) {
+                                $r->day = date("d", strtotime($planing[$k]->broadcast_day));
+                                $m = date("m", strtotime($planing[$k]->broadcast_day));
+                                $spots += $r->times_per_day;
+                                $pla[$m][] = $r;
+                                $months[] = $m;
+                            }
+                            $result[$key]->spots = $spots;
+                            $totalSpots += $spots;
+                            $result[$key]->planing = $pla;
                         }
-                        // $micro2 = microtime(true);
-                        $result[$key]->spots = $spots;
-                        $totalSpots += $spots;
-                        $result[$key]->planing = $pla;
                     }
                 }
 
@@ -302,6 +300,9 @@ class ExportController extends BaseController {
                 ])
                 ->get();
 
+            $pla = array();
+            $months = array();
+
             if (count($result) > 0) {
                 $total = 0;
                 $totalSpots = 0;
@@ -313,17 +314,24 @@ class ExportController extends BaseController {
                             ['material_auspice_planing.material_auspice_id', '=', $id]
                         ])
                         ->get();
+                    $m = date("m", strtotime($planing[0]->broadcast_day));
+                    $pla[$m] = array();
                     if (count($planing)) {
                         $spots = 0;
                         foreach ($planing as $k => $r) {
-                            $planing[$k]->day = date("d", strtotime($planing[$k]->broadcast_day));
+                            $r->day = date("d", strtotime($planing[$k]->broadcast_day));
+                            $m = date("m", strtotime($planing[$k]->broadcast_day));
                             $spots += $planing[$k]->times_per_day;
+                            $pla[$m][] = $r;
+                            $months[] = $m;
                         }
                         $result[$key]->spots = $spots;
                         $totalSpots += $spots;
-                        $result[$key]->planing = $planing;
+                        $result[$key]->planing = $pla;
                     }
                 }
+
+                $months = array_unique($months);
 
                 $orderNumber = OrderNumber::where('guide_id', '=', $result[0]->guide_id)->get();
 
@@ -377,6 +385,7 @@ class ExportController extends BaseController {
                     'pages'           => $pages,
                     'date'            => date("m-d-Y"),
                     'month_ini'       => $month,
+                    'months'          => $months,
                     'year'            => $year,
                     'daysInMonth'     => cal_days_in_month(CAL_GREGORIAN, $month, $year),
                     'date-'           => date("F Y", strtotime("2021-05-12")),
@@ -399,6 +408,8 @@ class ExportController extends BaseController {
                     $response['result'][$llave]->totalCost = $result[0]->cost / count($result);
                     $response['totalMount'] += $result[0]->cost / count($result);
                 }
+
+                // return $response;
 
                 return !$request->isOrderCampaign ? $this->exportPdf($response, 'auspice', 'auspice.pdf') : $response;
             } else {

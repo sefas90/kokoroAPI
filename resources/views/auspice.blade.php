@@ -32,6 +32,12 @@
     tr:nth-child(even) {
         background-color: #f2f2f2;
     }
+    hr{
+        page-break-after: always;
+        border: none;
+        margin: 0;
+        padding: 0;
+    }
     .title{
         width: 100%;
     }
@@ -80,9 +86,10 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 </head>
 <body>
-
-<div class="container">
-    <div>
+<span class="hidden">{{$count = 0}}</span>
+@foreach($data['months'] as $months => $monthRow)
+    <div class="container">
+        <div>
         <table class="data-table">
             <thead>
             <tr>
@@ -94,6 +101,7 @@
                 <th>Fecha de emision:<br>{{$data['date']}}</th>
                 <th>
                     <span class="hidden">{{setlocale(LC_ALL, "es_ES", 'Spanish_Spain', 'Spanish')}}</span>
+                    Mes: {{ucfirst(strftime("%B", DateTime::createFromFormat('!m', $monthRow)->getTimestamp()))}}
                 </th>
             </tr>
             </thead>
@@ -114,24 +122,26 @@
                 <td class="right"><div class="nowrap">Inversión</div>{{$data['currency']}}</td>
             </tr>
             @foreach($data['result'] as $key => $row)
+            @if(isset($row->planing[$monthRow]))
             <tr class="text-all">
                 <td>{{ $row->media_name }}</td>
                 <td>{{ $row->show }}</td>
                 <td>{{ substr($row->hourIni,0,-3) }} {{ substr($row->hourEnd,0,-3) }}</td>
                 <td>{{ $row->material_name }}</td>
                 <td>{{ $row->duration }}</td>
-                @for ($i = 1; $i <= $data['daysInMonth']; $i++)
+                @for ($i = 1; $i <= cal_days_in_month(CAL_GREGORIAN, $monthRow, $data['year']); $i++)
                 <td class="border-table">
-                    @foreach($row->planing as $k => $r)
-                    @if ($i == $r->day)
-                    <span class="selected">{{ $r->times_per_day }}</span>
-                    @endif
+                    @foreach($row->planing[$monthRow] as $k => $r)
+                        @if ($i == $r->day)
+                            <span class="selected">{{ $r->times_per_day }}</span>
+                        @endif
                     @endforeach
                 </td>
                 @endfor
                 <td>{{ $row->spots }}</td>
                 <td class="right">{{ number_format($row->totalCost / $data['currencyValue'], 2, ',', '.') }}</td>
             </tr>
+            @endif
             @endforeach
             </tbody>
         </table>
@@ -180,7 +190,12 @@
             </tbody>
         </table>
     </div>
-</div>
+    </div>
+    @if ($count < count($data['months']) - 1)
+    <span class="hidden">{{$count++}}</span>
+    <hr>
+    @endif
+@endforeach
 <script type="text/php">
     if (isset($pdf)) {
         $text = "Página {PAGE_NUM} / {PAGE_COUNT}";
