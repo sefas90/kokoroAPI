@@ -494,7 +494,16 @@ class ExportController extends BaseController {
     }
 
     public function export(Request $request) {
-        return (new ReportExport)->request($request);
+        $validator = Validator::make($request->all(), [
+            'clientId'   => 'required',
+            'dateIni'      => 'before_or_equal:dateEnd',
+            'dateEnd'      => 'after_or_equal:dateIni',
+        ]);
+        if (!$validator->fails()) {
+            return (new ReportExport)->request($request);
+        } else {
+            return $this->sendError('Error de validacion.', $validator->errors());
+        }
     }
 
     public function getUnitCost($unitCost, $mediaType, $duration) {

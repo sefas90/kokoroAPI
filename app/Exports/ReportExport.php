@@ -5,7 +5,6 @@ namespace App\Exports;
 use App\Models\Client;
 use App\Models\Currency;
 use App\Models\User;
-use DateTime;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
@@ -25,7 +24,47 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
 
     public function view(): View {
         $request = $this->req;
-        $currency = Currency::find($request->currencyId) ? Currency::find($request->currencyId) : Currency::find(1);
+
+        $request['currency'] = Currency::find($request->currencyId) ? Currency::find($request->currencyId) : Currency::find(1);
+
+        $response = $this->getCampaignReport($request);
+
+
+
+        $datas = [$response, $request['currency']];
+
+        return view('exports.reports', [
+            'datas' => $datas
+        ]);
+    }
+
+    function getCampaignReport($request): array {
+        $where = [['clients.deleted_at', '=', null]];
+        if ($request['clientId']) {
+            $where[] = ['clients.id', '=', $request->clientId];
+        }
+
+        if ($request['planId']) {
+            $where[] = ['plan.id', '=', $request->planId];
+        }
+
+        if ($request['campaignId']) {
+            $where[] = ['campaigns.id', '=', $request->campaignId];
+        }
+
+        if ($request['dateIni'] && $request['dateEnd']) {
+            $where[] = ['broadcast_day', '>=', $request['dateIni']];
+            $where[] = ['broadcast_day', '<=', $request['dateEnd']];
+        }
+
+        if ($request['dateIni'] && !$request['dateEnd']) {
+            $where[] = [];
+        }
+
+        if (!$request['dateIni'] && $request['dateEnd']) {
+            $where[] = [];
+        }
+
         $result = Client::select('clients.id as client_id', 'client_name', 'representative', 'clients.NIT as clientNit', 'billing_address', 'billing_policies',
             'plan_name', 'campaigns.id as budget', 'plan.id as plan_id', 'guide_name', 'guides.id as guide_id', 'order_number', 'order_numbers.version',
             'media.id as media_id', 'material_name', 'duration', 'materials.id as material_id', 'product', 'campaign_name', 'guides.billing_number',
@@ -39,12 +78,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
             ->join('media_types', 'media_types.id', '=', 'media.media_type')
             ->join('cities', 'cities.id', '=', 'media.city_id')
             ->join('order_numbers', 'order_numbers.guide_id', '=', 'guides.id')
-            ->where([
-                ['clients.deleted_at', '=', null],
-                ['clients.id', '=', $request->clientId],
-                ['plan.id', '=', $request->planId],
-                ['campaigns.id', '=', $request->campaignId]
-            ])
+            ->where($where)
             ->orderBy('materials.id')
             ->get();
 
@@ -72,7 +106,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
                 $fila->user          = $user;
                 $fila->row           = $row;
                 $fila->cost          = $this->getUnitCost($row->cost, $row->media_type, $row->duration);
-                $fila->currencyValue = $currency->currency_value;
+                $fila->currencyValue = $request['currency']->currency_value;
                 $fila->duration      = $row->duration;
                 $fila->broadcast_day = $r->broadcast_day;
                 $fila->weekOfYear    = $this->weekOfYear(strtotime($r->broadcast_day));
@@ -84,12 +118,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
                 $fila  = (object)[];
             }
         }
-
-        $datas = [$response, $currency];
-
-        return view('exports.reports', [
-            'datas' => $datas
-        ]);
+        return $response;
     }
 
     function weekOfMonth($date) {

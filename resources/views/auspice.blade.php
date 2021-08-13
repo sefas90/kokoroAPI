@@ -115,7 +115,7 @@
                 <td>Horario</td>
                 <td>Material</td>
                 <td class="glued">Dur (seg.)</td>
-                @for ($i = 1; $i <= $data['daysInMonth']; $i++)
+                @for ($i = 1; $i <= cal_days_in_month(CAL_GREGORIAN, $monthRow, $data['year']); $i++)
                 <td class="days">{{ $i }}</td>
                 @endfor
                 <td class="glued">Spots</td>
