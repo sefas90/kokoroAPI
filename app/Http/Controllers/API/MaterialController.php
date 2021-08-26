@@ -21,7 +21,7 @@ class MaterialController extends BaseController {
         }
         $result = DB::table('materials')
             ->select('materials.id', 'material_name as materialName', 'duration', 'rates.show', 'guides.guide_name as guideName', 'guides.id as guideId',
-                'rates.id as rateId', 'rates.cost', 'media_types.media_type as mediaType', 'guides.editable as isEditable', 'media_types.id as mediaTypeId')
+                'rates.id as rateId','rates.cost', 'media_types.media_type as mediaType', 'guides.editable as isEditable', 'media_types.id as mediaTypeId', 'media_types.media_type as mediaTypeValue')
             ->join('guides', 'guides.id', '=', 'materials.guide_id')
             ->join('rates', 'rates.id', '=', 'materials.rate_id')
             ->join('media', 'media.id', '=', 'rates.media_id')

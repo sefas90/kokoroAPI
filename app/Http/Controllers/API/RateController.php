@@ -14,8 +14,10 @@ class RateController extends BaseController {
         $sort = explode(':', $request->sort);
         $rates = DB::table('rates')
             ->select('rates.id', 'show', 'hour_ini as hourIni', 'hour_end as hourEnd', 'brod_mo as brodMo', 'brod_tu as brodTu',
-                             'brod_we as brodWe', 'brod_th as brodTh', 'brod_fr as brodFr', 'brod_sa as brodSa', 'brod_su as brodSu', 'cost', 'media_name as mediaName', 'media.id as mediaId')
+                'brod_we as brodWe', 'brod_th as brodTh', 'brod_fr as brodFr', 'brod_sa as brodSa', 'brod_su as brodSu', 'cost', 'media_name as mediaName', 'media.id as mediaId',
+                'media_types.media_type as mediaTypeValue')
             ->join('media', 'media.id', '=', 'rates.media_id')
+            ->join('media_types', 'media_types.id', '=', 'media.media_type')
             ->where('rates.deleted_at', '=', null)
             ->orderBy(empty($sort[0]) ? 'rates.id' : 'rates.'.$sort[0], empty($sort[1]) ? 'asc' : $sort[1])
             ->get();
