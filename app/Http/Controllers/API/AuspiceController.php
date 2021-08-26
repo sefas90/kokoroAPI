@@ -26,7 +26,7 @@ class AuspiceController extends BaseController {
             ->where([
                 ['auspices.deleted_at', '=', null]
             ])
-            ->orderBy(empty($sort[0]) ? 'auspices.id' : 'auspices.'.$sort[0], empty($sort[1]) ? 'asc' : $sort[1])
+            ->orderBy(empty($sort[0]) ? 'auspices.id' : 'auspices.'.$sort[0], empty($sort[1]) ? 'desc' : $sort[1])
             ->get();
 
         foreach ($auspice as $key => $row) {

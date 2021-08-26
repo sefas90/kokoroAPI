@@ -18,6 +18,11 @@ use DateTime;
 
 class ExportController extends BaseController {
 
+    protected $reportExport;
+    public function __construct(ReportExport $reportCtrl) {
+        $this->reportCtrl = $reportCtrl;
+    }
+
     public function order(Request $request) {
         $validator = Validator::make($request->all(), [
             'guideId'    => 'required'
@@ -429,65 +434,12 @@ class ExportController extends BaseController {
         ]);
         $currency = Currency::find($request->currencyId) ? Currency::find($request->currencyId) : Currency::find(1);
         if (!$validator->fails()) {
-            $result = Client::select('clients.id as client_id', 'client_name', 'representative', 'clients.NIT as clientNit', 'billing_address', 'billing_policies',
-                'plan_name', 'campaigns.id as budget', 'plan.id as plan_id', 'guide_name', 'guides.id as guide_id', 'order_number', 'order_numbers.version',
-                'media.id as media_id', 'material_name', 'duration', 'materials.id as material_id', 'product', 'campaign_name',
-                'rates.id as rate_id', 'show', 'cost', 'media_name', 'business_name', 'cities.id as city_id', 'city', 'media_types.media_type')
-                ->join('plan', 'plan.client_id', '=', 'clients.id')
-                ->join('campaigns', 'campaigns.plan_id', '=', 'plan.id')
-                ->join('guides', 'guides.campaign_id', '=', 'campaigns.id')
-                ->join('materials', 'materials.guide_id', '=', 'guides.id')
-                ->join('rates', 'rates.id', '=', 'materials.rate_id')
-                ->join('media', 'media.id', '=', 'rates.media_id')
-                ->join('media_types', 'media_types.id', '=', 'media.media_type')
-                ->join('cities', 'cities.id', '=', 'media.city_id')
-                ->join('order_numbers', 'order_numbers.guide_id', '=', 'guides.id')
-                ->where([
-                    ['clients.deleted_at', '=', null],
-                    ['clients.id', '=', $request->clientId],
-                    ['plan.id', '=', $request->planId],
-                    ['campaigns.id', '=', $request->campaignId]
-                ])
-                ->get();
+            $request['currency'] = Currency::find($request->currencyId) ? Currency::find($request->currencyId) : Currency::find(1);
+            $campaign = $this->reportCtrl->getCampaignReport($request);
+            $auspice = $this->reportCtrl->getAuspiceReport($request);
+            $datas = [$campaign, $request['currency'], $auspice];
 
-            $user = User::find($request->userId);
-            $user = empty($user) ? 'System' : $user->name . ' ' .$user->lastname;
-            $fila = (object)[];
-            $aux = null;
-            $response = array();
-            foreach ($result as $key => $row) {
-                $plan = DB::table('material_planing')
-                    ->select('*')
-                    ->where('material_id', '=', $row->material_id)
-                    ->get();
-                $week = 1;
-                $times_per_day = 0;
-                foreach ($plan as $k => $r) {
-                    $fila->week          = $this->weekOfMonth(strtotime($r->broadcast_day));
-                    if ($this->verifyWeek($aux) == $fila->week){
-
-                    } else {
-                        $times_per_day       = 0;
-                        $response[]          = $aux;
-                        $aux                 = null;
-                        $week++;
-                    }
-                    $fila->user          = $user;
-                    // $fila->row           = $row;
-                    $fila->cost          = $this->getUnitCost($row->cost, $row->media_type, $row->duration);
-                    $fila->currencyValue = $currency->currency_value;
-                    $fila->duration      = $row->duration;
-                    $fila->broadcast_day = $r->broadcast_day;
-                    $fila->month         = date("m", strtotime($r->broadcast_day));
-                    $fila->year          = date("Y", strtotime($r->broadcast_day));
-                    $times_per_day       += $r->times_per_day;
-                    $fila->times_per_day = $times_per_day;
-                    $aux   = $fila;
-                    $fila  = (object)[];
-                }
-            }
-
-            return $response;
+            return $datas;
         } else {
             return $this->sendError('Error de validacion.', $validator->errors());
         }

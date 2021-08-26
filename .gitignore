@@ -16,3 +16,5 @@ yarn-error.log
 *.iml
 .vscode
 composer.lock
+/out
+/storage
