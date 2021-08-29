@@ -131,15 +131,9 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
 
             $week = 1;
             $times_per_day = 0;
+            $total_passes = floor($total_passes);
             foreach ($plan as $k => $r) {
                 $fila->week          = $this->weekOfMonth(strtotime($r->broadcast_day));
-                if ($this->verifyWeek($aux) == $fila->week){
-                } else {
-                    $times_per_day       = 0;
-                    $response[]          = $aux;
-                    $aux                 = null;
-                    $week++;
-                }
                 $fila->user          = $user;
                 $fila->row           = $row;
                 $fila->cost          = $this->getAuspiceUnitCost($row->cost, $total_passes, count($material));
@@ -149,11 +143,21 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
                 $fila->weekOfYear    = $this->weekOfYear(strtotime($r->broadcast_day));
                 $fila->month         = date("m", strtotime($r->broadcast_day));
                 $fila->year          = date("Y", strtotime($r->broadcast_day));
+                if ($this->verifyWeek($aux) == $fila->week){
+                } else {
+                    $times_per_day       = 0;
+                    $response[]          = $aux;
+                    $aux                 = null;
+                    $week++;
+                }
                 $times_per_day       += $r->times_per_day;
                 $fila->times_per_day = $times_per_day;
                 $aux   = $fila;
                 $fila  = (object)[];
             }
+        }
+        if ($aux) {
+            $response[] = $aux;
         }
 
         return $response;

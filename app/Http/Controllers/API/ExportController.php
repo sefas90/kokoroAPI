@@ -118,11 +118,13 @@ class ExportController extends BaseController {
 
                 if($result[0]->editable == 1) {
                     if (count($orderNumber) > 0) {
-                        $orderNumber = OrderNumber::find($orderNumber[0]->id);
-                        $observation[0] = 'Remplazando a la orden '.$orderNumber->order_number.'.'.$orderNumber->version;
-                        $orderNumber->version = $orderNumber->version +1;
-                        $orderNumber->observation = $observation[0].' - '.$observation[1];
-                        $orderNumber->save();
+                        if ($request['newOrder']) {
+                            $orderNumber = OrderNumber::find($orderNumber[0]->id);
+                            $observation[0] = 'Remplazando a la orden '.$orderNumber->order_number.'.'.$orderNumber->version;
+                            $orderNumber->version = $orderNumber->version +1;
+                            $orderNumber->observation = $observation[0].' - '.$observation[1];
+                            $orderNumber->save();
+                        }
                     } else {
                         $order = OrderNumber::all()->max('order_number');
                         $orderNumber = OrderNumber::create([
@@ -252,7 +254,6 @@ class ExportController extends BaseController {
             if($orderNumber[0]->editable == 1) {
                 $max_order   = OrderNumber::where('guide_id', '=', $id)->get()->max('order_number');
                 $max_version = OrderNumber::where('guide_id', '=', $id)->get()->max('version') + 1;
-                $observation[0] = 'Remplaza a la orden ' . $max_order.'.'.$max_version.'';
                 return $this->sendResponse([
                     'order_number'  => ''. $max_order . '.' . $max_version
                 ]);
@@ -263,6 +264,27 @@ class ExportController extends BaseController {
                     'order_number'  => ''. $max_order . '.' . $max_version
                 ]);
             }
+        } else {
+            $order = OrderNumber::all()->max('order_number') + 1;
+            return $this->sendResponse([
+                'order_number'  => $order.'.0'
+            ]);
+        }
+    }
+
+    public function orderNumberAuspice($id) {
+        $orderNumber = DB::table('order_numbers')
+            ->select('*')
+            ->join('guides', 'guides.id', '=', 'order_numbers.guide_id')
+            ->where('order_numbers.guide_id', '=', $id)
+            ->get();
+
+        if (count($orderNumber) > 0) {
+            $max_order   = OrderNumber::where('guide_id', '=', $id)->get()->max('order_number');
+            $max_version = OrderNumber::where('guide_id', '=', $id)->get()->max('version');
+            return $this->sendResponse([
+                'order_number'  => ''. $max_order . '.' . $max_version
+            ]);
         } else {
             $order = OrderNumber::all()->max('order_number') + 1;
             return $this->sendResponse([

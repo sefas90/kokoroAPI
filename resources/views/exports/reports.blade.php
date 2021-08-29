@@ -62,6 +62,7 @@
             <td>{{ $data->row->billing_number }}</td>
         </tr>
     @endforeach
+    <tr></tr>
     @foreach ($datas[2] as $auspice)
         <tr>
             <td>{{ $auspice->row->client_name }}</td>
