@@ -118,13 +118,11 @@ class ExportController extends BaseController {
 
                 if($result[0]->editable == 1) {
                     if (count($orderNumber) > 0) {
-                        if ($request['newOrder']) {
-                            $orderNumber = OrderNumber::find($orderNumber[0]->id);
-                            $observation[0] = 'Remplazando a la orden '.$orderNumber->order_number.'.'.$orderNumber->version;
-                            $orderNumber->version = $orderNumber->version +1;
-                            $orderNumber->observation = $observation[0].' - '.$observation[1];
-                            $orderNumber->save();
-                        }
+                        $orderNumber = OrderNumber::find($orderNumber[0]->id);
+                        $observation[0] = 'Remplazando a la orden '.$orderNumber->order_number.'.'.$orderNumber->version;
+                        $orderNumber->version = $orderNumber->version +1;
+                        $orderNumber->observation = $observation[0].' - '.$observation[1];
+                        $orderNumber->save();
                     } else {
                         $order = OrderNumber::all()->max('order_number');
                         $orderNumber = OrderNumber::create([
@@ -137,9 +135,7 @@ class ExportController extends BaseController {
                 } else {
                     $orderNumber = OrderNumber::find($orderNumber[0]->id);
                 }
-                if(count($orderNumber) > 0) {
-                    $orderNumber = $orderNumber[0];
-                }
+
                 $orderNumber = $orderNumber->order_number.'.'.$orderNumber->version;
 
                 $date_ini = new DateTime($result[0]->date_ini);
