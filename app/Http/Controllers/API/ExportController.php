@@ -137,6 +137,9 @@ class ExportController extends BaseController {
                 } else {
                     $orderNumber = OrderNumber::find($orderNumber[0]->id);
                 }
+                if(count($orderNumber) > 0) {
+                    $orderNumber = $orderNumber[0];
+                }
                 $orderNumber = $orderNumber->order_number.'.'.$orderNumber->version;
 
                 $date_ini = new DateTime($result[0]->date_ini);

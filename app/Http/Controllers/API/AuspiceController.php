@@ -16,7 +16,7 @@ class AuspiceController extends BaseController {
         $auspice = DB::table('auspices')
             ->select('auspices.id', 'auspice_name as auspiceName', 'auspices.cost', 'rates.show', 'rates.id as rateId', 'guides.guide_name as guideName', 'guides.id as guideId', 'guides.editable',
                 'guides.date_ini as dateIni', 'guides.date_end as dateEnd', 'brod_mo', 'brod_tu', 'brod_we', 'brod_th', 'brod_fr', 'brod_sa', 'brod_su', 'media_types.media_type as mediaType', 'clients.client_name as clientName',
-                'media.media_name as mediaName', 'media_types.media_type as mediaTypeValue', 'campaigns.id as budget', 'editable as status')
+                'media.media_name as mediaName', 'media_types.media_type as mediaTypeValue', 'campaigns.id as budget', 'editable as status', 'manual_apportion as manualApportion')
             ->join('rates', 'rates.id', '=', 'auspices.rate_id')
             ->join('guides', 'guides.id', '=', 'auspices.guide_id')
             ->join('campaigns', 'campaigns.id', '=', 'guides.campaign_id')
@@ -59,10 +59,11 @@ class AuspiceController extends BaseController {
         }
 
         $auspice = new Auspice(array(
-            'auspice_name' => trim($request->auspiceName),
-            'cost'         => trim($request->cost),
-            'guide_id'     => trim($request->guideId),
-            'rate_id'      => trim($request->rateId)
+            'auspice_name'     => trim($request->auspiceName),
+            'cost'             => trim($request->cost),
+            'guide_id'         => trim($request->guideId),
+            'rate_id'          => trim($request->rateId),
+            'manual_apportion' => trim($request->prorrateoManual)
         ));
 
         return $auspice->save() ?
