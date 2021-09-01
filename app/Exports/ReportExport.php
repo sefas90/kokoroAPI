@@ -68,27 +68,29 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
             $week = 1;
             $times_per_day = 0;
             foreach ($plan as $k => $r) {
-                $fila->week          = $this->weekOfMonth(strtotime($r->broadcast_day));
-                if ($this->verifyWeek($aux) == $fila->week){
-                } else {
-                    $times_per_day       = 0;
-                    $response[]          = $aux;
-                    $aux                 = null;
-                    $week++;
+                if ($r) {
+                    $fila->week          = $this->weekOfMonth(strtotime($r->broadcast_day));
+                    if ($this->verifyWeek($aux) == $fila->week){
+                    } else {
+                        $times_per_day       = 0;
+                        $response[]          = $aux;
+                        $aux                 = null;
+                        $week++;
+                    }
+                    $fila->user          = $user;
+                    $fila->row           = $row;
+                    $fila->cost          = $this->getUnitCost($row->cost, $row->media_type, $row->duration);
+                    $fila->currencyValue = $request['currency']->currency_value;
+                    $fila->duration      = $row->duration;
+                    $fila->broadcast_day = $r->broadcast_day;
+                    $fila->weekOfYear    = $this->weekOfYear(strtotime($r->broadcast_day));
+                    $fila->month         = date("m", strtotime($r->broadcast_day));
+                    $fila->year          = date("Y", strtotime($r->broadcast_day));
+                    $times_per_day       += $r->times_per_day;
+                    $fila->times_per_day = $times_per_day;
+                    $aux   = $fila;
+                    $fila  = (object)[];
                 }
-                $fila->user          = $user;
-                $fila->row           = $row;
-                $fila->cost          = $this->getUnitCost($row->cost, $row->media_type, $row->duration);
-                $fila->currencyValue = $request['currency']->currency_value;
-                $fila->duration      = $row->duration;
-                $fila->broadcast_day = $r->broadcast_day;
-                $fila->weekOfYear    = $this->weekOfYear(strtotime($r->broadcast_day));
-                $fila->month         = date("m", strtotime($r->broadcast_day));
-                $fila->year          = date("Y", strtotime($r->broadcast_day));
-                $times_per_day       += $r->times_per_day;
-                $fila->times_per_day = $times_per_day;
-                $aux   = $fila;
-                $fila  = (object)[];
             }
         }
         return $response;
@@ -134,27 +136,29 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
             $total_passes = floor($total_passes);
             if (count($material) > 0 && $total_passes > 0) {
                 foreach ($plan as $k => $r) {
-                    $fila->week          = $this->weekOfMonth(strtotime($r->broadcast_day));
-                    $fila->user          = $user;
-                    $fila->row           = $row;
-                    $fila->cost          = $this->getAuspiceUnitCost($row->cost, $total_passes, count($material));
-                    $fila->currencyValue = $request['currency']->currency_value;
-                    $fila->duration      = $row->duration;
-                    $fila->broadcast_day = $r->broadcast_day;
-                    $fila->weekOfYear    = $this->weekOfYear(strtotime($r->broadcast_day));
-                    $fila->month         = date("m", strtotime($r->broadcast_day));
-                    $fila->year          = date("Y", strtotime($r->broadcast_day));
-                    if ($this->verifyWeek($aux) == $fila->week){
-                    } else {
-                        $times_per_day       = 0;
-                        $response[]          = $aux;
-                        $aux                 = null;
-                        $week++;
+                    if ($r) {
+                        $fila->week          = $this->weekOfMonth(strtotime($r->broadcast_day));
+                        $fila->user          = $user;
+                        $fila->row           = $row;
+                        $fila->cost          = $this->getAuspiceUnitCost($row->cost, $total_passes, count($material));
+                        $fila->currencyValue = $request['currency']->currency_value;
+                        $fila->duration      = $row->duration;
+                        $fila->broadcast_day = $r->broadcast_day;
+                        $fila->weekOfYear    = $this->weekOfYear(strtotime($r->broadcast_day));
+                        $fila->month         = date("m", strtotime($r->broadcast_day));
+                        $fila->year          = date("Y", strtotime($r->broadcast_day));
+                        if ($this->verifyWeek($aux) == $fila->week){
+                        } else {
+                            $times_per_day       = 0;
+                            $response[]          = $aux;
+                            $aux                 = null;
+                            $week++;
+                        }
+                        $times_per_day       += $r->times_per_day;
+                        $fila->times_per_day = $times_per_day;
+                        $aux   = $fila;
+                        $fila  = (object)[];
                     }
-                    $times_per_day       += $r->times_per_day;
-                    $fila->times_per_day = $times_per_day;
-                    $aux   = $fila;
-                    $fila  = (object)[];
                 }
                 if ($aux) {
                     $response[] = $aux;
