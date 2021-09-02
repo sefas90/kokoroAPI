@@ -101,7 +101,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
         $result = Client::select('clients.id as client_id', 'client_name', 'representative', 'clients.NIT as clientNit', 'billing_address', 'billing_policies',
             'plan_name', 'campaigns.id as budget', 'plan.id as plan_id', 'guide_name', 'guides.id as guide_id', 'order_number', 'order_numbers.version',
             'media.id as media_id', 'material_name', 'duration', 'auspice_materials.id as material_id', 'product', 'campaign_name', 'guides.billing_number',
-            'rates.id as rate_id', 'show', 'auspices.cost', 'media_name', 'business_name', 'cities.id as city_id', 'city', 'media_types.media_type')
+            'rates.id as rate_id', 'show', 'auspices.cost', 'auspices.id as auspiceId', 'media_name', 'business_name', 'cities.id as city_id', 'city', 'media_types.media_type')
             ->join('plan', 'plan.client_id', '=', 'clients.id')
             ->join('campaigns', 'campaigns.plan_id', '=', 'plan.id')
             ->join('guides', 'guides.campaign_id', '=', 'campaigns.id')
@@ -122,7 +122,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
         $response = array();
 
         foreach ($result as $key => $row) {
-            $material = AuspiceMaterial::where('id', '=', $row->material_id)->get();
+            $material = AuspiceMaterial::where('auspice_id', '=', $row->auspiceId)->get();
             $plan = DB::table('material_auspice_planing')
                 ->select('*')
                 ->where('material_auspice_id', '=', $row->material_id)
