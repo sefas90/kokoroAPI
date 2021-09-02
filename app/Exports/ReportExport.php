@@ -37,7 +37,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
     }
 
     public function getCampaignReport($request): array {
-        $where = $this->buildWhere($request);
+        $where = $this->buildWhere($request, true);
         $result = Client::select('clients.id as client_id', 'client_name', 'representative', 'clients.NIT as clientNit', 'billing_address', 'billing_policies',
             'plan_name', 'campaigns.id as budget', 'plan.id as plan_id', 'guide_name', 'guides.id as guide_id', 'order_number', 'order_numbers.version',
             'media.id as media_id', 'material_name', 'duration', 'materials.id as material_id', 'product', 'campaign_name', 'guides.billing_number',
@@ -97,7 +97,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
     }
 
     public function getAuspiceReport($request): array {
-        $where = $this->buildWhere($request);
+        $where = $this->buildWhere($request, false);
         $result = Client::select('clients.id as client_id', 'client_name', 'representative', 'clients.NIT as clientNit', 'billing_address', 'billing_policies',
             'plan_name', 'campaigns.id as budget', 'plan.id as plan_id', 'guide_name', 'guides.id as guide_id', 'order_number', 'order_numbers.version',
             'media.id as media_id', 'material_name', 'duration', 'auspice_materials.id as material_id', 'product', 'campaign_name', 'guides.billing_number',
@@ -208,7 +208,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
         return $aux->week ?? 1;
     }
 
-    function buildWhere($request): array {
+    function buildWhere($request, $isCampaign): array {
         $where = [['clients.deleted_at', '=', null], ['guides.editable', '<>', 2], ['guides.deleted_at', '=', null]];
         if ($request['clientId']) {
             $where[] = ['clients.id', '=', $request->clientId];
@@ -234,6 +234,13 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
         if (!$request['dateIni'] && $request['dateEnd']) {
             $where[] = [];
         }
+
+        if ($isCampaign) {
+            $where[] = ['materials.deleted_at', '=', null];
+        } else {
+            $where[] = ['auspice_materials.deleted_at', '=', null];
+        }
+
         return $where;
     }
 }
