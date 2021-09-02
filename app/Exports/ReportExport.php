@@ -237,8 +237,10 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
 
         if ($isCampaign) {
             $where[] = ['materials.deleted_at', '=', null];
+            $where[] = ['guides.deleted_at', '=', null];
         } else {
             $where[] = ['auspice_materials.deleted_at', '=', null];
+            $where[] = ['auspices.deleted_at', '=', null];
         }
 
         return $where;
