@@ -239,6 +239,12 @@ class GuideController extends BaseController {
             ->join('media_types', 'media_types.id', '=', 'media.media_type')
             ->where([
                 ['materials.deleted_at', '=', null],
+                ['guides.deleted_at', '=', null],
+                ['rates.deleted_at', '=', null],
+                ['media.deleted_at', '=', null],
+                ['campaigns.deleted_at', '=', null],
+                ['plan.deleted_at', '=', null],
+                ['clients.deleted_at', '=', null],
                 ['guides.id', '=', $id],
                 ['guides.editable', '<>', 2]
             ])

@@ -64,7 +64,6 @@
             </tr>
         @endif
     @endforeach
-    <tr></tr>
     @foreach ($datas[2] as $auspice)
         @if($auspice && $auspice->row)
         <tr>

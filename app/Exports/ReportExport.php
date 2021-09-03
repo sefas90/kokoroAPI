@@ -5,7 +5,9 @@ namespace App\Exports;
 use App\Models\AuspiceMaterial;
 use App\Models\Client;
 use App\Models\Currency;
+use App\Models\PlaningAuspiceMaterial;
 use App\Models\User;
+use Dflydev\DotAccessData\Data;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
@@ -65,33 +67,25 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
                 ->select('*')
                 ->where('material_id', '=', $row->material_id)
                 ->get();
-            $week = 1;
             $times_per_day = 0;
             foreach ($plan as $k => $r) {
-                if ($r) {
-                    $fila->week          = $this->weekOfMonth(strtotime($r->broadcast_day));
-                    if ($this->verifyWeek($aux) == $fila->week){
-                    } else {
-                        $times_per_day       = 0;
-                        $response[]          = $aux;
-                        $aux                 = null;
-                        $week++;
-                    }
-                    $fila->user          = $user;
-                    $fila->row           = $row;
-                    $fila->cost          = $this->getUnitCost($row->cost, $row->media_type, $row->duration);
-                    $fila->currencyValue = $request['currency']->currency_value;
-                    $fila->duration      = $row->duration;
-                    $fila->broadcast_day = $r->broadcast_day;
-                    $fila->weekOfYear    = $this->weekOfYear(strtotime($r->broadcast_day));
-                    $fila->month         = date("m", strtotime($r->broadcast_day));
-                    $fila->year          = date("Y", strtotime($r->broadcast_day));
-                    $times_per_day       += $r->times_per_day;
-                    $fila->times_per_day = $times_per_day;
-                    $aux   = $fila;
-                    $fila  = (object)[];
-                }
+                $fila->week          = $this->weekOfMonth(strtotime($r->broadcast_day));
+                $fila->user          = $user;
+                $fila->row           = $row;
+                $fila->cost          = $this->getUnitCost($row->cost, $row->media_type, $row->duration);
+                $fila->currencyValue = $request['currency']->currency_value;
+                $fila->duration      = $row->duration;
+                $fila->broadcast_day = $r->broadcast_day;
+                $fila->weekOfYear    = $this->weekOfYear(strtotime($r->broadcast_day));
+                $fila->month         = date("m", strtotime($r->broadcast_day));
+                $fila->year          = date("Y", strtotime($r->broadcast_day));
+                $times_per_day       += $r->times_per_day;
+                $fila->times_per_day = $times_per_day;
+                $aux   = $fila;
+                $fila  = (object)[];
             }
+            $response[]          = $aux;
+            $aux                 = null;
         }
         return $response;
     }
@@ -122,28 +116,22 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
         $response = array();
 
         foreach ($result as $key => $row) {
-            $material = AuspiceMaterial::where('auspice_id', '=', $row->auspiceId)->get();
-            $plan = DB::table('material_auspice_planing')
-                ->select('*')
-                ->where('material_auspice_id', '=', $row->material_id)
-                ->get();
-            $total_passes = DB::table('material_auspice_planing')
-                ->where('material_auspice_id', '=', $row->material_id)
+            $material = AuspiceMaterial::where([
+                ['auspice_id', '=', $row->auspiceId],
+                ['deleted_at', '=', null]
+            ])->get();
+            $plan = PlaningAuspiceMaterial::where([
+                ['material_auspice_id', '=', $row->material_id]
+            ])->select('*')->get();
+            $total_passes = PlaningAuspiceMaterial::where('material_auspice_id', '=', $row->material_id)
                 ->sum('times_per_day');
 
-            $week = 1;
             $times_per_day = 0;
             $total_passes = floor($total_passes);
             if (count($material) > 0 && $total_passes > 0) {
                 foreach ($plan as $k => $r) {
                     $fila->cost          = $this->getAuspiceUnitCost($row->cost, $total_passes, count($material));
                     $fila->week          = $this->weekOfMonth(strtotime($r->broadcast_day));
-                    if ($this->verifyWeek($aux) != $fila->week) {
-                        $times_per_day = 0;
-                        $response[] = $aux;
-                        $aux = null;
-                        $week++;
-                    }
                     $fila->user          = $user;
                     $fila->row           = $row;
                     $fila->currencyValue = $request['currency']->currency_value;
@@ -157,6 +145,8 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
                     $aux   = $fila;
                     $fila  = (object)[];
                 }
+                $response[] = $aux;
+                $aux = null;
             }
         }
 
@@ -237,11 +227,11 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
 
         if ($isCampaign) {
             $where[] = ['materials.deleted_at', '=', null];
-            $where[] = ['guides.deleted_at', '=', null];
         } else {
             $where[] = ['auspice_materials.deleted_at', '=', null];
             $where[] = ['auspices.deleted_at', '=', null];
         }
+        $where[] = ['guides.deleted_at', '=', null];
 
         return $where;
     }
