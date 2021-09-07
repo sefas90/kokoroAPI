@@ -7,13 +7,13 @@ use App\Models\Client;
 use App\Models\Currency;
 use App\Models\PlaningAuspiceMaterial;
 use App\Models\User;
-use Dflydev\DotAccessData\Data;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use DateTime;
 
 class ReportExport implements FromView, Responsable, ShouldAutoSize {
     use Exportable;
@@ -63,9 +63,10 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
         $aux = null;
         $response = array();
         foreach ($result as $key => $row) {
+            $where = $this->buildDatesWhere($request, true, $row->material_id);
             $plan = DB::table('material_planing')
                 ->select('*')
-                ->where('material_id', '=', $row->material_id)
+                ->where($where)
                 ->get();
             $times_per_day = 0;
             foreach ($plan as $k => $r) {
@@ -120,9 +121,8 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
                 ['auspice_id', '=', $row->auspiceId],
                 ['deleted_at', '=', null]
             ])->get();
-            $plan = PlaningAuspiceMaterial::where([
-                ['material_auspice_id', '=', $row->material_id]
-            ])->select('*')->get();
+            $where = $this->buildDatesWhere($request, false, $row->material_id);
+            $plan = PlaningAuspiceMaterial::where($where)->select('*')->get();
             $total_passes = PlaningAuspiceMaterial::where('material_auspice_id', '=', $row->material_id)
                 ->sum('times_per_day');
 
@@ -212,19 +212,6 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
             $where[] = ['campaigns.id', '=', $request->campaignId];
         }
 
-        if ($request['dateIni'] && $request['dateEnd']) {
-            $where[] = ['broadcast_day', '>=', $request['dateIni']];
-            $where[] = ['broadcast_day', '<=', $request['dateEnd']];
-        }
-
-        if ($request['dateIni'] && !$request['dateEnd']) {
-            $where[] = [];
-        }
-
-        if (!$request['dateIni'] && $request['dateEnd']) {
-            $where[] = [];
-        }
-
         if ($isCampaign) {
             $where[] = ['materials.deleted_at', '=', null];
         } else {
@@ -234,5 +221,27 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
         $where[] = ['guides.deleted_at', '=', null];
 
         return $where;
+    }
+
+    function buildDatesWhere($request, $isCampaign, $materialId): array {
+        $where = $isCampaign ? [['material_id', '=', $materialId]] : [['material_auspice_id', '=', $materialId]];
+        if ($request['dateIni'] && $request['dateEnd']) {
+            $where[] = ['broadcast_day', '>=', $this->getDate($request['dateIni'])];
+            $where[] = ['broadcast_day', '<=', $this->getDate($request['dateEnd'])];
+        }
+
+        if ($request['dateIni'] && !$request['dateEnd']) {
+            $where[] = ['broadcast_day', '>=', $this->getDate($request['dateIni'])];
+        }
+
+        if (!$request['dateIni'] && $request['dateEnd']) {
+            $where[] = ['broadcast_day', '<=', $this->getDate($request['dateEnd'])];
+        }
+        return $where;
+    }
+
+    function getDate($timezone): string {
+        $date = new DateTime($timezone);
+        return $date->format('Y-m-d');
     }
 }
