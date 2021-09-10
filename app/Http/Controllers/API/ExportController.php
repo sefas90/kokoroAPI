@@ -306,12 +306,16 @@ class ExportController extends BaseController {
             ];
 
             $result = DB::table('auspices')
-                ->select('auspices.id as id', 'auspice_materials.id as auspiceMaterialsId', 'auspices.auspice_name', 'auspices.guide_id', 'auspices.rate_id',
-                    'guides.guide_name', 'guides.media_id', 'guides.campaign_id', 'guides.editable as editable', 'rates.show', 'auspice_materials.duration', 'auspice_materials.material_name',
-                    'rates.hour_ini', 'rates.hour_end', 'auspices.cost', 'media.media_name', 'media.business_name', 'media.NIT', 'media.media_type as mediaTypeId', 'media_types.media_type',
-                    'campaigns.campaign_name', 'campaigns.plan_id', 'plan.client_id', 'campaigns.date_ini', 'campaigns.date_end', 'campaigns.product',
-                    'rates.hour_ini as hourIni', 'rates.hour_end as hourEnd',
-                    'clients.id as clientId', 'clients.client_name as clientName', 'clients.representative', 'clients.NIT as clientNIT', 'clients.billing_address as billingAddress', 'clients.billing_policies as billingPolicies')
+                ->select('auspices.id as id', 'auspice_materials.id as auspiceMaterialsId', 'auspices.auspice_name',
+                    'auspices.guide_id', 'auspices.rate_id', 'guides.guide_name', 'guides.media_id', 'guides.campaign_id',
+                    'guides.editable as editable', 'rates.show', 'auspice_materials.duration', 'auspice_materials.material_name',
+                    'rates.hour_ini', 'rates.hour_end', 'auspices.cost', 'media.media_name', 'media.business_name',
+                    'media.NIT', 'media.media_type as mediaTypeId', 'media_types.media_type', 'campaigns.campaign_name',
+                    'campaigns.plan_id', 'plan.client_id', 'campaigns.date_ini', 'campaigns.date_end', 'campaigns.product',
+                    'rates.hour_ini as hourIni', 'rates.hour_end as hourEnd', 'clients.id as clientId', 'auspices.manual_apportion',
+                    'clients.client_name as clientName', 'clients.representative', 'clients.NIT as clientNIT',
+                    'auspice_materials.total_cost as materialCost', 'clients.billing_address as billingAddress',
+                    'clients.billing_policies as billingPolicies')
                 ->join('auspice_materials', 'auspice_materials.auspice_id', '=', 'auspices.id')
                 ->join('guides', 'guides.id', '=', 'auspices.guide_id')
                 ->join('rates', 'rates.id', '=', 'auspices.rate_id')
@@ -431,8 +435,8 @@ class ExportController extends BaseController {
 
                 foreach ($response['result'] as $llave => $fila) {
                     $response['result'][$llave]->unitCost = $result[0]->cost / count($result) / $fila->spots;
-                    $response['result'][$llave]->totalCost = $result[0]->cost / count($result);
-                    $response['totalMount'] += $result[0]->cost / count($result);
+                    $response['result'][$llave]->totalCost = !!$response['result'][$llave]->manual_apportion ? $response['result'][$llave]->materialCost : $result[0]->cost / count($result);
+                    $response['totalMount'] += !!$response['result'][$llave]->manual_apportion ? $response['result'][$llave]->materialCost : $result[0]->cost / count($result);
                 }
 
                 // return $response;

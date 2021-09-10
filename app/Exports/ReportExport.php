@@ -96,7 +96,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
         $result = Client::select('clients.id as client_id', 'client_name', 'representative', 'clients.NIT as clientNit', 'billing_address', 'billing_policies',
             'plan_name', 'campaigns.id as budget', 'plan.id as plan_id', 'guide_name', 'guides.id as guide_id', 'order_number', 'order_numbers.version',
             'media.id as media_id', 'material_name', 'duration', 'auspice_materials.id as material_id', 'product', 'campaign_name', 'guides.billing_number',
-            'rates.id as rate_id', 'show', 'auspices.cost', 'auspices.id as auspiceId', 'media_name', 'business_name', 'cities.id as city_id', 'city', 'media_types.media_type')
+            'rates.id as rate_id', 'show', 'auspices.cost', 'auspices.id as auspiceId', 'media_name', 'business_name', 'cities.id as city_id', 'city', 'media_types.media_type', 'manual_apportion')
             ->join('plan', 'plan.client_id', '=', 'clients.id')
             ->join('campaigns', 'campaigns.plan_id', '=', 'plan.id')
             ->join('guides', 'guides.campaign_id', '=', 'campaigns.id')
@@ -130,7 +130,11 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
             $total_passes = floor($total_passes);
             if (count($material) > 0 && $total_passes > 0) {
                 foreach ($plan as $k => $r) {
-                    $fila->cost          = $this->getAuspiceUnitCost($row->cost, $total_passes, count($material));
+                    if ($result[$key]->manual_apportion) {
+                        $fila->cost      = '';
+                    } else {
+                        $fila->cost      = $this->getAuspiceUnitCost($row->cost, $total_passes, count($material));
+                    }
                     $fila->week          = $this->weekOfMonth(strtotime($r->broadcast_day));
                     $fila->user          = $user;
                     $fila->row           = $row;
