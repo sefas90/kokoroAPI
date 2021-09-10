@@ -99,11 +99,30 @@ class GuideController extends BaseController {
             return $this->sendError('No se encontro el guide');
         }
 
-        $guide->guide_name = trim($request->guideName);
-        $guide->date_ini   = trim($request->dateIni);
-        $guide->date_end   = trim($request->dateEnd);
-        $guide->media_id   = trim($request->mediaId);
-        $guide->campaign_id   = trim($request->campaignId);
+        $guide->guide_name  = trim($request->guideName);
+        $guide->date_ini    = trim($request->dateIni);
+        $guide->date_end    = trim($request->dateEnd);
+        $guide->media_id    = trim($request->mediaId);
+        $guide->campaign_id = trim($request->campaignId);
+
+        if ($guide->media_id) {
+            // remove associated materials
+            $materials = Material::where('guide_id', '=', $id)->get();
+            foreach ($materials as $key => $row) {
+                $material = Material::find($row->id);
+                $material->guide_id = 0;
+                $material->save();
+                // $material->delete();
+            }
+            // remove associated auspices
+            $auspices = Auspice::where('guide_id', '=', $id)->get();
+            foreach ($auspices as $key => $row) {
+                $auspice = Material::find($row->id);
+                $auspice->guide_id = 0;
+                $auspice->save();
+                // $material->delete();
+            }
+        }
 
         return $guide->save() ?
             $this->sendResponse('', 'El guide ' . $guide->guide_name . ' se actualizo correctamente') :

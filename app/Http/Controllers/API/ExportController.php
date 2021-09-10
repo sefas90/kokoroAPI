@@ -120,7 +120,7 @@ class ExportController extends BaseController {
                     if (count($orderNumber) > 0) {
                         $orderNumber = OrderNumber::find($orderNumber[0]->id);
                         $observation[0] = 'Remplazando a la orden '.$orderNumber->order_number.'.'.$orderNumber->version;
-                        $orderNumber->version = $orderNumber->version +1;
+                        $orderNumber->version = $request->newOrder ? $orderNumber->version + 1 : $orderNumber->version;
                         $orderNumber->observation = $observation[0].' - '.$observation[1];
                         $orderNumber->save();
                     } else {
