@@ -130,7 +130,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
             $total_passes = floor($total_passes);
             if (count($material) > 0 && $total_passes > 0) {
                 foreach ($plan as $k => $r) {
-                    if ($result[$key]->manual_apportion) {
+                    if (!!$result[$key]->manual_apportion) {
                         $fila->cost      = '';
                     } else {
                         $fila->cost      = $this->getAuspiceUnitCost($row->cost, $total_passes, count($material));

@@ -4,7 +4,6 @@ namespace App\Http\Controllers\API;
 
 use App\Exports\ReportExport;
 use App\Models\Campaign;
-use App\Models\Client;
 use App\Models\Currency;
 use App\Models\Guide;
 use App\Models\Material;
@@ -119,7 +118,11 @@ class ExportController extends BaseController {
                 if($result[0]->editable == 1) {
                     if (count($orderNumber) > 0) {
                         $orderNumber = OrderNumber::find($orderNumber[0]->id);
-                        $observation[0] = 'Remplazando a la orden '.$orderNumber->order_number.'.'.$orderNumber->version;
+                        $observation[0] = $request->newOrder ?
+                            'Remplazando a la orden '.$orderNumber->order_number.'.'.$orderNumber->version :
+                            ($orderNumber->version == 0 ?
+                                '' :
+                                'Remplazando a la orden '.$orderNumber->order_number.'.'.($orderNumber->version - 1));
                         $orderNumber->version = $request->newOrder ? $orderNumber->version + 1 : $orderNumber->version;
                         $orderNumber->observation = $observation[0].' - '.$observation[1];
                         $orderNumber->save();

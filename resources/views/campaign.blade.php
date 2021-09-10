@@ -101,8 +101,45 @@
                 <tr>
                     <th>Fecha de emision:<br>{{$guideRow['date']}}</th>
                     <th>
-                        <span class="hidden">{{setlocale(LC_ALL, "es_ES", 'Spanish_Spain', 'Spanish')}}</span>
-                        Mes: {{ucfirst(strftime("%B", DateTime::createFromFormat('!m', $monthRow)->getTimestamp()))}}
+                        Mes:
+                        @switch ($monthRow)
+                            @case ('01')
+                            {{'Enero'}}
+                            @break
+                            @case ('02')
+                            {{'Febrero'}}
+                            @break
+                            @case ('03')
+                            {{'Marzo'}}
+                            @break
+                            @case ('04')
+                            {{'Abril'}}
+                            @break
+                            @case ('05')
+                            {{'Mayo'}}
+                            @break
+                            @case ('06')
+                            {{'Junio'}}
+                            @break
+                            @case ('07')
+                            {{'Julio'}}
+                            @break
+                            @case ('08')
+                            {{'Agosto'}}
+                            @break
+                            @case ('09')
+                            {{'Septiembre'}}
+                            @break
+                            @case ('10')
+                            {{'Octubre'}}
+                            @break
+                            @case ('11')
+                            {{'Noviembre'}}
+                            @break
+                            @case ('12')
+                            {{'Diciembre'}}
+                            @break
+                        @endswitch
                     </th>
                 </tr>
                 </thead>
