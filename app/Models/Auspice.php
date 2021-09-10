@@ -12,6 +12,7 @@ class Auspice extends Model {
         'auspice_name',
         'cost',
         'guide_id',
+        'manual_apportion',
         'rate_id',
         'created_at',
         'updated_at',
@@ -30,5 +31,5 @@ class Auspice extends Model {
         'deleted_at',
     ];
 
-    
+
 }

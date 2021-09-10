@@ -13,6 +13,7 @@ class AuspiceMaterial extends Model {
         'material_name',
         'duration',
         'auspice_id',
+        'total_cost',
         'created_at',
         'updated_at',
         'deleted_at'

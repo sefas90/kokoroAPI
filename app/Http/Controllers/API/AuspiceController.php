@@ -6,6 +6,7 @@ use App\Models\Auspice;
 use App\Models\AuspiceMaterial;
 use App\Models\OrderNumber;
 use App\Models\PlaningAuspiceMaterial;
+use Dflydev\DotAccessData\Data;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Validator;
@@ -32,7 +33,9 @@ class AuspiceController extends BaseController {
 
         foreach ($auspice as $key => $row) {
             $orderNumber = OrderNumber::where('guide_id', '=', $row->guideId)->get();
-
+            if (!!$row->manualApportion) {
+                $auspice[$key]->cost = $this->getManualAuspiceCost($row->id);
+            }
             $number = 'Orden no exportada';
             if (count($orderNumber) > 0) {
                 $orderNumber = $orderNumber[0];
@@ -49,7 +52,7 @@ class AuspiceController extends BaseController {
     public function store(Request $request) {
         $validator = Validator::make($request->all(), [
             'auspiceName' => 'required',
-            'cost'         => 'required',
+            'cost'        => 'numeric',
             'guideId'     => 'required',
             'rateId'      => 'required',
         ]);
@@ -57,13 +60,13 @@ class AuspiceController extends BaseController {
         if($validator->fails()){
             return $this->sendError('Error de validacion.', $validator->errors());
         }
-
+        $request->cost = !!$request->cost ? $request->cost : 0;
         $auspice = new Auspice(array(
             'auspice_name'     => trim($request->auspiceName),
             'cost'             => trim($request->cost),
             'guide_id'         => trim($request->guideId),
             'rate_id'          => trim($request->rateId),
-            'manual_apportion' => trim($request->prorrateoManual)
+            'manual_apportion' => trim($request->prorrateoManual) || 0
         ));
 
         return $auspice->save() ?
@@ -120,7 +123,8 @@ class AuspiceController extends BaseController {
         $material = new AuspiceMaterial(array(
             'material_name' => trim($request->materialName),
             'duration'      => empty($request->duration) ? 0 : trim($request->duration),
-            'auspice_id'    => trim($request->auspiceId)
+            'auspice_id'    => trim($request->auspiceId),
+            'total_cost'    => trim($request->cost)
         ));
 
         if($material->save())  {
@@ -199,7 +203,7 @@ class AuspiceController extends BaseController {
 
     public function getAuspiceMaterial($id) {
         $aus = Auspice::where('auspices.id', '=', $id)
-            ->select('auspices.id', 'auspice_name as auspiceName', 'auspices.cost', 'rates.show', 'guides.guide_name as guideName',
+            ->select('auspices.id', 'auspice_name as auspiceName', 'auspices.cost', 'rates.show', 'guides.guide_name as guideName', 'manual_apportion',
                 'guides.date_ini as dateIni', 'guides.date_end as dateEnd', 'brod_mo', 'brod_tu', 'brod_we', 'brod_th', 'brod_fr', 'brod_sa', 'brod_su', 'media_types.media_type as mediaType')
             ->join('rates', 'rates.id', '=', 'auspices.rate_id')
             ->join('guides', 'guides.id', '=', 'auspices.guide_id')
@@ -208,7 +212,7 @@ class AuspiceController extends BaseController {
             ->get();
 
         $aus = $aus[0];
-        $auspice = AuspiceMaterial::select('id', 'material_name as materialName', 'duration', 'auspice_id as auspiceId')->where('auspice_id', '=', $id)->get();
+        $auspice = AuspiceMaterial::select('id', 'material_name as materialName', 'duration', 'auspice_id as auspiceId', 'total_cost')->where('auspice_id', '=', $id)->get();
         if (!$auspice) {
             return $this->sendResponse([]);
         }
@@ -222,8 +226,13 @@ class AuspiceController extends BaseController {
                 ->where('material_auspice_id', '=', $row->id)->get();
 
             $auspice[$key]->passes = (int)$material;
-            $auspice[$key]->cost = number_format($aus->cost / count($auspice), 2, '.', '');
+            if(!!$aus->manual_apportion) {
+                $auspice[$key]->cost = $auspice[$key]->total_cost;
+            } else {
+                $auspice[$key]->cost = number_format($aus->cost / count($auspice), 2, '.', '');
+            }
             $auspice[$key]->mediaType = $aus->mediaType;
+
             $aux = [];
             foreach ($material_planing as $k => $r) {
                 $aux[$r->broadcast_day] = [
@@ -258,7 +267,7 @@ class AuspiceController extends BaseController {
             $this->sendError('Ocurrio un error al eliminar un material');
     }
 
-    public function getAuspiceCost($guide_id) {
+    public function getAuspiceCost($guide_id): float {
         $total_cost = 0;
         $auspices = Auspice::where([
             ['guide_id', '=', $guide_id],
@@ -271,11 +280,30 @@ class AuspiceController extends BaseController {
                 if (!!$row->manual_apportion) {
                     //calculated value
                     $total_cost = 0;
+                    $material = AuspiceMaterial::where([
+                        ['auspice_id', '=', $row->auspiceId],
+                        ['deleted_at', '=', null]
+                    ])->get();
+                    foreach ($material as $k => $r) {
+                        $total_cost += $r->total_cost;
+                    }
                 } else {
                     //happy path
                     $total_cost += $row->cost;
                 }
             }
+        }
+        return $total_cost;
+    }
+
+    function getManualAuspiceCost($auspiceId): float {
+        $total_cost = 0;
+        $material = AuspiceMaterial::where([
+            ['auspice_id', '=', $auspiceId],
+            ['deleted_at', '=', null]
+        ])->get();
+        foreach ($material as $k => $r) {
+            $total_cost += $r->total_cost;
         }
         return $total_cost;
     }
