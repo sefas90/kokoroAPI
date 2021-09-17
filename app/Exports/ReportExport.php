@@ -42,7 +42,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
         $where = $this->buildWhere($request, true);
         $result = Client::select('clients.id as client_id', 'client_name', 'representative', 'clients.NIT as clientNit', 'billing_address', 'billing_policies',
             'plan_name', 'campaigns.id as budget', 'plan.id as plan_id', 'guide_name', 'guides.id as guide_id', 'order_number', 'order_numbers.version',
-            'media.id as media_id', 'material_name', 'duration', 'materials.id as material_id', 'product', 'campaign_name', 'guides.billing_number',
+            'media.id as media_id', 'material_name', 'duration', 'materials.id as material_id', 'materials.material_name', 'product', 'campaign_name', 'guides.billing_number',
             'rates.id as rate_id', 'show', 'cost', 'media_name', 'business_name', 'cities.id as city_id', 'city', 'media_types.media_type')
             ->join('plan', 'plan.client_id', '=', 'clients.id')
             ->join('campaigns', 'campaigns.plan_id', '=', 'plan.id')
@@ -69,24 +69,30 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
                 ->where($where)
                 ->get();
             $times_per_day = 0;
+            $started = false;
             foreach ($plan as $k => $r) {
-                $fila->week          = $this->weekOfMonth(strtotime($r->broadcast_day));
+                $fila->weekOfYear    = $this->weekOfYear(strtotime($r->broadcast_day));
+                if ($started && $aux->weekOfYear != $fila->weekOfYear) {
+                    $response[]    = $aux;
+                    $times_per_day = 0;
+                } else {
+                    $started = true;
+                }
                 $fila->user          = $user;
                 $fila->row           = $row;
                 $fila->cost          = $this->getUnitCost($row->cost, $row->media_type, $row->duration);
                 $fila->currencyValue = $request['currency']->currency_value;
                 $fila->duration      = $row->duration;
                 $fila->broadcast_day = $r->broadcast_day;
-                $fila->weekOfYear    = $this->weekOfYear(strtotime($r->broadcast_day));
                 $fila->month         = date("m", strtotime($r->broadcast_day));
                 $fila->year          = date("Y", strtotime($r->broadcast_day));
                 $times_per_day       += $r->times_per_day;
                 $fila->times_per_day = $times_per_day;
-                $aux   = $fila;
-                $fila  = (object)[];
+                $aux                 = $fila;
+                $fila                = (object)[];
             }
-            $response[]          = $aux;
-            $aux                 = null;
+            $response[] = $aux;
+            $aux        = null;
         }
         return $response;
     }
@@ -96,7 +102,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
         $result = Client::select('clients.id as client_id', 'client_name', 'representative', 'clients.NIT as clientNit', 'billing_address', 'billing_policies',
             'plan_name', 'campaigns.id as budget', 'plan.id as plan_id', 'guide_name', 'guides.id as guide_id', 'order_number', 'order_numbers.version',
             'media.id as media_id', 'material_name', 'duration', 'auspice_materials.id as material_id', 'product', 'campaign_name', 'guides.billing_number',
-            'rates.id as rate_id', 'show', 'auspices.cost', 'auspices.id as auspiceId', 'media_name', 'business_name', 'cities.id as city_id', 'city', 'media_types.media_type', 'manual_apportion')
+            'rates.id as rate_id', 'show', 'auspices.cost', 'auspices.auspice_name', 'auspices.id as auspiceId', 'media_name', 'business_name', 'cities.id as city_id', 'city', 'media_types.media_type', 'manual_apportion')
             ->join('plan', 'plan.client_id', '=', 'clients.id')
             ->join('campaigns', 'campaigns.plan_id', '=', 'plan.id')
             ->join('guides', 'guides.campaign_id', '=', 'campaigns.id')
@@ -128,14 +134,21 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
 
             $times_per_day = 0;
             $total_passes = floor($total_passes);
+            $started = false;
             if (count($material) > 0 && $total_passes > 0) {
                 foreach ($plan as $k => $r) {
+                    $fila->weekOfYear    = $this->weekOfYear(strtotime($r->broadcast_day));
+                    if ($started && $aux->weekOfYear != $fila->weekOfYear) {
+                        $response[]    = $aux;
+                        $times_per_day = 0;
+                    } else {
+                        $started = true;
+                    }
                     if (!!$result[$key]->manual_apportion) {
-                        $fila->cost      = '';
+                        $fila->cost      = $material->total_cost / $total_passes;
                     } else {
                         $fila->cost      = $this->getAuspiceUnitCost($row->cost, $total_passes, count($material));
                     }
-                    $fila->week          = $this->weekOfMonth(strtotime($r->broadcast_day));
                     $fila->user          = $user;
                     $fila->row           = $row;
                     $fila->currencyValue = $request['currency']->currency_value;
@@ -150,7 +163,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
                     $fila  = (object)[];
                 }
                 $response[] = $aux;
-                $aux = null;
+                $aux        = null;
             }
         }
 

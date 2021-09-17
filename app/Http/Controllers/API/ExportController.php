@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Exports\ReportExport;
+use App\Models\Auspice;
 use App\Models\Campaign;
 use App\Models\Currency;
 use App\Models\Guide;
@@ -234,6 +235,16 @@ class ExportController extends BaseController {
                     $res = $this->order($request);
                     if (count($res) > 0) {
                         $response[] = $res;
+                    }
+                    $auspices = Auspice::where('guide_id', '=', $request['guideId'])->get();
+                    if (count($auspices) > 0) {
+                        foreach ($auspices as $kaus => $raws) {
+                            $request['auspiceId'] = $raws->id;
+                            $aus = $this->auspice($request);
+                            if (count($aus) > 0) {
+                                $response[] = $aus;
+                            }
+                        }
                     }
                 }
                 return $request->isOrderCampaign ? $this->exportPdf($response, 'campaign', 'campaña.pdf') : $response;
