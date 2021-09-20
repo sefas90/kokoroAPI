@@ -383,8 +383,8 @@ class ExportController extends BaseController {
                     if (count($orderNumber) > 0) {
                         $orderNumber = OrderNumber::find($orderNumber[0]->id);
                         if ($orderNumber->version > 0) {
-                            $version = $orderNumber->version - 1;
-                            $observation[0] = 'Remplazando a la orden '.$orderNumber->order_number.'.'.$version;
+                            $version = $request->newOrder ? $orderNumber->version + 1 : $orderNumber->version - 1;
+                            $observation[0] = $request->newOrder ? 'Remplazando a la orden '.$orderNumber->order_number.'.'.$version : '';
                         } else {
                             $observation[0] = '';
                         }

@@ -124,7 +124,7 @@ class AuspiceController extends BaseController {
             'material_name' => trim($request->materialName),
             'duration'      => empty($request->duration) ? 0 : trim($request->duration),
             'auspice_id'    => trim($request->auspiceId),
-            'total_cost'    => trim($request->cost)
+            'total_cost'    => $request->cost ? trim($request->cost) : 0
         ));
 
         if($material->save())  {
