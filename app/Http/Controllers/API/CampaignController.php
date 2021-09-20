@@ -122,7 +122,7 @@ class CampaignController extends BaseController {
 
     protected function plansCampaignsList($id) {
         return $this->sendResponse(DB::table('campaigns')
-            ->select('id', 'id as value', 'campaign_name as label')
+            ->select('id', 'id as value', 'campaign_name as label', 'date_ini as dateIni', 'date_end as dateEnd')
             ->where([
                 ['deleted_at', '=', null],
                 ['plan_id', '=', $id],
