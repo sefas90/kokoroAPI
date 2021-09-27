@@ -382,13 +382,15 @@ class ExportController extends BaseController {
                 if($result[0]->editable == 1) {
                     if (count($orderNumber) > 0) {
                         $orderNumber = OrderNumber::find($orderNumber[0]->id);
+                        $version = $request->newOrder ? $orderNumber->version + 1 : $orderNumber->version;
                         if ($orderNumber->version > 0) {
-                            $version = $request->newOrder ? $orderNumber->version + 1 : $orderNumber->version - 1;
-                            $observation[0] = $request->newOrder ? 'Remplazando a la orden '.$orderNumber->order_number.'.'.$version : '';
+                            $obVer = $version - 1;
+                            $observation[0] = 'Remplazando a la orden '.$orderNumber->order_number.'.'.$obVer;
                         } else {
                             $observation[0] = '';
                         }
                         $orderNumber->observation = $observation[0].' - '.$observation[1];
+                        $orderNumber->version = $version;
                         $orderNumber->save();
                     } else {
                         $order = OrderNumber::all()->max('order_number');
