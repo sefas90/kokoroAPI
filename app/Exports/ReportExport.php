@@ -99,22 +99,28 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
 
     public function getAuspiceReport($request): array {
         $where = $this->buildWhere($request, false);
-        $result = Client::select('clients.id as client_id', 'client_name', 'representative', 'clients.NIT as clientNit', 'billing_address', 'billing_policies',
-            'plan_name', 'campaigns.id as budget', 'plan.id as plan_id', 'guide_name', 'guides.id as guide_id', 'order_number', 'order_numbers.version',
-            'media.id as media_id', 'material_name', 'duration', 'auspice_materials.id as material_id', 'product', 'campaign_name', 'guides.billing_number',
-            'rates.id as rate_id', 'show', 'auspices.cost', 'auspices.auspice_name', 'auspices.id as auspiceId', 'media_name', 'business_name', 'cities.id as city_id', 'city', 'media_types.media_type', 'manual_apportion')
-            ->join('plan', 'plan.client_id', '=', 'clients.id')
-            ->join('campaigns', 'campaigns.plan_id', '=', 'plan.id')
-            ->join('guides', 'guides.campaign_id', '=', 'campaigns.id')
-            ->join('auspices', 'auspices.guide_id', '=', 'guides.id')
+        $result = DB::table('auspices')
+            ->select('auspices.id as auspiceId', 'auspice_materials.id as material_id', 'auspices.auspice_name',
+                'auspices.guide_id', 'auspices.rate_id', 'guides.guide_name', 'guides.media_id', 'guides.campaign_id', 'guides.billing_number',
+                'guides.editable as editable', 'rates.show', 'auspice_materials.duration', 'auspice_materials.material_name',
+                'rates.hour_ini', 'rates.hour_end', 'auspices.cost', 'media.media_name', 'media.business_name', 'order_number', 'order_numbers.version',
+                'media.NIT', 'media.media_type as mediaTypeId', 'media_types.media_type', 'campaigns.campaign_name', 'campaigns.id as budget',
+                'campaigns.plan_id', 'plan.client_id', 'plan.plan_name as plan_name', 'campaigns.date_ini', 'campaigns.date_end', 'campaigns.product',
+                'rates.hour_ini as hourIni', 'rates.hour_end as hourEnd', 'clients.id as clientId', 'auspices.manual_apportion',
+                'clients.client_name as client_name', 'clients.representative', 'clients.NIT as clientNIT',
+                'auspice_materials.total_cost as materialCost', 'clients.billing_address as billingAddress',
+                'clients.billing_policies as billingPolicies', 'cities.id as city_id', 'city')
             ->join('auspice_materials', 'auspice_materials.auspice_id', '=', 'auspices.id')
-            ->join('rates', 'rates.id', '=', 'auspice_materials.auspice_id')
+            ->join('guides', 'guides.id', '=', 'auspices.guide_id')
+            ->join('rates', 'rates.id', '=', 'auspices.rate_id')
             ->join('media', 'media.id', '=', 'rates.media_id')
+            ->join('campaigns', 'campaigns.id', '=', 'guides.campaign_id')
+            ->join('plan', 'plan.id', '=', 'campaigns.plan_id')
+            ->join('clients', 'clients.id', '=', 'plan.client_id')
             ->join('media_types', 'media_types.id', '=', 'media.media_type')
             ->join('cities', 'cities.id', '=', 'media.city_id')
             ->join('order_numbers', 'order_numbers.guide_id', '=', 'guides.id')
             ->where($where)
-            ->orderBy('auspice_materials.id')
             ->get();
         $user = User::find($request->userId);
         $user = empty($user) ? 'System' : $user->name . ' ' .$user->lastname;
