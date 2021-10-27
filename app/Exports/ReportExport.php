@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Cache\CacheManager;
 use DateTime;
 
 class ReportExport implements FromView, Responsable, ShouldAutoSize {
@@ -27,6 +28,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
     }
 
     public function view(): View {
+
         $request = $this->req;
         $request['currency'] = Currency::find($request->currencyId) ? Currency::find($request->currencyId) : Currency::find(1);
         $campaign = $this->getCampaignReport($request);
@@ -141,7 +143,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
             $times_per_day = 0;
             $total_passes = floor($total_passes);
             $started = false;
-            if (count($material) > 0 && $total_passes > 0) {
+            if (empty($material) && count($material) > 0 && $total_passes > 0) {
                 foreach ($plan as $k => $r) {
                     $fila->weekOfYear    = $this->weekOfYear(strtotime($r->broadcast_day));
                     if ($started && $aux->weekOfYear != $fila->weekOfYear) {

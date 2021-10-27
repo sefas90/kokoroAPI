@@ -34,6 +34,8 @@ RUN useradd -G www-data,root -u $uid -d /home/$user $user
 RUN mkdir -p /home/$user/.composer && \
     chown -R $user:$user /home/$user
 
+ENV PHP_MEMORY_LIMIT=512M
+
 # Set working directory
 WORKDIR /var/www
 CMD php artisan serve --host=0.0.0.0 --port=8000
