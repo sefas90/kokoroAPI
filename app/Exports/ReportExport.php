@@ -143,7 +143,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
             $times_per_day = 0;
             $total_passes = floor($total_passes);
             $started = false;
-            if (empty($material) && count($material) > 0 && $total_passes > 0) {
+            if (!empty($material) && count($material) > 0 && $total_passes > 0) {
                 foreach ($plan as $k => $r) {
                     $fila->weekOfYear    = $this->weekOfYear(strtotime($r->broadcast_day));
                     if ($started && $aux->weekOfYear != $fila->weekOfYear) {
