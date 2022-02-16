@@ -21,7 +21,8 @@ class GuideController extends BaseController {
             ->select('guides.id', 'guide_name as guideName', 'guides.date_ini as dateIni', 'campaigns.id as budget', 'clients.client_name as clientName',
                 'media.NIT as billingNumber', 'media.business_name as billingName', 'guides.date_end as dateEnd', 'media.id as mediaId', 'media_name as mediaName',
                 'campaigns.id as campaignId', 'campaign_name as campaignName', 'guides.id as guideId', 'editable as status', 'guides.billing_number as invoiceNumber',
-                'media_types.media_type as mediaTypeValue')
+                'media_types.media_type as mediaTypeValue',
+                'plan.plan_name as planName', 'campaigns.campaign_name as campaignName', 'campaigns.product')
             ->join('media', 'media.id', '=', 'guides.media_id')
             ->join('campaigns', 'campaigns.id', '=', 'guides.campaign_id')
             ->join('plan', 'plan.id', '=', 'campaigns.plan_id')

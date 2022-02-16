@@ -43,12 +43,6 @@ $attributes = [
 ];
 
 Route::group($attributes, function () {
-    Route::get('/auspice', [AuspiceController::class, 'index']);
-    Route::post('/auspice', [AuspiceController::class, 'store']);
-    Route::get('/auspice/{id}', [AuspiceController::class, 'show']);
-    Route::post('/auspice/{id}', [AuspiceController::class, 'update']);
-    Route::delete('/auspice/{id}', [AuspiceController::class, 'destroy']);
-
     Route::get('/currency', [CurrencyController::class, 'index']);
     Route::post('/currency', [CurrencyController::class, 'store']);
     Route::get('/currency/{id}', [CurrencyController::class, 'show']);
