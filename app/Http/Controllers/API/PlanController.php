@@ -18,7 +18,7 @@ class PlanController extends BaseController {
 
     public function index (Request $request) {
         $sort = explode(":", $request->sort);
-        $result =DB::table('plan')
+        $result = DB::table('plan')
             ->select('plan.id', 'plan_name as planName', 'client_name as clientName', 'plan.client_id as clientId')
             ->join('clients', 'clients.id', '=', 'plan.client_id')
             ->where('plan.deleted_at', '=', null)

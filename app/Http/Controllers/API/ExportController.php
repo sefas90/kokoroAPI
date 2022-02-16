@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\API;
 
 use App\Exports\ReportExport;
-use App\Models\Auspice;
 use App\Models\Campaign;
 use App\Models\Currency;
 use App\Models\Guide;
@@ -236,16 +235,6 @@ class ExportController extends BaseController {
                     if (count($res) > 0) {
                         $response[] = $res;
                     }
-                    $auspices = Auspice::where('guide_id', '=', $request['guideId'])->get();
-                    if (count($auspices) > 0) {
-                        foreach ($auspices as $kaus => $raws) {
-                            $request['auspiceId'] = $raws->id;
-                            $aus = $this->auspice($request);
-                            if (count($aus) > 0) {
-                                $response[] = $aus;
-                            }
-                        }
-                    }
                 }
                 return $request->isOrderCampaign ? $this->exportPdf($response, 'campaign', 'campaña.pdf') : $response;
             } else {
@@ -285,188 +274,6 @@ class ExportController extends BaseController {
         }
     }
 
-    public function orderNumberAuspice($id) {
-        $orderNumber = DB::table('order_numbers')
-            ->select('*')
-            ->join('guides', 'guides.id', '=', 'order_numbers.guide_id')
-            ->where('order_numbers.guide_id', '=', $id)
-            ->get();
-
-        if (count($orderNumber) > 0) {
-            $max_order   = OrderNumber::where('guide_id', '=', $id)->get()->max('order_number');
-            $max_version = OrderNumber::where('guide_id', '=', $id)->get()->max('version');
-            return $this->sendResponse([
-                'order_number'  => ''. $max_order . '.' . $max_version
-            ]);
-        } else {
-            $order = OrderNumber::all()->max('order_number') + 1;
-            return $this->sendResponse([
-                'order_number'  => $order.'.0'
-            ]);
-        }
-    }
-
-    public function auspice(Request $request) {
-        $validator = Validator::make($request->all(), [
-            'auspiceId'    => 'required'
-        ]);
-
-        $currency = Currency::find($request->currencyId) ? Currency::find($request->currencyId) : (object)['currency_value' => 1, 'symbol' => 'BOB'];
-
-        if (!$validator->fails()){
-            $observation = [
-                0 => '',
-                1 => $request->observations
-            ];
-
-            $result = DB::table('auspices')
-                ->select('auspices.id as id', 'auspice_materials.id as auspiceMaterialsId', 'auspices.auspice_name',
-                    'auspices.guide_id', 'auspices.rate_id', 'guides.guide_name', 'guides.media_id', 'guides.campaign_id',
-                    'guides.editable as editable', 'rates.show', 'auspice_materials.duration', 'auspice_materials.material_name',
-                    'rates.hour_ini', 'rates.hour_end', 'auspices.cost', 'media.media_name', 'media.business_name',
-                    'media.NIT', 'media.media_type as mediaTypeId', 'media_types.media_type', 'campaigns.campaign_name',
-                    'campaigns.plan_id', 'plan.client_id', 'campaigns.date_ini', 'campaigns.date_end', 'campaigns.product',
-                    'rates.hour_ini as hourIni', 'rates.hour_end as hourEnd', 'clients.id as clientId', 'auspices.manual_apportion',
-                    'clients.client_name as clientName', 'clients.representative', 'clients.NIT as clientNIT',
-                    'auspice_materials.total_cost as materialCost', 'clients.billing_address as billingAddress',
-                    'clients.billing_policies as billingPolicies')
-                ->join('auspice_materials', 'auspice_materials.auspice_id', '=', 'auspices.id')
-                ->join('guides', 'guides.id', '=', 'auspices.guide_id')
-                ->join('rates', 'rates.id', '=', 'auspices.rate_id')
-                ->join('media', 'media.id', '=', 'rates.media_id')
-                ->join('campaigns', 'campaigns.id', '=', 'guides.campaign_id')
-                ->join('plan', 'plan.id', '=', 'campaigns.plan_id')
-                ->join('clients', 'clients.id', '=', 'plan.client_id')
-                ->join('media_types', 'media_types.id', '=', 'media.media_type')
-                ->where([
-                    ['auspices.id', '=', $request->auspiceId],
-                    ['auspice_materials.deleted_at', '=', null]
-                ])
-                ->get();
-
-            $pla = array();
-            $months = array();
-
-            if (count($result) > 0) {
-                $total = 0;
-                $totalSpots = 0;
-                foreach ($result as $key => $row) {
-                    $id = $result[$key]->auspiceMaterialsId;
-                    $planing = DB::table('material_auspice_planing')
-                        ->select('broadcast_day', 'times_per_day')
-                        ->where([
-                            ['material_auspice_planing.material_auspice_id', '=', $id]
-                        ])
-                        ->get();
-                    $m = date("m", strtotime($planing[0]->broadcast_day));
-                    $pla[$m] = array();
-                    if (count($planing)) {
-                        $spots = 0;
-                        foreach ($planing as $k => $r) {
-                            $r->day = date("d", strtotime($planing[$k]->broadcast_day));
-                            $m = date("m", strtotime($planing[$k]->broadcast_day));
-                            $spots += $planing[$k]->times_per_day;
-                            $pla[$m][] = $r;
-                            $months[] = $m;
-                        }
-                        $result[$key]->spots = $spots;
-                        $totalSpots += $spots;
-                        $result[$key]->planing = $pla;
-                    }
-                }
-
-                $months = array_unique($months);
-
-                $orderNumber = OrderNumber::where('guide_id', '=', $result[0]->guide_id)->get();
-
-                if($result[0]->editable == 1) {
-                    if (count($orderNumber) > 0) {
-                        $orderNumber = OrderNumber::find($orderNumber[0]->id);
-                        $version = $request->newOrder ? $orderNumber->version + 1 : $orderNumber->version;
-                        if ($orderNumber->version > 0) {
-                            $obVer = $version - 1;
-                            $observation[0] = 'Remplazando a la orden '.$orderNumber->order_number.'.'.$obVer;
-                        } else {
-                            $observation[0] = '';
-                        }
-                        $orderNumber->observation = $observation[0].' - '.$observation[1];
-                        $orderNumber->version = $version;
-                        $orderNumber->save();
-                    } else {
-                        $order = OrderNumber::all()->max('order_number');
-                        $orderNumber = OrderNumber::create([
-                            'order_number'  => $order + 1,
-                            'version'       => 0,
-                            'guide_id'      => $result[0]->guide_id,
-                            'observation'   => $observation[1]
-                        ]);
-                    }
-                } else {
-                    $orderNumber = OrderNumber::find($orderNumber[0]->id);
-                }
-                $orderNumber = $orderNumber->order_number.'.'.$orderNumber->version;
-
-                $date_ini = new DateTime($result[0]->date_ini);
-                $date_end = new DateTime($result[0]->date_end);
-                $pages = $date_ini->diff($date_end)->m;
-
-                $month = date("m", strtotime(explode(" ", $result[0]->date_ini)[0]));
-                $year = date("Y", strtotime(explode(" ", $result[0]->date_ini)[0]));
-
-                $user = User::find($request->userId);
-                $user = empty($user) ? 'System' : $user->name . ' ' .$user->lastname;
-
-                $response = [
-                    'result'          => $result,
-                    'product'         => $result[0]->product,
-                    'status'          => $result[0]->editable,
-                    'status_value'    => $this->getStatus($result[0]->editable),
-                    'order'           => $orderNumber,
-                    'client'          => $result[0]->clientName,
-                    'businessName'    => strtoupper($result[0]->business_name),
-                    'guideName'       => $result[0]->guide_name,
-                    'NIT'             => $result[0]->NIT,
-                    'date_ini'        => explode(" ", $result[0]->date_ini)[0],
-                    'date_end'        => explode(" ", $result[0]->date_end)[0],
-                    'pages'           => $pages,
-                    'date'            => date("m-d-Y"),
-                    'month_ini'       => $month,
-                    'months'          => $months,
-                    'year'            => $year,
-                    'daysInMonth'     => cal_days_in_month(CAL_GREGORIAN, $month, $year),
-                    'date-'           => date("F Y", strtotime("2021-05-12")),
-                    'totalMount'      => $total,
-                    'totalSpots'      => $totalSpots,
-                    'billingToName'   => 'Nombre: '. $result[0]->representative,
-                    'billingToNit'    => 'NIT: ' .$result[0]->clientNIT,
-                    'billingAddress'  => $result[0]->billingAddress,
-                    'billingPolicies' => $result[0]->billingPolicies,
-                    'observation1'    => $observation[0],
-                    'observation2'    => $observation[1],
-                    'clientName'      => $result[0]->clientName,
-                    'user'            => $user,
-                    'currency'        => $currency->symbol,
-                    'currencyValue'   => $currency->currency_value
-                ];
-
-                foreach ($response['result'] as $llave => $fila) {
-                    $response['result'][$llave]->unitCost = $result[0]->cost / count($result) / $fila->spots;
-                    $response['result'][$llave]->totalCost = !!$response['result'][$llave]->manual_apportion ? $response['result'][$llave]->materialCost : $result[0]->cost / count($result);
-                    $response['totalMount'] += !!$response['result'][$llave]->manual_apportion ? $response['result'][$llave]->materialCost : $result[0]->cost / count($result);
-                }
-
-                // return $response;
-
-                return !$request->isOrderCampaign ? $this->exportPdf($response, 'auspice', 'auspice.pdf') : $response;
-            } else {
-                $request['isOrderCampaign'] = !!$request->isOrderCampaign;
-                return !$request->isOrderCampaign ? $this->sendError('No tiene materiales') : [];
-            }
-        } else {
-            return $this->sendError('Error de validacion.', $validator->errors());
-        }
-    }
-
     public function exportReport(Request $request) {
         $validator = Validator::make($request->all(), [
             'clientId'   => 'required',
@@ -477,8 +284,7 @@ class ExportController extends BaseController {
         if (!$validator->fails()) {
             $request['currency'] = Currency::find($request->currencyId) ? Currency::find($request->currencyId) : Currency::find(1);
             $campaign = $this->reportCtrl->getCampaignReport($request);
-            $auspice = $this->reportCtrl->getAuspiceReport($request);
-            $datas = [$campaign, $request['currency'], $auspice];
+            $datas = [$campaign, $request['currency']];
 
             return $datas;
         } else {

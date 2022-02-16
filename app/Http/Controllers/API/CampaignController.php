@@ -9,23 +9,25 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Validator;
 use App\Http\Controllers\API\GuideController;
-use App\Http\Controllers\API\AuspiceController;
 
 class CampaignController extends BaseController {
-    protected $auspiceCtrl;
     protected $guideCtrl;
-    public function __construct(GuideController $guideCtrl, AuspiceController $auspiceCtrl) {
+    public function __construct(GuideController $guideCtrl) {
         $this->guideCtrl = $guideCtrl;
-        $this->auspiceCtrl = $auspiceCtrl;
     }
 
     public function index (Request $request) {
+        $search = $request->search;
+        $where = [['campaigns.deleted_at', '=', null]];
+        if (isset($search)) {
+            array_push($where, ['plan.id', '=', $search]);
+        }
         $sort = explode(":", $request->sort);
         $result = DB::table('campaigns')
             ->select('campaigns.id', 'campaign_name as campaignName', 'clients.client_name as clientName', 'clients.id as clientId', 'date_ini as dateIni', 'date_end as dateEnd', 'plan.plan_name as planName', 'plan.id as planId', 'product')
             ->join('plan', 'plan.id', '=', 'campaigns.plan_id')
             ->join('clients', 'clients.id', '=', 'plan.client_id')
-            ->where('campaigns.deleted_at', '=', null)
+            ->where($where)
             ->orderBy(empty($sort[0]) ? 'campaigns.id' : 'campaigns.'.$sort[0], empty($sort[1]) ? 'asc' : $sort[1])
             ->get();
 
@@ -134,7 +136,7 @@ class CampaignController extends BaseController {
         $total_cost = 0;
         $guides = Guide::where('campaign_id', '=', $campaign_id)->get();
         foreach ($guides as $key => $row) {
-            $total_cost += $this->guideCtrl->getGuideCost($row->id) + $this->auspiceCtrl->getAuspiceCost($row->id);
+            $total_cost += $this->guideCtrl->getGuideCost($row->id);
         }
         return $total_cost;
     }

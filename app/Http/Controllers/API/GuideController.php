@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Models\Auspice;
 use App\Models\Guide;
 use App\Models\Material;
 use App\Models\OrderNumber;
@@ -114,14 +113,6 @@ class GuideController extends BaseController {
                 $material->save();
                 // $material->delete();
             }
-            // remove associated auspices
-            $auspices = Auspice::where('guide_id', '=', $id)->get();
-            foreach ($auspices as $key => $row) {
-                $auspice = Material::find($row->id);
-                $auspice->guide_id = 0;
-                $auspice->save();
-                // $material->delete();
-            }
         }
 
         return $guide->save() ?
@@ -137,10 +128,6 @@ class GuideController extends BaseController {
 
         if (count(Material::where('guide_id', '=', $guide->id)->get()) > 0) {
             return $this->sendError('unD_Material', null, 200);
-        }
-
-        if (count(Auspice::where('guide_id', '=', $guide->id)->get()) > 0) {
-            return $this->sendError('unD_Auspice', null, 200);
         }
 
         return $guide->delete() ?

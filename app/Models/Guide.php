@@ -10,6 +10,8 @@ class Guide extends Model {
 
     protected $fillable = [
         'guide_name',
+        'cost',
+        'manual_apportion',
         'date_ini',
         'date_end',
         'media_id',

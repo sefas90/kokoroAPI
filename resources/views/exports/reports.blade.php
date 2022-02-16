@@ -64,42 +64,5 @@
             </tr>
         @endif
     @endforeach
-    @foreach ($datas[2] as $auspice)
-        @if($auspice && $auspice->row)
-        <tr>
-            <td>{{ $auspice->row->client_name }}</td>
-            <td>{{ $auspice->user }}</td>
-            <td>KOKORO S.R.L.</td>
-            <td>{{ $auspice->row->plan_name }}</td>
-            <td>{{ $auspice->row->campaign_name }}</td>
-            <td>{{ $auspice->row->media_type }}</td>
-            <td>{{ $auspice->row->guide_name }}</td>
-            <td>{{ $auspice->row->product }}</td>
-            <td>{{ $auspice->row->material_name }}</td>
-            <td>{{ $auspice->year }}</td>
-            <td>{{ $auspice->month }}</td>
-            <td>{{ $auspice->weekOfYear }}</td>
-            <td>{{ $auspice->row->media_name }}</td>
-            <td>{{ $auspice->row->business_name }}</td>
-            <td>{{ $auspice->row->city }}</td>
-            <td>{{ $auspice->row->representative }}</td>
-            <td>{{ $auspice->row->budget }}</td>
-            <td>{{ $auspice->row->order_number }}.{{ $auspice->row->version }}</td>
-            @if (!empty($auspice->times_per_day))
-                <td>{{ $auspice->times_per_day }}</td>
-            @else
-                <td>0</td>
-            @endif
-            @if (!empty($auspice->times_per_day))
-                <td>{{ number_format($auspice->times_per_day * $auspice->cost, 2, '.', '') }}</td>
-            @else
-                <td>0</td>
-            @endif
-            <td>{{ number_format($auspice->currencyValue, 2, '.', '') }}</td>
-            <td>{{ number_format($auspice->times_per_day * $auspice->cost / $auspice->currencyValue, 2, '.', '') }}</td>
-            <td>{{ $auspice->row->billing_number }}</td>
-        </tr>
-        @endif
-    @endforeach
     </tbody>
 </table>

@@ -143,7 +143,6 @@
             </tr>
             </thead>
         </table>
-        <br>
         <table class="data-table-info">
             <tbody>
             <tr>
@@ -183,6 +182,9 @@
             </tbody>
         </table>
         <br>
+            <div>
+                <br>
+            </div>
         <table class="data-table">
             <thead>
             <tr>
