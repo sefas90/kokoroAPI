@@ -331,7 +331,9 @@ class GuideController extends BaseController {
 
     public function getGuideMaterials($id) {
         $mat = Guide::where('guides.id', '=', $id)
-            ->select('guides.id', 'guide_name as guideName', 'guides.cost', 'manual_apportion', 'guides.date_ini as dateIni', 'guides.date_end as dateEnd')
+            ->select('guides.id', 'guide_name as guideName', 'guides.cost', 'manual_apportion', 'guides.date_ini as dateIni', 'guides.date_end as dateEnd', 'media_types.media_type as mediaTypeValue')
+            ->join('media', 'media.id', '=', 'guides.media_id')
+            ->join('media_types', 'media_types.id', '=', 'media.media_type')
             ->get();
 
         $mat = $mat[0];
@@ -366,6 +368,7 @@ class GuideController extends BaseController {
             }
             $material[$key]->timesPerDay = $aux;
             $material[$key]->guideName = $mat->guideName;
+            $material[$key]->mediaTypeValue = $mat->mediaTypeValue;
         }
         return $this->sendResponse($material);
     }
