@@ -158,7 +158,7 @@ class RateController extends BaseController {
 
     public function rateGuideList($id) {
         $rates = DB::table('rates')
-            ->select('rates.id', 'rates.id as value', 'show as label', 'brod_mo', 'brod_tu', 'brod_we', 'brod_th', 'brod_fr', 'brod_sa', 'brod_su', 'media_types.media_type as mediaType', 'cost', 'media.id as mediaId')
+            ->select('rates.id', 'rates.id as value', 'show as label', 'brod_mo', 'brod_tu', 'brod_we', 'brod_th', 'brod_fr', 'brod_sa', 'brod_su', 'media_types.media_type as mediaType', 'rates.cost as rateCost', 'guides.cost as guideCost', 'media.id as mediaId')
             ->join('media', 'media.id', '=', 'rates.media_id')
             ->join('media_types', 'media_types.id', '=', 'media.media_type')
             ->join('guides', 'guides.media_id', '=', 'media.id')

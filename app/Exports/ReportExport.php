@@ -32,8 +32,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
         $request = $this->req;
         $request['currency'] = Currency::find($request->currencyId) ? Currency::find($request->currencyId) : Currency::find(1);
         $campaign = $this->getCampaignReport($request);
-        $auspice = $this->getAuspiceReport($request);
-        $data = [$campaign, $request['currency'], $auspice];
+        $data = [$campaign, $request['currency']];
 
         return view('exports.reports', [
             'datas' => $data

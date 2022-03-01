@@ -11,8 +11,10 @@ class Material extends Model {
 
     protected $fillable = [
         'material_name',
-        'rate_id',
+        'duration',
         'total_cost',
+        'guide_id',
+        'rate_id',
         'created_at',
         'updated_at',
         'deleted_at'

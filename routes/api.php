@@ -54,6 +54,8 @@ Route::group($attributes, function () {
     Route::post('/auspiceMaterial/{id}', [AuspiceController::class, 'updateMaterial']);
     Route::delete('/auspiceMaterial/{id}', [AuspiceController::class, 'deleteAuspiceMaterial']);
 
+    Route::get('/guideMaterial/{id}', [GuideController::class, 'getGuideMaterials']);
+
     Route::get('/campaign', [CampaignController::class, 'index']);
     Route::post('/campaign', [CampaignController::class, 'store']);
     Route::get('/campaign/{id}', [CampaignController::class, 'show']);
@@ -142,4 +144,7 @@ Route::group($attributes, function () {
     Route::post('/finalizeGuide', [GuideController::class, 'finalizeGuide']);
     Route::post('/cancelGuide', [GuideController::class, 'cancelGuide']);
     Route::post('/activateGuide', [GuideController::class, 'activateGuide']);
+
+    // migration
+    Route::get('/updateCost', [GuideController::class, 'updateCost']);
 });

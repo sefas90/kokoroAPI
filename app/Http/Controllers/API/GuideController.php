@@ -10,6 +10,11 @@ use Illuminate\Support\Facades\DB;
 use Validator;
 
 class GuideController extends BaseController {
+    // automatico = 0
+    // el costo se divide
+
+    // manual = 1
+    // el costo se ingresa
     public function index (Request $request) {
         $sort = explode(":", $request->sort);
         $search = $request->search;
@@ -21,7 +26,7 @@ class GuideController extends BaseController {
             ->select('guides.id', 'guide_name as guideName', 'guides.date_ini as dateIni', 'campaigns.id as budget', 'clients.client_name as clientName',
                 'media.NIT as billingNumber', 'media.business_name as billingName', 'guides.date_end as dateEnd', 'media.id as mediaId', 'media_name as mediaName',
                 'campaigns.id as campaignId', 'campaign_name as campaignName', 'guides.id as guideId', 'editable as status', 'guides.billing_number as invoiceNumber',
-                'media_types.media_type as mediaTypeValue',
+                'media_types.media_type as mediaTypeValue', 'guides.manual_apportion as manualApportion', 'guides.cost',
                 'plan.plan_name as planName', 'campaigns.campaign_name as campaignName', 'campaigns.product')
             ->join('media', 'media.id', '=', 'guides.media_id')
             ->join('campaigns', 'campaigns.id', '=', 'guides.campaign_id')
@@ -43,7 +48,7 @@ class GuideController extends BaseController {
                 }
             }
 
-            $result_guide[$key]->totalCost = $this->getGuideCost($row->guideId);
+            $result_guide[$key]->totalCost = !!$result_guide[$key]->manualApportion ? $this->getManualGuideCost($row->guideId) : $result_guide[$key]->cost;
             $result_guide[$key]->orderNumber = $number;
         }
 
@@ -231,6 +236,50 @@ class GuideController extends BaseController {
             ->get(), '');
     }
 
+    function getManualGuideCost($guideId): float {
+        $total_cost = 0;
+        $material = Material::where([
+            ['guide_id', '=', $guideId],
+            ['deleted_at', '=', null]
+        ])->get();
+        foreach ($material as $k => $r) {
+            $total_cost += $r->total_cost;
+        }
+        return $total_cost;
+    }
+
+    function updateCost() {
+        $where = [['campaigns.deleted_at', '=', null]];
+        $result_guide = DB::table('guides')
+            ->select('guides.id as guideId', 'guide_name as guideName', 'guides.date_ini as dateIni', 'campaigns.id as budget', 'clients.client_name as clientName',
+                'media.NIT as billingNumber', 'media.business_name as billingName', 'guides.date_end as dateEnd', 'media.id as mediaId', 'media_name as mediaName',
+                'campaigns.id as campaignId', 'campaign_name as campaignName', 'guides.id as guideId', 'editable as status', 'guides.billing_number as invoiceNumber',
+                'media_types.media_type as mediaTypeValue', 'guides.manual_apportion as manualApportion', 'guides.cost',
+                'plan.plan_name as planName', 'campaigns.campaign_name as campaignName', 'campaigns.product')
+            ->join('media', 'media.id', '=', 'guides.media_id')
+            ->join('campaigns', 'campaigns.id', '=', 'guides.campaign_id')
+            ->join('plan', 'plan.id', '=', 'campaigns.plan_id')
+            ->join('clients', 'clients.id', '=', 'plan.client_id')
+            ->join('media_types', 'media_types.id', '=', 'media.media_type')
+            ->where($where)
+            ->orderBy(empty($sort[0]) ? 'guides.id' : 'guides.'.$sort[0], empty($sort[1]) ? 'desc' : $sort[1])
+            ->get();
+
+        foreach ($result_guide as $key => $row) {
+            if (!$result_guide[$key]->manualApportion) {
+                $guide = Guide::find($row->guideId);
+                if (!$guide) {
+                    // return $this->sendError('No se encontro la pauta');
+                } else {
+                    $guide->cost  = $this->getGuideCost($row->guideId);
+                    $guide->save();
+                }
+            }
+        }
+
+        return $this->sendResponse('success');
+    }
+
     public function getGuideCost($id) {
         $total_cost = 0;
         $result = DB::table('materials')
@@ -263,10 +312,10 @@ class GuideController extends BaseController {
             ->get();
 
         foreach ($result as $ke => $ro) {
-            $id = $result[$ke]->id;
+            $other_id = $result[$ke]->id;
             $planing = DB::table('material_planing')
                 ->select('broadcast_day', 'times_per_day')
-                ->where('material_planing.material_id', '=', $id)->get();
+                ->where('material_planing.material_id', '=', $other_id)->get();
             $spots = 0;
             foreach ($planing as $k => $r) {
                 $spots += $r->times_per_day;
@@ -278,5 +327,43 @@ class GuideController extends BaseController {
             $total_cost += $result[$ke]->totalCost;
         }
         return $total_cost;
+    }
+
+    public function getGuideMaterials($id) {
+        $mat = Guide::where('guides.id', '=', $id)
+            ->select('guides.id', 'guide_name as guideName', 'guides.cost', 'manual_apportion', 'guides.date_ini as dateIni', 'guides.date_end as dateEnd')
+            ->get();
+
+        $mat = $mat[0];
+        $material = Material::select('id', 'material_name as materialName', 'duration', 'total_cost')->where('guide_id', '=', $id)->get();
+        if (!$material) {
+            return $this->sendResponse([]);
+        }
+
+        foreach ($material as $key => $row) {
+            $material_count = DB::table('material_planing')
+                ->where('material_id', '=', $row->id)
+                ->sum('times_per_day');
+
+            $material_planing = DB::table('material_planing')
+                ->where('material_id', '=', $row->id)->get();
+
+            $material[$key]->passes = (int)$material_count;
+            if(!!$mat->manual_apportion) {
+                $material[$key]->cost = $material[$key]->total_cost;
+            } else {
+                $material[$key]->cost = number_format($mat->cost / count($material), 2, '.', '');
+            }
+
+            $aux = [];
+            foreach ($material_planing as $k => $r) {
+                $aux[$r->broadcast_day] = [
+                    'date' => date('Y-m-d h:i:s', strtotime($r->broadcast_day)),
+                    'timesPerDay' => $r->times_per_day
+                ];
+            }
+            $material[$key]->timesPerDay = $aux;
+        }
+        return $this->sendResponse($material);
     }
 }
