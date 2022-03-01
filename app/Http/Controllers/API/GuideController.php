@@ -335,7 +335,9 @@ class GuideController extends BaseController {
             ->get();
 
         $mat = $mat[0];
-        $material = Material::select('id', 'material_name as materialName', 'duration', 'total_cost')->where('guide_id', '=', $id)->get();
+        $material = Material::select('materials.id', 'material_name as materialName', 'duration', 'total_cost', 'rates.show')
+            ->join('rates', 'rates.id', '=', 'materials.rate_id')
+            ->where('guide_id', '=', $id)->get();
         if (!$material) {
             return $this->sendResponse([]);
         }
@@ -363,6 +365,7 @@ class GuideController extends BaseController {
                 ];
             }
             $material[$key]->timesPerDay = $aux;
+            $material[$key]->guideName = $mat->guideName;
         }
         return $this->sendResponse($material);
     }
