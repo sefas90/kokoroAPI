@@ -136,8 +136,13 @@ class CampaignController extends BaseController {
     public function getCampaignCost($campaign_id) {
         $total_cost = 0;
         $guides = Guide::where('campaign_id', '=', $campaign_id)->get();
-        foreach ($guides as $k => $row) {
-            $total_cost = $row->manualApportion ? $this->getManualGuideCost($row->guideId) : $row->cost;
+        foreach ($guides as $key => $row) {
+            if ($row->cost > 0) {
+                $total_cost += $row->cost;
+            } else {
+                $total_cost += $this->guideCtrl->getManualGuideCost($row->id);
+            }
+            $total_cost += $row->cost;
         }
         return $total_cost;
     }
