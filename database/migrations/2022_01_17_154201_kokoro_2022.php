@@ -8,7 +8,7 @@ class Kokoro2022 extends Migration {
     public function up() {
         Schema::table('guides', function (Blueprint $table) {
             $table->float('cost', 15)->after('billing_number');
-            $table->boolean('manual_apportion')->nullable()->default(0)->after('cost');
+            $table->boolean('manual_apportion')->nullable()->default(1)->after('cost');
         });
 
         Schema::table('materials', function (Blueprint $table) {

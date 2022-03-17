@@ -36,8 +36,7 @@ class ExportController extends BaseController {
 
             $result = Material::where([
                     ['materials.deleted_at', '=', null],
-                    ['guides.id', '=', $request->guideId],
-                    ['guides.date_ini', '>', date("Y-01-01")]
+                    ['guides.id', '=', $request->guideId]
                 ])
                 ->select('materials.id as id', 'materials.material_name', 'materials.duration', 'materials.guide_id', 'materials.rate_id',
                     'guides.guide_name', 'guides.media_id', 'guides.campaign_id', 'guides.editable as editable', 'rates.show',

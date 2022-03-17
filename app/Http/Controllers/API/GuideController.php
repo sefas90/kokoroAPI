@@ -48,7 +48,7 @@ class GuideController extends BaseController {
                 }
             }
 
-            $result_guide[$key]->totalCost = !!$result_guide[$key]->manualApportion ? $this->getManualGuideCost($row->guideId) : $result_guide[$key]->cost;
+            $result_guide[$key]->totalCost = $result_guide[$key]->manualApportion ? $this->getManualGuideCost($row->guideId) : $result_guide[$key]->cost;
             $result_guide[$key]->orderNumber = $number;
         }
 
@@ -265,15 +265,12 @@ class GuideController extends BaseController {
             ->orderBy(empty($sort[0]) ? 'guides.id' : 'guides.'.$sort[0], empty($sort[1]) ? 'desc' : $sort[1])
             ->get();
 
-        foreach ($result_guide as $key => $row) {
-            if (!$result_guide[$key]->manualApportion) {
-                $guide = Guide::find($row->guideId);
-                if (!$guide) {
-                    // return $this->sendError('No se encontro la pauta');
-                } else {
-                    $guide->cost  = $this->getGuideCost($row->guideId);
-                    $guide->save();
-                }
+        foreach ($result_guide as $k => $row) {
+            $guide = Guide::find($row->guideId);
+            if (!$guide) {
+                print_r($row->guideId. ' ');
+            } else {
+                $this->getGuideCost($row->guideId);
             }
         }
 
@@ -325,6 +322,9 @@ class GuideController extends BaseController {
             $result[$ke]->unitCost = $this->getUnitCost($result[$ke]->cost, $result[$ke]->media_type, $result[$ke]->duration);
             $result[$ke]->totalCost = $this->getTotalCost($result[$ke]->cost, $result[$ke]->media_type, $result[$ke]->duration, $result[$ke]->spots);
             $total_cost += $result[$ke]->totalCost;
+            $material = Material::find($ro->id);
+            $material->total_cost =  $result[$ke]->totalCost;
+            $material->save();
         }
         return $total_cost;
     }
