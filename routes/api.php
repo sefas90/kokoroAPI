@@ -147,4 +147,5 @@ Route::group($attributes, function () {
 
     // migration
     Route::get('/updateCost', [GuideController::class, 'updateCost']);
+    Route::get('/migrateForReal', [GuideController::class, 'migrateForReal']);
 });

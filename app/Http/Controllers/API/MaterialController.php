@@ -10,7 +10,6 @@ use Validator;
 
 class MaterialController extends BaseController {
     public function index (Request $request) {
-
         $guideId = $request->guideId;
         $where = [
             ['materials.deleted_at', '=', null]

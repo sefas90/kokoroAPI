@@ -2,11 +2,16 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Models\Auspice;
+use App\Models\AuspiceMaterial;
 use App\Models\Guide;
 use App\Models\Material;
 use App\Models\OrderNumber;
+use App\Models\PlaningAuspiceMaterial;
+use App\Models\PlaningMaterial;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use phpDocumentor\Reflection\Exception\PcreException;
 use Validator;
 
 class GuideController extends BaseController {
@@ -18,7 +23,10 @@ class GuideController extends BaseController {
     public function index (Request $request) {
         $sort = explode(":", $request->sort);
         $search = $request->search;
-        $where = [['campaigns.deleted_at', '=', null]];
+        $where = [
+            ['campaigns.deleted_at', '=', null],
+            ['guides.deleted_at', '=', null]
+        ];
         if (isset($search)) {
             array_push($where, ['campaigns.id', '=', $search]);
         }
@@ -27,7 +35,7 @@ class GuideController extends BaseController {
                 'media.NIT as billingNumber', 'media.business_name as billingName', 'guides.date_end as dateEnd', 'media.id as mediaId', 'media_name as mediaName',
                 'campaigns.id as campaignId', 'campaign_name as campaignName', 'guides.id as guideId', 'editable as status', 'guides.billing_number as invoiceNumber',
                 'media_types.media_type as mediaTypeValue', 'guides.manual_apportion as manualApportion', 'guides.cost',
-                'plan.plan_name as planName', 'campaigns.campaign_name as campaignName', 'campaigns.product')
+                'plan.plan_name as planName', 'campaigns.campaign_name as campaignName', 'campaigns.product', 'guides.guide_parent_id')
             ->join('media', 'media.id', '=', 'guides.media_id')
             ->join('campaigns', 'campaigns.id', '=', 'guides.campaign_id')
             ->join('plan', 'plan.id', '=', 'campaigns.plan_id')
@@ -45,6 +53,14 @@ class GuideController extends BaseController {
                 $orderNumber = $orderNumber[0];
                 if ($orderNumber->order_number) {
                     $number = $orderNumber->order_number.'.'.$orderNumber->version;
+                }
+            } else {
+                $orderNumber = OrderNumber::where('guide_id', '=', $row->guide_parent_id)->get();
+                if (count($orderNumber) > 0) {
+                    $orderNumber = $orderNumber[0];
+                    if ($orderNumber->order_number) {
+                        $number = $orderNumber->order_number . '.' . $orderNumber->version;
+                    }
                 }
             }
 
@@ -137,12 +153,12 @@ class GuideController extends BaseController {
             return $this->sendError('No se encontro la guia');
         }
 
-        if (count(Material::where('guide_id', '=', $guide->id)->get()) > 0) {
+        /*if (count(Material::where('guide_id', '=', $guide->id)->get()) > 0) {
             return $this->sendError('unD_Material', null, 200);
-        }
+        }*/
 
         return $guide->delete() ?
-            $this->sendResponse('', 'El guide ' . $guide->guide_name . ' se elimino correctamente.') :
+            $this->sendResponse('', 'La puta ' . $guide->guide_name . ' se elimino correctamente.') :
             $this->sendError('El guide ' . $guide->guide_name .' no se pudo eliminar.');
     }
 
@@ -249,7 +265,7 @@ class GuideController extends BaseController {
     }
 
     function updateCost() {
-        $where = [['campaigns.deleted_at', '=', null]];
+        $where = [['campaigns.deleted_at', '=', null], ['guides.manual_apportion', '=', 1]];
         $result_guide = DB::table('guides')
             ->select('guides.id as guideId', 'guide_name as guideName', 'guides.date_ini as dateIni', 'campaigns.id as budget', 'clients.client_name as clientName',
                 'media.NIT as billingNumber', 'media.business_name as billingName', 'guides.date_end as dateEnd', 'media.id as mediaId', 'media_name as mediaName',
@@ -265,16 +281,78 @@ class GuideController extends BaseController {
             ->orderBy(empty($sort[0]) ? 'guides.id' : 'guides.'.$sort[0], empty($sort[1]) ? 'desc' : $sort[1])
             ->get();
 
-        foreach ($result_guide as $k => $row) {
-            $guide = Guide::find($row->guideId);
-            if (!$guide) {
-                print_r($row->guideId. ' ');
-            } else {
-                $this->getGuideCost($row->guideId);
-            }
+        foreach ($result_guide as $k => $r) {
+            $this->getGuideCost($r->guideId);
         }
 
         return $this->sendResponse('success');
+    }
+
+    function migrateForReal() {
+        $result_guide = DB::table('guides')
+            ->select('guides.id', 'guide_name as guideName', 'guides.date_ini', 'guides.date_end',
+                'guides.media_id', 'guides.campaign_id', 'guides.editable', 'guides.created_at', 'guides.updated_at', 'guides.deleted_at',
+                DB::raw('COUNT(auspices.guide_id) as children'))
+            ->join('auspices', 'auspices.guide_id', '=', 'guides.id')
+            ->groupBy(['auspices.guide_id'])
+            ->get();
+        foreach ($result_guide as $k => $r) {
+            $auspice = Auspice::where('guide_id', '=', $r->id)->get();
+            $orderNumber = OrderNumber::where('guide_id', '=', $r->id)->get();
+            foreach ($auspice as $key => $row) {
+                Guide::create([
+                'guide_name'       => $row->auspice_name,
+                'cost'             => $row->cost,
+                'manual_apportion' => $row->manual_apportion,
+                'date_ini'         => $r->date_ini,
+                'date_end'         => $r->date_end,
+                'media_id'         => $r->media_id,
+                'campaign_id'      => $r->campaign_id,
+                'editable'         => $r->editable,
+                'guide_parent_id'  => $row->guide_id,
+                'created_at'       => $r->created_at,
+                'updated_at'       => $r->updated_at,
+                'deleted_at'       => $r->deleted_at
+                ]);
+                if(count($orderNumber) > 0) {
+                    OrderNumber::create([
+                        'order_number' => $orderNumber[0]->order_number,
+                        'version'      => $orderNumber[0]->version,
+                        'observation'  => $orderNumber[0]->observation,
+                        'guide_id'     => $r->id
+                    ]);
+                }
+
+                $guidesId = DB::table('guides')->get()->last();
+                $materials = AuspiceMaterial::where('auspice_id', '=', $row->id)->get();
+
+                foreach ($materials as $m => $material) {
+                    Material::create([
+                        'material_name' => $material->material_name,
+                        'duration'      => $material->duration,
+                        'total_cost'    => $material->total_cost,
+                        'guide_id'      => $guidesId->id,
+                        'rate_id'       => $row->rate_id,
+                        'created_at'    => $material->created_at,
+                        'updated_at'    => $material->updated_at,
+                        'deleted_at'    => $material->deleted_at
+                    ]);
+                    $materialsId = DB::table('materials')->get()->last();
+                    $materialPlaning = PlaningAuspiceMaterial::where('material_auspice_id', '=', $material->id)->get();
+                    foreach ($materialPlaning as $p => $planing) {
+                        PlaningMaterial::create([
+                            'broadcast_day' => $planing->broadcast_day,
+                            'times_per_day' => $planing->times_per_day,
+                            'material_id'   => $materialsId->id
+                        ]);
+                    }
+
+                }
+            }
+
+        }
+
+        return $this->sendResponse('ok');
     }
 
     public function getGuideCost($id) {
@@ -326,17 +404,17 @@ class GuideController extends BaseController {
             $material->total_cost =  $result[$ke]->totalCost;
             $material->save();
         }
-        return $total_cost;
+        return 'ok';
     }
 
     public function getGuideMaterials($id) {
-        $mat = Guide::where('guides.id', '=', $id)
+        $guide = Guide::where('guides.id', '=', $id)
             ->select('guides.id', 'guide_name as guideName', 'guides.cost', 'manual_apportion', 'guides.date_ini as dateIni', 'guides.date_end as dateEnd', 'media_types.media_type as mediaTypeValue')
             ->join('media', 'media.id', '=', 'guides.media_id')
             ->join('media_types', 'media_types.id', '=', 'media.media_type')
             ->get();
 
-        $mat = $mat[0];
+        $guide = $guide[0];
         $material = Material::select('materials.id', 'material_name as materialName', 'duration', 'total_cost', 'rates.show')
             ->join('rates', 'rates.id', '=', 'materials.rate_id')
             ->where('guide_id', '=', $id)->get();
@@ -353,22 +431,22 @@ class GuideController extends BaseController {
                 ->where('material_id', '=', $row->id)->get();
 
             $material[$key]->passes = (int)$material_count;
-            if(!!$mat->manual_apportion) {
+            if(!!$guide->manual_apportion) {
                 $material[$key]->cost = $material[$key]->total_cost;
             } else {
-                $material[$key]->cost = number_format($mat->cost / count($material), 2, '.', '');
+                $material[$key]->cost = number_format($guide->cost / count($material), 2, '.', '');
             }
 
-            $aux = [];
+            $passes = [];
             foreach ($material_planing as $k => $r) {
-                $aux[$r->broadcast_day] = [
+                $passes[$r->broadcast_day] = [
                     'date' => date('Y-m-d h:i:s', strtotime($r->broadcast_day)),
                     'timesPerDay' => $r->times_per_day
                 ];
             }
-            $material[$key]->timesPerDay = $aux;
-            $material[$key]->guideName = $mat->guideName;
-            $material[$key]->mediaTypeValue = $mat->mediaTypeValue;
+            $material[$key]->timesPerDay = $passes;
+            $material[$key]->guideName = $guide->guideName;
+            $material[$key]->mediaTypeValue = $guide->mediaTypeValue;
         }
         return $this->sendResponse($material);
     }
