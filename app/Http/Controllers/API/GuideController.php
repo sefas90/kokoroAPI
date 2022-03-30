@@ -11,7 +11,6 @@ use App\Models\PlaningAuspiceMaterial;
 use App\Models\PlaningMaterial;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use phpDocumentor\Reflection\Exception\PcreException;
 use Validator;
 
 class GuideController extends BaseController {
@@ -85,13 +84,14 @@ class GuideController extends BaseController {
         }
 
         $guide = new Guide(array(
-            'guide_name'     => trim($request->guideName),
-            'date_ini'       => trim($request->dateIni),
-            'date_end'       => trim($request->dateEnd),
-            'media_id'       => trim($request->mediaId),
-            'campaign_id'    => trim($request->campaignId),
-            'billing_number' => null,
-            'editable'       => 1,
+            'guide_name'      => trim($request->guideName),
+            'date_ini'        => trim($request->dateIni),
+            'date_end'        => trim($request->dateEnd),
+            'media_id'        => trim($request->mediaId),
+            'campaign_id'     => trim($request->campaignId),
+            'guide_parent_id' => trim($request->guideParentId),
+            'billing_number'  => null,
+            'editable'        => 1,
         ));
 
         return $guide->save() ?
@@ -125,13 +125,15 @@ class GuideController extends BaseController {
             return $this->sendError('No se encontro el guide');
         }
 
-        $guide->guide_name  = trim($request->guideName);
-        $guide->date_ini    = trim($request->dateIni);
-        $guide->date_end    = trim($request->dateEnd);
-        $guide->media_id    = trim($request->mediaId);
-        $guide->campaign_id = trim($request->campaignId);
+        $guide->guide_name      = trim($request->guideName);
+        $guide->date_ini        = trim($request->dateIni);
+        $guide->date_end        = trim($request->dateEnd);
+        $guide->media_id        = trim($request->mediaId);
+        $guide->campaign_id     = trim($request->campaignId);
+        $guide->guide_parent_id = trim($request->guideParentId);
 
-        if ($guide->media_id) {
+        // TODO review this logic with the client
+        /*if ($guide->media_id) {
             // remove associated materials
             $materials = Material::where('guide_id', '=', $id)->get();
             foreach ($materials as $key => $row) {
@@ -140,7 +142,7 @@ class GuideController extends BaseController {
                 $material->save();
                 // $material->delete();
             }
-        }
+        }*/
 
         return $guide->save() ?
             $this->sendResponse('', 'El guide ' . $guide->guide_name . ' se actualizo correctamente') :
@@ -170,6 +172,11 @@ class GuideController extends BaseController {
                 ['editable', '=', 1],
             ])
             ->get(), '');
+    }
+
+    public function guideParentList() {
+        $guides = Guide::where(['guide_parent_id', '=', null])->get();
+        return $this->sendResponse($guides);
     }
 
     public function finalizeGuide(Request $request) {
@@ -314,14 +321,12 @@ class GuideController extends BaseController {
                 'updated_at'       => $r->updated_at,
                 'deleted_at'       => $r->deleted_at
                 ]);
-                if(count($orderNumber) > 0) {
-                    OrderNumber::create([
-                        'order_number' => $orderNumber[0]->order_number,
-                        'version'      => $orderNumber[0]->version,
-                        'observation'  => $orderNumber[0]->observation,
-                        'guide_id'     => $r->id
-                    ]);
-                }
+                OrderNumber::create([
+                    'order_number' => $orderNumber[0]->order_number,
+                    'version'      => $orderNumber[0]->version,
+                    'observation'  => $orderNumber[0]->observation,
+                    'guide_id'     => $r->id
+                ]);
 
                 $guidesId = DB::table('guides')->get()->last();
                 $materials = AuspiceMaterial::where('auspice_id', '=', $row->id)->get();
@@ -365,7 +370,7 @@ class GuideController extends BaseController {
                 'plan.client_id', 'campaigns.date_ini', 'campaigns.date_end', 'rates.hour_ini as hourIni', 'rates.hour_end as hourEnd',
                 'guides.date_ini as guideDateIni', 'guides.editable', 'clients.id as clientId', 'clients.client_name as clientName',
                 'clients.representative', 'clients.NIT as clientNIT', 'clients.billing_address as billingAddress',
-                'clients.billing_policies as billingPolicies')
+                'clients.billing_policies as billingPolicies', 'guides.guide_parent_id')
             ->join('guides', 'guides.id', '=', 'materials.guide_id')
             ->join('rates', 'rates.id', '=', 'materials.rate_id')
             ->join('media', 'media.id', '=', 'rates.media_id')
@@ -382,7 +387,8 @@ class GuideController extends BaseController {
                 ['plan.deleted_at', '=', null],
                 ['clients.deleted_at', '=', null],
                 ['guides.id', '=', $id],
-                ['guides.editable', '<>', 2]
+                ['guides.editable', '<>', 2],
+                ['guides.guide_parent_id', '=', null]
             ])
             ->get();
 
