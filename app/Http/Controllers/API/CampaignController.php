@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Models\Auspice;
 use App\Models\Campaign;
 use App\Models\Guide;
 use Illuminate\Http\Request;
@@ -144,5 +145,26 @@ class CampaignController extends BaseController {
             }
         }
         return $total_cost;
+    }
+
+    public function getCosts($id) {
+        $campaign = Campaign::where('id', '=', $id)->select('id as campaignId', 'campaign_name as campaignName')->get();
+        if (!$campaign) {
+            return $this->sendError('No se contro la campaña');
+        }
+
+        foreach ($campaign as $key => $row) {
+            $row->cost = $this->getCampaignCost($row->campaignId);
+            $guide = Guide::where('campaign_id', '=', $row->campaignId)->select('id as guideId', 'guide_name as guideName', 'cost', 'manual_apportion')->get();
+            foreach ($guide as $ke => $ro) {
+                $ro->guideCost = filter_var($ro->manual_apportion, FILTER_VALIDATE_BOOLEAN) ?
+                    $this->guideCtrl->getManualGuideCost($row->id):
+                    $ro->cost;
+                $ro->manual_apportion = filter_var($ro->manual_apportion, FILTER_VALIDATE_BOOLEAN) ? 'automatico' : 'manual';
+            }
+            $row->detail = $guide;
+        }
+
+        return $this->sendResponse($campaign, '');
     }
 }
