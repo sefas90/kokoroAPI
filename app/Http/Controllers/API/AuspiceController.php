@@ -32,7 +32,7 @@ class AuspiceController extends BaseController {
 
         foreach ($auspice as $key => $row) {
             $orderNumber = OrderNumber::where('guide_id', '=', $row->guideId)->get();
-            if (!!$row->manualApportion) {
+            if (filter_var($row->manualApportion, FILTER_VALIDATE_BOOLEAN)) {
                 $auspice[$key]->cost = $this->getManualAuspiceCost($row->id);
             }
             $number = 'Orden no exportada';

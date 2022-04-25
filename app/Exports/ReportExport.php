@@ -5,15 +5,17 @@ namespace App\Exports;
 use App\Models\AuspiceMaterial;
 use App\Models\Client;
 use App\Models\Currency;
+use App\Models\Material;
 use App\Models\PlaningAuspiceMaterial;
+use App\Models\PlaningMaterial;
 use App\Models\User;
+use DateInterval;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use Maatwebsite\Excel\Cache\CacheManager;
 use DateTime;
 
 class ReportExport implements FromView, Responsable, ShouldAutoSize {
@@ -42,9 +44,9 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
     public function getCampaignReport($request): array {
         $where = $this->buildWhere($request, true);
         $result = Client::select('clients.id as client_id', 'client_name', 'representative', 'clients.NIT as clientNit', 'billing_address', 'billing_policies',
-            'plan_name', 'campaigns.id as budget', 'plan.id as plan_id', 'guide_name', 'guides.id as guide_id', 'order_number', 'order_numbers.version',
+            'plan_name', 'campaigns.id as budget', 'plan.id as plan_id', 'guide_name', 'guides.id as guide_id', 'manual_apportion as manualApportion',
             'media.id as media_id', 'material_name', 'duration', 'materials.id as material_id', 'materials.material_name', 'product', 'campaign_name', 'guides.billing_number',
-            'rates.id as rate_id', 'show', 'cost', 'media_name', 'business_name', 'cities.id as city_id', 'city', 'media_types.media_type')
+            'rates.id as rate_id', 'show', 'rates.cost', 'media_name', 'business_name', 'cities.id as city_id', 'city', 'media_types.media_type')
             ->join('plan', 'plan.client_id', '=', 'clients.id')
             ->join('campaigns', 'campaigns.plan_id', '=', 'plan.id')
             ->join('guides', 'guides.campaign_id', '=', 'campaigns.id')
@@ -53,7 +55,6 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
             ->join('media', 'media.id', '=', 'rates.media_id')
             ->join('media_types', 'media_types.id', '=', 'media.media_type')
             ->join('cities', 'cities.id', '=', 'media.city_id')
-            ->join('order_numbers', 'order_numbers.guide_id', '=', 'guides.id')
             ->where($where)
             ->orderBy('materials.id')
             ->get();
@@ -82,6 +83,10 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
                 $fila->user          = $user;
                 $fila->row           = $row;
                 $fila->cost          = $this->getUnitCost($row->cost, $row->media_type, $row->duration);
+                $fila->totalCost     = filter_var($row->manualApportion, FILTER_VALIDATE_BOOLEAN) ?
+                    $this->getManualGuideCost($row->guide_id) :
+                    $this->getAutoGuideCost($row->cost, $row->guide_id);
+                $fila->weeksInMonth  = $this->weeksInMonth(new DateTime($r->broadcast_day));
                 $fila->currencyValue = $request['currency']->currency_value;
                 $fila->duration      = $row->duration;
                 $fila->broadcast_day = $r->broadcast_day;
@@ -96,6 +101,38 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
             $aux        = null;
         }
         return $response;
+    }
+
+    function getManualGuideCost($guideId): float {
+        $total_cost = 0;
+        $material = Material::where([
+            ['guide_id', '=', $guideId],
+            ['deleted_at', '=', null]
+        ])->get();
+
+        foreach ($material as $k => $r) {
+            $total_passes = PlaningMaterial::where('material_id', '=', $r->id)
+                ->sum('times_per_day');
+            $total_passes = floor($total_passes);
+            $total_cost += $r->total_cost / $total_passes;
+        }
+        return $total_cost;
+    }
+
+    function getAutoGuideCost($cost, $guideId) {
+        $total_passes = 0;
+        $countMaterials = count(Material::where('guide_id', $guideId)->get());
+        $material = Material::where([
+            ['guide_id', '=', $guideId],
+            ['deleted_at', '=', null]
+        ])->get();
+
+        foreach ($material as $k => $r) {
+            $total_passes = PlaningMaterial::where('material_id', '=', $r->id)
+                ->sum('times_per_day');
+            $total_passes += floor($total_passes);
+        }
+        return ($cost / $countMaterials) / $total_passes;
     }
 
     public function getAuspiceReport($request): array {
@@ -151,7 +188,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
                     } else {
                         $started = true;
                     }
-                    if (!!$result[$key]->manual_apportion) {
+                    if (filter_var($result[$key]->manual_apportion, FILTER_VALIDATE_BOOLEAN)) {
                         $fila->cost      = $result[$key]->materialCost > 0 ? $result[$key]->materialCost / $total_passes : 0;
                     } else {
                         $fila->cost      = $this->getAuspiceUnitCost($row->cost, $total_passes, count($material));
@@ -175,6 +212,14 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
         }
 
         return $response;
+    }
+
+    function weeksInMonth($month_date, $count_last=true) {
+        $fn = $count_last ? 'ceil' : 'floor';
+        $start = new DateTime($month_date->format('Y-m'));
+        $days = (clone $start)->add(new DateInterval('P1M'))->diff($start)->days;
+        $offset = $month_date->format('N') - 1;
+        return $fn(($days + $offset)/7);
     }
 
     function weekOfMonth($date): int {
@@ -238,10 +283,8 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
 
         if ($isCampaign) {
             $where[] = ['materials.deleted_at', '=', null];
-        } else {
-            $where[] = ['auspice_materials.deleted_at', '=', null];
-            $where[] = ['auspices.deleted_at', '=', null];
         }
+
         $where[] = ['guides.deleted_at', '=', null];
 
         return $where;

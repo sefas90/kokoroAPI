@@ -266,6 +266,7 @@ class ExportController extends BaseController {
                 ]);
             }
         } else {
+            // TODO if search cant find search parent order_number
             $order = OrderNumber::all()->max('order_number') + 1;
             return $this->sendResponse([
                 'order_number'  => $order.'.0'

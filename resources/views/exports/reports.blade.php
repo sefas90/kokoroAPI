@@ -47,14 +47,14 @@
                 <td>{{ $data->row->city }}</td>
                 <td>{{ $data->row->representative }}</td>
                 <td>{{ $data->row->budget }}</td>
-                <td>{{ $data->row->order_number }}.{{ $data->row->version }}</td>
+                <td></td>
                 @if (!empty($data->times_per_day))
                     <td>{{ $data->times_per_day }}</td>
                 @else
                     <td>0</td>
                 @endif
                 @if (!empty($data->times_per_day))
-                    <td>{{ number_format($data->times_per_day * $data->cost, 2, '.', '') }}</td>
+                    <td>{{ number_format($data->totalCost * $data->times_per_day, 2, '.', '') }}</td>
                 @else
                     <td>0</td>
                 @endif

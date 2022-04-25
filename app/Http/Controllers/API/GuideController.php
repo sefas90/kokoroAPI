@@ -24,7 +24,8 @@ class GuideController extends BaseController {
         $search = $request->search;
         $where = [
             ['campaigns.deleted_at', '=', null],
-            ['guides.deleted_at', '=', null]
+            ['guides.deleted_at', '=', null],
+            ['guides.editable', '<>', 2]
         ];
         if (isset($search)) {
             array_push($where, ['campaigns.id', '=', $search]);
@@ -63,7 +64,7 @@ class GuideController extends BaseController {
                 }
             }
 
-            $result_guide[$key]->totalCost = $result_guide[$key]->manualApportion ? $this->getManualGuideCost($row->guideId) : $result_guide[$key]->cost;
+            $result_guide[$key]->totalCost = filter_var($result_guide[$key]->manualApportion, FILTER_VALIDATE_BOOLEAN) ? $this->getManualGuideCost($row->guideId) : $result_guide[$key]->cost;
             $result_guide[$key]->orderNumber = $number;
         }
 
@@ -73,8 +74,8 @@ class GuideController extends BaseController {
     public function store(Request $request) {
         $validator = Validator::make($request->all(), [
             'guideName'  => 'required',
-            'dateIni'      => ['required', 'before_or_equal:dateEnd'],
-            'dateEnd'      => ['required', 'after_or_equal:dateIni'],
+            'dateIni'    => ['required', 'before_or_equal:dateEnd'],
+            'dateEnd'    => ['required', 'after_or_equal:dateIni'],
             'mediaId'    => 'required',
             'campaignId' => 'required',
         ]);
@@ -154,7 +155,7 @@ class GuideController extends BaseController {
         if (!$guide) {
             return $this->sendError('No se encontro la guia');
         }
-
+        // TODO WTF with this code
         /*if (count(Material::where('guide_id', '=', $guide->id)->get()) > 0) {
             return $this->sendError('unD_Material', null, 200);
         }*/
@@ -289,19 +290,21 @@ class GuideController extends BaseController {
             ->get();
 
         foreach ($result_guide as $k => $r) {
-            $this->getGuideCost($r->guideId);
+            $msg = $this->getGuideCost($r->guideId);
         }
 
-        return $this->sendResponse('success');
+        return $this->sendResponse('success', $msg);
     }
 
     function migrateForReal() {
         $result_guide = DB::table('guides')
             ->select('guides.id', 'guide_name as guideName', 'guides.date_ini', 'guides.date_end',
-                'guides.media_id', 'guides.campaign_id', 'guides.editable', 'guides.created_at', 'guides.updated_at', 'guides.deleted_at',
-                DB::raw('COUNT(auspices.guide_id) as children'))
+                'guides.media_id', 'guides.campaign_id', 'guides.editable', 'guides.created_at', 'guides.updated_at', 'guides.deleted_at')
             ->join('auspices', 'auspices.guide_id', '=', 'guides.id')
-            ->groupBy(['auspices.guide_id'])
+            ->where([
+                ['guides.deleted_at', '=', null],
+                ['auspices.deleted_at', '=', null]
+            ])
             ->get();
         foreach ($result_guide as $k => $r) {
             $auspice = Auspice::where('guide_id', '=', $r->id)->get();
@@ -362,8 +365,7 @@ class GuideController extends BaseController {
 
     public function getGuideCost($id) {
         $total_cost = 0;
-        $result = DB::table('materials')
-            ->select('materials.id as id', 'materials.material_name', 'materials.duration', 'materials.guide_id', 'materials.rate_id',
+        $result = Material::select('materials.id as id', 'materials.material_name', 'materials.duration', 'materials.guide_id', 'materials.rate_id',
                 'guides.guide_name', 'guides.media_id', 'guides.campaign_id', 'guides.editable as editable', 'rates.show',
                 'rates.hour_ini', 'rates.hour_end', 'rates.cost', 'media.media_name', 'media.business_name', 'media.NIT',
                 'media.media_type as mediaTypeId', 'media_types.media_type', 'campaigns.campaign_name', 'campaigns.plan_id',
@@ -394,8 +396,7 @@ class GuideController extends BaseController {
 
         foreach ($result as $ke => $ro) {
             $other_id = $result[$ke]->id;
-            $planing = DB::table('material_planing')
-                ->select('broadcast_day', 'times_per_day')
+            $planing = PlaningMaterial::select('broadcast_day', 'times_per_day')
                 ->where('material_planing.material_id', '=', $other_id)->get();
             $spots = 0;
             foreach ($planing as $k => $r) {
@@ -437,7 +438,7 @@ class GuideController extends BaseController {
                 ->where('material_id', '=', $row->id)->get();
 
             $material[$key]->passes = (int)$material_count;
-            if(!!$guide->manual_apportion) {
+            if(filter_var($guide->manual_apportion, FILTER_VALIDATE_BOOLEAN)) {
                 $material[$key]->cost = $material[$key]->total_cost;
             } else {
                 $material[$key]->cost = number_format($guide->cost / count($material), 2, '.', '');
