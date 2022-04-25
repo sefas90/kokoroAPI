@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Models\Auspice;
 use App\Models\Campaign;
 use App\Models\Guide;
 use Illuminate\Http\Request;
@@ -137,5 +138,26 @@ class CampaignController extends BaseController {
             $total_cost += $this->guideCtrl->getGuideCost($row->id) + $this->auspiceCtrl->getAuspiceCost($row->id);
         }
         return $total_cost;
+    }
+
+    public function getCosts($id) {
+        $campaign = Campaign::where('id', '=', $id)->select('id as campaignId', 'campaign_name as campaignName')->get();
+        if (!$campaign) {
+            return $this->sendError('No se contro la campaña');
+        }
+
+        foreach ($campaign as $key => $row) {
+            $row->cost = $this->getCampaignCost($row->campaignId);
+            $guide = Guide::where('campaign_id', '=', $row->campaignId)->select('id as guideId', 'guide_name as guideName')->get();
+            foreach ($guide as $ke => $ro) {
+                $ro->guideCost = $this->guideCtrl->getGuideCost($ro->guideId);
+                $ro->auspiceCost = $this->auspiceCtrl->getAuspiceCost($ro->guideId);
+                $auspice = Auspice::where('guide_id', '=', $ro->guideId)->select('id as auspiceId', 'auspice_name as auspiceName', 'cost')->get();
+                $ro->auspiceDetail = $auspice;
+            }
+            $row->detail = $guide;
+        }
+
+        return $this->sendResponse($campaign, '');
     }
 }

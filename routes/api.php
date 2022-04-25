@@ -148,4 +148,7 @@ Route::group($attributes, function () {
     Route::post('/finalizeGuide', [GuideController::class, 'finalizeGuide']);
     Route::post('/cancelGuide', [GuideController::class, 'cancelGuide']);
     Route::post('/activateGuide', [GuideController::class, 'activateGuide']);
+
+    //test endpoint
+    Route::get('/campaign/getCosts/{id}', [CampaignController::class, 'getCosts']);
 });
