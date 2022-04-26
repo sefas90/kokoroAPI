@@ -157,10 +157,10 @@ class CampaignController extends BaseController {
             $row->cost = $this->getCampaignCost($row->campaignId);
             $guide = Guide::where('campaign_id', '=', $row->campaignId)->select('id as guideId', 'guide_name as guideName', 'cost', 'manual_apportion')->get();
             foreach ($guide as $ke => $ro) {
-                $ro->guideCost = filter_var($ro->manual_apportion, FILTER_VALIDATE_BOOLEAN) ?
-                    $this->guideCtrl->getManualGuideCost($row->id):
+                $ro->cost = filter_var($ro->manual_apportion, FILTER_VALIDATE_BOOLEAN) ?
+                    $this->guideCtrl->getManualGuideCost($ro->guideId) :
                     $ro->cost;
-                $ro->manual_apportion = filter_var($ro->manual_apportion, FILTER_VALIDATE_BOOLEAN) ? 'automatico' : 'manual';
+                $ro->manual_apportion = filter_var($ro->manual_apportion, FILTER_VALIDATE_BOOLEAN) ? 'manual' : 'automatico';
             }
             $row->detail = $guide;
         }
