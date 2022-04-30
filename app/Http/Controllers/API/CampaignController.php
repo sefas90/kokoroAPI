@@ -133,14 +133,15 @@ class CampaignController extends BaseController {
 
     public function getCampaignCost($campaign_id) {
         $total_cost = 0;
-        $guides = Guide::where('campaign_id', '=', $campaign_id)->get();
+        $guides = Guide::where('campaign_id', '=', $campaign_id)->select('guides.id')->get();
         foreach ($guides as $key => $row) {
             $total_cost += $this->guideCtrl->getGuideCost($row->id) + $this->auspiceCtrl->getAuspiceCost($row->id);
         }
-        return $total_cost;
+        return round($total_cost, 2);
     }
 
     public function getCosts($id) {
+        $total_cost = 0;
         $campaign = Campaign::where('id', '=', $id)->select('id as campaignId', 'campaign_name as campaignName')->get();
         if (!$campaign) {
             return $this->sendError('No se contro la campaña');
@@ -152,10 +153,12 @@ class CampaignController extends BaseController {
             foreach ($guide as $ke => $ro) {
                 $ro->guideCost = $this->guideCtrl->getGuideCost($ro->guideId);
                 $ro->auspiceCost = $this->auspiceCtrl->getAuspiceCost($ro->guideId);
+                $total_cost += $ro->guideCost + $ro->auspiceCost;
                 $auspice = Auspice::where('guide_id', '=', $ro->guideId)->select('id as auspiceId', 'auspice_name as auspiceName', 'cost')->get();
                 $ro->auspiceDetail = $auspice;
             }
             $row->detail = $guide;
+            $row->total_cost = $total_cost;
         }
 
         return $this->sendResponse($campaign, '');

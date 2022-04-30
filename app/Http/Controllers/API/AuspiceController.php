@@ -227,7 +227,7 @@ class AuspiceController extends BaseController {
                 ->where('material_auspice_id', '=', $row->id)->get();
 
             $auspice[$key]->passes = (int)$material;
-            if(!!$aus->manual_apportion) {
+            if(filter_var($aus->manual_apportion, FILTER_VALIDATE_BOOLEAN)) {
                 $auspice[$key]->cost = $auspice[$key]->total_cost;
             } else {
                 $auspice[$key]->cost = number_format($aus->cost / count($auspice), 2, '.', '');
@@ -275,21 +275,21 @@ class AuspiceController extends BaseController {
             ['auspices.deleted_at', '=', null],
             ['guides.deleted_at', '=', null],
             ['guides.editable', '<>', 2]
-        ])->join('guides', 'guides.id', '=', 'auspices.guide_id')->get();
+        ])->join('guides', 'guides.id', '=', 'auspices.guide_id')
+            ->select('auspices.id', 'auspice_name', 'cost', 'guides.id as guide_id', 'auspices.rate_id', 'manual_apportion',
+            'guide_name', 'date_ini', 'date_end', 'media_id', 'campaign_id', 'editable', 'billing_number')
+            ->get();
         if (count($auspices) > 0) {
             foreach ($auspices as $key => $row) {
-                if (!!$row->manual_apportion) {
-                    //calculated value
-                    $total_cost = 0;
+                if (filter_var($row->manual_apportion, FILTER_VALIDATE_BOOLEAN)) {
                     $material = AuspiceMaterial::where([
-                        ['auspice_id', '=', $row->auspiceId],
+                        ['auspice_id', '=', $row->id],
                         ['deleted_at', '=', null]
                     ])->get();
                     foreach ($material as $k => $r) {
-                        $total_cost += $r->total_cost;
+                        $total_cost += round($r->total_cost);
                     }
                 } else {
-                    //happy path
                     $total_cost += $row->cost;
                 }
             }
