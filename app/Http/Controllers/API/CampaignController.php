@@ -2,15 +2,11 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Models\Auspice;
 use App\Models\Campaign;
 use App\Models\Guide;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use PhpOffice\PhpSpreadsheet\Writer\Pdf;
 use Validator;
-use App\Http\Controllers\API\GuideController;
 
 class CampaignController extends BaseController {
     protected $guideCtrl;
@@ -138,13 +134,11 @@ class CampaignController extends BaseController {
         $total_cost = 0;
         $guides = Guide::where('campaign_id', '=', $campaign_id)->get();
         foreach ($guides as $key => $row) {
-            if (filter_var($row->manual_apportion, FILTER_VALIDATE_BOOLEAN)) {
-                $total_cost += $this->guideCtrl->getManualGuideCost($row->id);
-            } else {
-                $total_cost += $row->cost;
-            }
+            $total_cost += filter_var($row->manual_apportion, FILTER_VALIDATE_BOOLEAN) ?
+                $this->guideCtrl->getManualGuideCost($row->id) :
+                $row->cost;
         }
-        return $total_cost;
+        return round($total_cost, 2);
     }
 
     public function getCosts($id) {

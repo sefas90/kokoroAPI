@@ -269,7 +269,7 @@ class GuideController extends BaseController {
         foreach ($material as $k => $r) {
             $total_cost += $r->total_cost;
         }
-        return $total_cost;
+        return round($total_cost, 2);
     }
 
     function updateCost() {
