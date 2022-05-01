@@ -149,7 +149,7 @@ class CampaignController extends BaseController {
 
         foreach ($campaign as $key => $row) {
             $row->cost = $this->getCampaignCost($row->campaignId);
-            $guide = Guide::where('campaign_id', '=', $row->campaignId)->select('id as guideId', 'guide_name as guideName', 'cost', 'manual_apportion')->get();
+            $guide = Guide::where('campaign_id', '=', $row->campaignId)->select('id as guideId', 'guide_name as guideName', 'cost', 'manual_apportion', 'guide_parent_id')->get();
             foreach ($guide as $ke => $ro) {
                 $ro->cost = filter_var($ro->manual_apportion, FILTER_VALIDATE_BOOLEAN) ?
                     $this->guideCtrl->getManualGuideCost($ro->guideId) :
