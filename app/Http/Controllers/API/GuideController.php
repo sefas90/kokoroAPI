@@ -395,23 +395,23 @@ class GuideController extends BaseController {
             ->get();
 
         foreach ($result as $ke => $ro) {
-            $other_id = $result[$ke]->id;
+            $other_id = $ro->id;
             $planing = PlaningMaterial::select('broadcast_day', 'times_per_day')
                 ->where('material_planing.material_id', '=', $other_id)->get();
             $spots = 0;
             foreach ($planing as $k => $r) {
                 $spots += $r->times_per_day;
-                $result[$ke]->spots = $spots;
+                $ro->spots = $spots;
             }
-            $result[$ke]->spots = $spots;
-            $result[$ke]->unitCost = $this->getUnitCost($result[$ke]->cost, $result[$ke]->media_type, $result[$ke]->duration);
-            $result[$ke]->totalCost = $this->getTotalCost($result[$ke]->cost, $result[$ke]->media_type, $result[$ke]->duration, $result[$ke]->spots);
-            $total_cost += $result[$ke]->totalCost;
+            $ro->spots = $spots;
+            $ro->unitCost = $this->getUnitCost($ro->cost, $ro->media_type, $ro->duration);
+            $ro->totalCost = $this->getTotalCost($ro->cost, $ro->media_type, $ro->duration, $ro->spots);
+            $total_cost += $ro->totalCost;
             $material = Material::find($ro->id);
-            $material->total_cost =  $result[$ke]->totalCost;
+            $material->total_cost =  $ro->totalCost;
             $material->save();
         }
-        return 'ok';
+        return $total_cost;
     }
 
     public function getGuideMaterials($id) {
