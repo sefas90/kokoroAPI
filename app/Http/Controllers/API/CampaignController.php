@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Models\Campaign;
 use App\Models\Guide;
+use Dflydev\DotAccessData\Data;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Validator;
@@ -132,7 +133,10 @@ class CampaignController extends BaseController {
 
     public function getCampaignCost($campaign_id) {
         $total_cost = 0;
-        $guides = Guide::where('campaign_id', '=', $campaign_id)->get();
+        $guides = Guide::where([
+            ['campaign_id', '=', $campaign_id],
+            ['guides.editable', '<>', 2]
+        ])->get();
         foreach ($guides as $key => $row) {
             $total_cost += filter_var($row->manual_apportion, FILTER_VALIDATE_BOOLEAN) ?
                 $this->guideCtrl->getManualGuideCost($row->id) :
@@ -149,8 +153,14 @@ class CampaignController extends BaseController {
 
         foreach ($campaign as $key => $row) {
             $row->cost = $this->getCampaignCost($row->campaignId);
-            $guide = Guide::where('campaign_id', '=', $row->campaignId)->select('id as guideId', 'guide_name as guideName', 'cost', 'manual_apportion', 'guide_parent_id')->get();
+            $guide = Guide::where([
+                ['campaign_id', '=', $row->campaignId],
+                ['guides.editable', '<>', 2]
+            ])->select('id as guideId', 'guide_name as guideName', 'cost', 'manual_apportion', 'guide_parent_id')->get();
             foreach ($guide as $ke => $ro) {
+                if ($ro->guideId == 91) {
+                    dd($ro->guideId);
+                }
                 $ro->cost = filter_var($ro->manual_apportion, FILTER_VALIDATE_BOOLEAN) ?
                     $this->guideCtrl->getManualGuideCost($ro->guideId) :
                     $ro->cost;
