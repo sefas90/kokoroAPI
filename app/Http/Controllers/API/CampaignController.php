@@ -158,9 +158,6 @@ class CampaignController extends BaseController {
                 ['guides.editable', '<>', 2]
             ])->select('id as guideId', 'guide_name as guideName', 'cost', 'manual_apportion', 'guide_parent_id')->get();
             foreach ($guide as $ke => $ro) {
-                if ($ro->guideId == 91) {
-                    dd($ro->guideId);
-                }
                 $ro->cost = filter_var($ro->manual_apportion, FILTER_VALIDATE_BOOLEAN) ?
                     $this->guideCtrl->getManualGuideCost($ro->guideId) :
                     $ro->cost;
