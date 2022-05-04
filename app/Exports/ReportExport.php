@@ -43,10 +43,12 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
 
     public function getCampaignReport($request): array {
         $where = $this->buildWhere($request, true);
-        $result = Client::select('clients.id as client_id', 'client_name', 'representative', 'clients.NIT as clientNit', 'billing_address', 'billing_policies',
-            'plan_name', 'campaigns.id as budget', 'plan.id as plan_id', 'guide_name', 'guides.id as guide_id', 'manual_apportion as manualApportion',
-            'media.id as media_id', 'material_name', 'duration', 'materials.id as material_id', 'materials.material_name', 'product', 'campaign_name', 'guides.billing_number',
-            'rates.id as rate_id', 'show', 'rates.cost', 'media_name', 'business_name', 'cities.id as city_id', 'city', 'media_types.media_type')
+        $result = Client::select('clients.id as client_id', 'client_name', 'representative', 'clients.NIT as clientNit',
+            'billing_address', 'billing_policies', 'plan_name', 'campaigns.id as budget', 'plan.id as plan_id',
+            'guide_name', 'guides.id as guide_id', 'manual_apportion as manualApportion', 'media.id as media_id',
+            'material_name', 'duration', 'materials.id as material_id', 'materials.material_name', 'product',
+            'campaign_name', 'guides.billing_number', 'rates.id as rate_id', 'show', 'rates.cost', 'media_name',
+            'business_name', 'cities.id as city_id', 'city', 'media_types.media_type')
             ->join('plan', 'plan.client_id', '=', 'clients.id')
             ->join('campaigns', 'campaigns.plan_id', '=', 'plan.id')
             ->join('guides', 'guides.campaign_id', '=', 'campaigns.id')
@@ -66,17 +68,16 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
         $response = array();
         foreach ($result as $key => $row) {
             $where = $this->buildDatesWhere($request, true, $row->material_id);
-            $plan = DB::table('material_planing')
+            $plan = PlaningMaterial::where($where)
                 ->select('*')
-                ->where($where)
                 ->get();
             $times_per_day = 0;
             $started = false;
             foreach ($plan as $k => $r) {
                 $fila->weekOfYear    = $this->weekOfYear(strtotime($r->broadcast_day));
                 if ($started && $aux->weekOfYear != $fila->weekOfYear) {
-                    $response[]    = $aux;
-                    $times_per_day = 0;
+                    $response[]      = $aux;
+                    $times_per_day   = 0;
                 } else {
                     $started = true;
                 }

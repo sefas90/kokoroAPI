@@ -26,7 +26,9 @@ class ExportController extends BaseController {
         $validator = Validator::make($request->all(), [
             'guideId'    => 'required'
         ]);
-        $currency = Currency::find($request->currencyId) ? Currency::find($request->currencyId) : (object)['currency_value' => 1, 'symbol' => 'BOB'];
+        $currency = Currency::find($request->currencyId) ?
+            Currency::find($request->currencyId) :
+            (object)['currency_value' => 1, 'symbol' => 'BOB'];
 
         if (!$validator->fails()){
             $observation = [
@@ -40,10 +42,12 @@ class ExportController extends BaseController {
                 ])
                 ->select('materials.id as id', 'materials.material_name', 'materials.duration', 'materials.guide_id', 'materials.rate_id',
                     'guides.guide_name', 'guides.media_id', 'guides.campaign_id', 'guides.editable as editable', 'rates.show',
-                    'rates.hour_ini', 'rates.hour_end', 'rates.cost', 'media.media_name', 'media.business_name', 'media.NIT', 'media.media_type as mediaTypeId', 'media_types.media_type',
-                    'campaigns.campaign_name', 'campaigns.plan_id', 'plan.client_id', 'campaigns.date_ini', 'campaigns.date_end',
-                    'rates.hour_ini as hourIni', 'rates.hour_end as hourEnd', 'guides.date_ini as guideDateIni', 'guides.editable',
-                    'clients.id as clientId', 'clients.client_name as clientName', 'clients.representative', 'clients.NIT as clientNIT', 'clients.billing_address as billingAddress', 'clients.billing_policies as billingPolicies')
+                    'rates.hour_ini', 'rates.hour_end', 'rates.cost', 'media.media_name', 'media.business_name', 'media.NIT',
+                    'media.media_type as mediaTypeId', 'media_types.media_type', 'campaigns.campaign_name', 'campaigns.plan_id',
+                    'plan.client_id', 'campaigns.date_ini', 'campaigns.date_end', 'rates.hour_ini as hourIni', 'rates.hour_end as hourEnd',
+                    'guides.date_ini as guideDateIni', 'guides.editable', 'clients.id as clientId', 'clients.client_name as clientName',
+                    'clients.representative', 'clients.NIT as clientNIT', 'clients.billing_address as billingAddress',
+                    'clients.billing_policies as billingPolicies')
                 ->join('guides', 'guides.id', '=', 'materials.guide_id')
                 ->join('rates', 'rates.id', '=', 'materials.rate_id')
                 ->join('media', 'media.id', '=', 'rates.media_id')
@@ -60,36 +64,35 @@ class ExportController extends BaseController {
                 $total = 0;
                 $totalSpots = 0;
                 foreach ($result as $key => $row) {
-                    $id = $result[$key]->id;
                     if($request['monthsSelected'] && count($request['monthsSelected']) > 0) {
                         foreach ($request['monthsSelected'] as $ke => $ro) {
                             if (is_string($ro)) {
                                 $month = date($this->getMonth($ro));
                                 $planing = DB::table('material_planing')
                                     ->select('broadcast_day', 'times_per_day')
-                                    ->where('material_planing.material_id', '=', $id)
+                                    ->where('material_planing.material_id', '=', $row->id)
                                     ->whereMonth('broadcast_day',  $month)
                                     ->get();
                                 if(count($planing) > 0) {
                                     $pla[$month] = array();
                                     $spots = 0;
                                     foreach ($planing as $k => $r) {
-                                        $r->day = date("d", strtotime($planing[$k]->broadcast_day));
-                                        $m = date("m", strtotime($planing[$k]->broadcast_day));
+                                        $r->day = date("d", strtotime($r->broadcast_day));
+                                        $m = date("m", strtotime($r->broadcast_day));
                                         if ($month === $m) {
                                             $spots += $r->times_per_day;
                                         }
                                         $pla[$month][] = $r;
                                         $months[] = $month;
                                     }
-                                    $result[$key]->spots = $spots;
+                                    $row->spots = $spots;
+                                    $row->planing = $pla;
                                     $totalSpots += $spots;
-                                    $result[$key]->planing = $pla;
                                 }
                             }
                         }
                     } else {
-                        $planing = PlaningMaterial::where('material_planing.material_id', '=', $id)
+                        $planing = PlaningMaterial::where('material_planing.material_id', '=', $row->id)
                             ->select('broadcast_day', 'times_per_day')
                             ->get();
                         $m = date("m", strtotime($planing[0]->broadcast_day));
@@ -103,9 +106,9 @@ class ExportController extends BaseController {
                                 $pla[$m][] = $r;
                                 $months[] = $m;
                             }
-                            $result[$key]->spots = $spots;
+                            $row->spots = $spots;
+                            $row->planing = $pla;
                             $totalSpots += $spots;
-                            $result[$key]->planing = $pla;
                         }
                     }
                 }
