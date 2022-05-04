@@ -152,7 +152,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
                     } else {
                         $started = true;
                     }
-                    if (!!$result[$key]->manual_apportion) {
+                    if (filter_var($result[$key]->manual_apportion, FILTER_VALIDATE_BOOLEAN)) {
                         $fila->cost      = $result[$key]->materialCost > 0 ? $result[$key]->materialCost / $total_passes : 0;
                     } else {
                         $fila->cost      = $this->getAuspiceUnitCost($row->cost, $total_passes, count($material));
