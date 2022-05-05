@@ -326,7 +326,7 @@ class GuideController extends BaseController {
                 'campaign_id'      => $r->campaign_id,
                 'editable'         => $r->editable,
                 'guide_parent_id'  => $row->guide_id,
-                'billing_number'   => $row->billing_number,
+                'billing_number'   => $r->billing_number,
                 'created_at'       => $r->created_at,
                 'updated_at'       => $r->updated_at,
                 'deleted_at'       => $r->deleted_at
