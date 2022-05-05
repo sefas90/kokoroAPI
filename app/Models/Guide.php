@@ -18,6 +18,7 @@ class Guide extends Model {
         'campaign_id',
         'editable',
         'guide_parent_id',
+        'billing_number',
         'created_at',
         'updated_at',
         'deleted_at'

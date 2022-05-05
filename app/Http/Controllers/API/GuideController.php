@@ -175,8 +175,13 @@ class GuideController extends BaseController {
             ->get(), '');
     }
 
-    public function guideParentList() {
-        $guides = Guide::where(['guide_parent_id', '=', null])->get();
+    public function guideParentList($id) {
+        $guides = Guide::where([
+            ['guide_parent_id', '=', null],
+            ['campaign.id', '=', $id]
+        ])
+            ->join('campaigns', 'campaigns.id', '=', 'guides.campaign_id')
+            ->get();
         return $this->sendResponse($guides);
     }
 
@@ -299,7 +304,8 @@ class GuideController extends BaseController {
     function migrateForReal() {
         $result_guide = DB::table('guides')
             ->select('guides.id', 'guide_name as guideName', 'guides.date_ini', 'guides.date_end',
-                'guides.media_id', 'guides.campaign_id', 'guides.editable', 'guides.created_at', 'guides.updated_at', 'guides.deleted_at')
+                'guides.media_id', 'guides.campaign_id', 'guides.editable', 'guides.billing_number',
+                'guides.created_at', 'guides.updated_at', 'guides.deleted_at')
             ->join('auspices', 'auspices.guide_id', '=', 'guides.id')
             ->where([
                 ['guides.deleted_at', '=', null],
@@ -320,6 +326,7 @@ class GuideController extends BaseController {
                 'campaign_id'      => $r->campaign_id,
                 'editable'         => $r->editable,
                 'guide_parent_id'  => $row->guide_id,
+                'billing_number'   => $row->billing_number,
                 'created_at'       => $r->created_at,
                 'updated_at'       => $r->updated_at,
                 'deleted_at'       => $r->deleted_at
