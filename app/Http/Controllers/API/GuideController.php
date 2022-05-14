@@ -90,7 +90,7 @@ class GuideController extends BaseController {
             'date_end'        => trim($request->dateEnd),
             'media_id'        => trim($request->mediaId),
             'campaign_id'     => trim($request->campaignId),
-            'guide_parent_id' => trim($request->guideParentId),
+            'guide_parent_id' => trim($request->guideParentId) || null,
             'billing_number'  => null,
             'editable'        => 1,
         ));
@@ -429,7 +429,7 @@ class GuideController extends BaseController {
             ->get();
 
         $guide = $guide[0];
-        $material = Material::select('materials.id', 'material_name as materialName', 'duration', 'total_cost', 'rates.show')
+        $material = Material::select('materials.id', 'material_name as materialName', 'duration', 'total_cost', 'rates.show', 'rates.id as rateId')
             ->join('rates', 'rates.id', '=', 'materials.rate_id')
             ->where('guide_id', '=', $id)->get();
         if (!$material) {
