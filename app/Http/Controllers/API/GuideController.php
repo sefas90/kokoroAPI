@@ -91,7 +91,7 @@ class GuideController extends BaseController {
             'date_end'        => trim($request->dateEnd),
             'media_id'        => trim($request->mediaId),
             'campaign_id'     => trim($request->campaignId),
-            'guide_parent_id' => trim($request->guideParentId) || null,
+            'guide_parent_id' => empty($request->guideParentId) ? null : (trim($request->guideParentId)),
             'billing_number'  => null,
             'editable'        => 1,
         ));

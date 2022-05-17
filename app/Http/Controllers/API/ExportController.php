@@ -40,9 +40,9 @@ class ExportController extends BaseController {
                     ['materials.deleted_at', '=', null],
                     ['guides.id', '=', $request->guideId]
                 ])
-                ->select('materials.id as id', 'materials.material_name', 'materials.duration', 'materials.guide_id', 'materials.rate_id',
+                ->select('materials.id as id', 'materials.material_name', 'materials.duration', 'materials.guide_id', 'materials.rate_id', 'materials.total_cost as materialCost',
                     'guides.guide_name', 'guides.media_id', 'guides.campaign_id', 'guides.editable as editable', 'guides.cost as guideCost',
-                    'guides.date_ini as guideDateIni', 'guides.editable', 'guides.manual_apportion',
+                    'guides.date_ini as guideDateIni', 'guides.editable', 'guides.manual_apportion as manualApportion',
                     'rates.show', 'rates.hour_ini', 'rates.hour_end', 'rates.cost', 'media.media_name', 'media.business_name', 'media.NIT',
                     'media.media_type as mediaTypeId', 'media_types.media_type', 'campaigns.campaign_name', 'campaigns.plan_id',
                     'plan.client_id', 'campaigns.date_ini', 'campaigns.date_end', 'rates.hour_ini as hourIni', 'rates.hour_end as hourEnd',
@@ -227,25 +227,10 @@ class ExportController extends BaseController {
                     'currencyValue'   => $currency->currency_value
                 ];
 
-                foreach ($response['result'] as $llave => $fila) {
+                foreach ($response['result'] as $ll => $fila) {
                     if (isset($fila->planing)) {
-                        // dd($fila);
-                        $fila->totalCost     = filter_var($row->manualApportion, FILTER_VALIDATE_BOOLEAN) ?
-                            $this->reportCtrl->getManualGuideCost($row->guide_id) :
-                            $this->reportCtrl->getAutoGuideCost($row->cost, $row->guide_id);
-                        /*$fila->unitCost     = filter_var($row->manualApportion, FILTER_VALIDATE_BOOLEAN) ?
-                            $this->reportCtrl->getManualGuideCost($row->guide_id) :
-                            $this->reportCtrl->getAutoGuideCost($row->cost, $row->guide_id);*/
-
+                        $fila->totalCost = filter_var($fila->manualApportion, FILTER_VALIDATE_BOOLEAN) ? $fila->materialCost : $fila->guideCost / count($response['result']);
                         $response['totalMount'] += $fila->totalCost;
-                        if (filter_var($guide->manual_apportion, FILTER_VALIDATE_BOOLEAN)) {
-                            $fila->unitCost = 0;
-                        } else {
-                            $fila->unitCost = $this->getUnitCost($fila->cost, $fila->media_type, $fila->duration);
-                        }
-                    } else {
-                        $response['result'][$llave]->unitCost = 0;
-                        $response['result'][$llave]->totalCost = 0;
                     }
                 }
 
