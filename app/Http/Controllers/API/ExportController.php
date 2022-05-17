@@ -41,11 +41,12 @@ class ExportController extends BaseController {
                     ['guides.id', '=', $request->guideId]
                 ])
                 ->select('materials.id as id', 'materials.material_name', 'materials.duration', 'materials.guide_id', 'materials.rate_id',
-                    'guides.guide_name', 'guides.media_id', 'guides.campaign_id', 'guides.editable as editable', 'rates.show',
-                    'rates.hour_ini', 'rates.hour_end', 'rates.cost', 'media.media_name', 'media.business_name', 'media.NIT',
+                    'guides.guide_name', 'guides.media_id', 'guides.campaign_id', 'guides.editable as editable', 'guides.cost as guideCost',
+                    'guides.date_ini as guideDateIni', 'guides.editable', 'guides.manual_apportion',
+                    'rates.show', 'rates.hour_ini', 'rates.hour_end', 'rates.cost', 'media.media_name', 'media.business_name', 'media.NIT',
                     'media.media_type as mediaTypeId', 'media_types.media_type', 'campaigns.campaign_name', 'campaigns.plan_id',
                     'plan.client_id', 'campaigns.date_ini', 'campaigns.date_end', 'rates.hour_ini as hourIni', 'rates.hour_end as hourEnd',
-                    'guides.date_ini as guideDateIni', 'guides.editable', 'clients.id as clientId', 'clients.client_name as clientName',
+                    'clients.id as clientId', 'clients.client_name as clientName',
                     'clients.representative', 'clients.NIT as clientNIT', 'clients.billing_address as billingAddress',
                     'clients.billing_policies as billingPolicies')
                 ->join('guides', 'guides.id', '=', 'materials.guide_id')
@@ -59,10 +60,12 @@ class ExportController extends BaseController {
 
             $pla = array();
             $months = array();
+            $isChild = false;
 
             if (count($result) > 0) {
                 $total = 0;
                 $totalSpots = 0;
+                // spots
                 foreach ($result as $key => $row) {
                     if($request['monthsSelected'] && count($request['monthsSelected']) > 0) {
                         foreach ($request['monthsSelected'] as $ke => $ro) {
@@ -115,8 +118,17 @@ class ExportController extends BaseController {
 
                 $months = array_unique($months);
 
-                $orderNumber = OrderNumber::where('guide_id', '=', $request->guideId)->get();
+                $orderNumber = $orderNumberChild = OrderNumber::where('guide_id', '=', $request->guideId)->get();
+                $guide  = Guide::find($request->guideId);
+                if (count($orderNumber) <= 0) {
+                    $orderNumber = OrderNumber::where('guide_id', '=', $guide->guide_parent_id)->get();
+                }
 
+                if ($guide->guide_parent_id) {
+                    $isChild = true;
+                }
+
+                // Order number
                 if($result[0]->editable == 1) {
                     if (count($orderNumber) > 0) {
                         $orderNumber = OrderNumber::find($orderNumber[0]->id);
@@ -128,14 +140,44 @@ class ExportController extends BaseController {
                         $orderNumber->version = $request->newOrder ? $orderNumber->version + 1 : $orderNumber->version;
                         $orderNumber->observation = $observation[0].' - '.$observation[1];
                         $orderNumber->save();
+                        if ($isChild && count($orderNumberChild) <= 0 ) {
+                            $orderNumber = OrderNumber::create([
+                                'order_number' => $orderNumber->order_number,
+                                'version'      => $orderNumber->version,
+                                'guide_id'     => $request->guideId,
+                                'observation'  => $observation[1]
+                            ]);
+                        } else {
+                            if ($isChild){
+                                $orderNumber2 = OrderNumber::where('guide_id', '=', $guide->guide_parent_id)->get()->last();
+                                $observation[0] = $request->newOrder ?
+                                    'Remplazando a la orden '.$orderNumber2->order_number.'.'.$orderNumber2->version :
+                                    ($orderNumber2->version == 0 ?
+                                        '' :
+                                        'Remplazando a la orden '.$orderNumber2->order_number.'.'.($orderNumber2->version - 1));
+                                $orderNumber2->version = $request->newOrder ? $orderNumber2->version + 1 : $orderNumber2->version;
+                                $orderNumber2->observation = $observation[0].' - '.$observation[1];
+                                $orderNumber2->save();
+                            }
+                        }
                     } else {
-                        $order = OrderNumber::all()->max('order_number');
-                        $orderNumber = OrderNumber::create([
-                            'order_number'  => $order + 1,
-                            'version'       => 0,
-                            'guide_id'      => $request->guideId,
-                            'observation'  => $observation[1]
-                        ]);
+                        if ($isChild){
+                            $order = OrderNumber::all()->max('order_number');
+                            $orderNumber = OrderNumber::create([
+                                'order_number' => $order + 1,
+                                'version'      => 0,
+                                'guide_id'     => $guide->guide_parent_id,
+                                'observation'  => $observation[1]
+                            ]);
+                        } else {
+                            $order = OrderNumber::all()->max('order_number');
+                            $orderNumber = OrderNumber::create([
+                                'order_number' => $order + 1,
+                                'version'      => 0,
+                                'guide_id'     => $request->guideId,
+                                'observation'  => $observation[1]
+                            ]);
+                        }
                     }
                 } else {
                     $orderNumber = OrderNumber::find($orderNumber[0]->id);
@@ -187,9 +229,20 @@ class ExportController extends BaseController {
 
                 foreach ($response['result'] as $llave => $fila) {
                     if (isset($fila->planing)) {
-                        $response['result'][$llave]->unitCost = $this->getUnitCost($fila->cost, $fila->media_type, $fila->duration);
-                        $response['result'][$llave]->totalCost = $this->getTotalCost($fila->cost, $fila->media_type, $fila->duration, $fila->spots);
-                        $response['totalMount'] += $this->getTotalCost($fila->cost, $fila->media_type, $fila->duration, $fila->spots);
+                        // dd($fila);
+                        $fila->totalCost     = filter_var($row->manualApportion, FILTER_VALIDATE_BOOLEAN) ?
+                            $this->reportCtrl->getManualGuideCost($row->guide_id) :
+                            $this->reportCtrl->getAutoGuideCost($row->cost, $row->guide_id);
+                        /*$fila->unitCost     = filter_var($row->manualApportion, FILTER_VALIDATE_BOOLEAN) ?
+                            $this->reportCtrl->getManualGuideCost($row->guide_id) :
+                            $this->reportCtrl->getAutoGuideCost($row->cost, $row->guide_id);*/
+
+                        $response['totalMount'] += $fila->totalCost;
+                        if (filter_var($guide->manual_apportion, FILTER_VALIDATE_BOOLEAN)) {
+                            $fila->unitCost = 0;
+                        } else {
+                            $fila->unitCost = $this->getUnitCost($fila->cost, $fila->media_type, $fila->duration);
+                        }
                     } else {
                         $response['result'][$llave]->unitCost = 0;
                         $response['result'][$llave]->totalCost = 0;

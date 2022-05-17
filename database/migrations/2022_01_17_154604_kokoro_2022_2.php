@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class Kokoro2022_3 extends Migration {
+class Kokoro2022_2 extends Migration {
     public function up() {
         Schema::table('material_auspice_planing', function (Blueprint $table) {
             $table->dropForeign('material_auspice_id');
@@ -21,6 +21,5 @@ class Kokoro2022_3 extends Migration {
             $table->dropForeign('rate_id');
         });
         Schema::dropIfExists('auspices');
-
     }
 }

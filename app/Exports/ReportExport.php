@@ -2,17 +2,14 @@
 
 namespace App\Exports;
 
-use App\Models\AuspiceMaterial;
 use App\Models\Client;
 use App\Models\Currency;
 use App\Models\Material;
-use App\Models\PlaningAuspiceMaterial;
 use App\Models\PlaningMaterial;
 use App\Models\User;
 use DateInterval;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
@@ -30,15 +27,11 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
     }
 
     public function view(): View {
-
         $request = $this->req;
         $request['currency'] = Currency::find($request->currencyId) ? Currency::find($request->currencyId) : Currency::find(1);
         $campaign = $this->getCampaignReport($request);
         $data = [$campaign, $request['currency']];
-
-        return view('exports.reports', [
-            'datas' => $data
-        ]);
+        return view('exports.reports', ['datas' => $data]);
     }
 
     public function getCampaignReport($request): array {
@@ -104,7 +97,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
         return $response;
     }
 
-    function getManualGuideCost($guideId): float {
+    public function getManualGuideCost($guideId): float {
         $total_cost = 0;
         $material = Material::where([
             ['guide_id', '=', $guideId],
@@ -112,15 +105,14 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
         ])->get();
 
         foreach ($material as $k => $r) {
-            $total_passes = PlaningMaterial::where('material_id', '=', $r->id)
-                ->sum('times_per_day');
+            $total_passes = PlaningMaterial::where('material_id', '=', $r->id)->sum('times_per_day');
             $total_passes = floor($total_passes);
             $total_cost += $r->total_cost / $total_passes;
         }
         return $total_cost;
     }
 
-    function getAutoGuideCost($cost, $guideId) {
+    public function getAutoGuideCost($cost, $guideId) {
         $total_passes = 0;
         $countMaterials = count(Material::where('guide_id', $guideId)->get());
         $material = Material::where([
@@ -129,90 +121,10 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
         ])->get();
 
         foreach ($material as $k => $r) {
-            $total_passes = PlaningMaterial::where('material_id', '=', $r->id)
-                ->sum('times_per_day');
+            $total_passes = PlaningMaterial::where('material_id', '=', $r->id)->sum('times_per_day');
             $total_passes += floor($total_passes);
         }
         return ($cost / $countMaterials) / $total_passes;
-    }
-
-    public function getAuspiceReport($request): array {
-        $where = $this->buildWhere($request, false);
-        $result = DB::table('auspices')
-            ->select('auspices.id as auspiceId', 'auspice_materials.id as material_id', 'auspices.auspice_name',
-                'auspices.guide_id', 'auspices.rate_id', 'guides.guide_name', 'guides.media_id', 'guides.campaign_id', 'guides.billing_number',
-                'guides.editable as editable', 'rates.show', 'auspice_materials.duration', 'auspice_materials.material_name',
-                'rates.hour_ini', 'rates.hour_end', 'auspices.cost', 'media.media_name', 'media.business_name', 'order_number', 'order_numbers.version',
-                'media.NIT', 'media.media_type as mediaTypeId', 'media_types.media_type', 'campaigns.campaign_name', 'campaigns.id as budget',
-                'campaigns.plan_id', 'plan.client_id', 'plan.plan_name as plan_name', 'campaigns.date_ini', 'campaigns.date_end', 'campaigns.product',
-                'rates.hour_ini as hourIni', 'rates.hour_end as hourEnd', 'clients.id as clientId', 'auspices.manual_apportion',
-                'clients.client_name as client_name', 'clients.representative', 'clients.NIT as clientNIT',
-                'auspice_materials.total_cost as materialCost', 'clients.billing_address as billingAddress',
-                'clients.billing_policies as billingPolicies', 'cities.id as city_id', 'city')
-            ->join('auspice_materials', 'auspice_materials.auspice_id', '=', 'auspices.id')
-            ->join('guides', 'guides.id', '=', 'auspices.guide_id')
-            ->join('rates', 'rates.id', '=', 'auspices.rate_id')
-            ->join('media', 'media.id', '=', 'rates.media_id')
-            ->join('campaigns', 'campaigns.id', '=', 'guides.campaign_id')
-            ->join('plan', 'plan.id', '=', 'campaigns.plan_id')
-            ->join('clients', 'clients.id', '=', 'plan.client_id')
-            ->join('media_types', 'media_types.id', '=', 'media.media_type')
-            ->join('cities', 'cities.id', '=', 'media.city_id')
-            ->join('order_numbers', 'order_numbers.guide_id', '=', 'guides.id')
-            ->where($where)
-            ->get();
-        $user = User::find($request->userId);
-        $user = empty($user) ? 'System' : $user->name . ' ' .$user->lastname;
-        $fila = (object)[];
-        $aux = null;
-        $response = array();
-
-        foreach ($result as $key => $row) {
-            $material = AuspiceMaterial::where([
-                ['auspice_id', '=', $row->auspiceId],
-                ['deleted_at', '=', null]
-            ])->get();
-            $where = $this->buildDatesWhere($request, false, $row->material_id);
-            $plan = PlaningAuspiceMaterial::where($where)->select('*')->get();
-            $total_passes = PlaningAuspiceMaterial::where('material_auspice_id', '=', $row->material_id)
-                ->sum('times_per_day');
-
-            $times_per_day = 0;
-            $total_passes = floor($total_passes);
-            $started = false;
-            if (!empty($material) && count($material) > 0 && $total_passes > 0) {
-                foreach ($plan as $k => $r) {
-                    $fila->weekOfYear    = $this->weekOfYear(strtotime($r->broadcast_day));
-                    if ($started && $aux->weekOfYear != $fila->weekOfYear) {
-                        $response[]    = $aux;
-                        $times_per_day = 0;
-                    } else {
-                        $started = true;
-                    }
-                    if (filter_var($result[$key]->manual_apportion, FILTER_VALIDATE_BOOLEAN)) {
-                        $fila->cost      = $result[$key]->materialCost > 0 ? $result[$key]->materialCost / $total_passes : 0;
-                    } else {
-                        $fila->cost      = $this->getAuspiceUnitCost($row->cost, $total_passes, count($material));
-                    }
-                    $fila->user          = $user;
-                    $fila->row           = $row;
-                    $fila->currencyValue = $request['currency']->currency_value;
-                    $fila->duration      = $row->duration;
-                    $fila->broadcast_day = $r->broadcast_day;
-                    $fila->weekOfYear    = $this->weekOfYear(strtotime($r->broadcast_day));
-                    $fila->month         = date("m", strtotime($r->broadcast_day));
-                    $fila->year          = date("Y", strtotime($r->broadcast_day));
-                    $times_per_day       += $r->times_per_day;
-                    $fila->times_per_day = $times_per_day;
-                    $aux   = $fila;
-                    $fila  = (object)[];
-                }
-                $response[] = $aux;
-                $aux        = null;
-            }
-        }
-
-        return $response;
     }
 
     function weeksInMonth($month_date, $count_last=true) {
@@ -257,11 +169,6 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
         else {
             return $unitCost * $passes;
         }
-    }
-
-    public function getAuspiceUnitCost($cost, $passes, $totalMaterial) {
-        $total_cost = $cost / $totalMaterial;
-        return $total_cost / $passes;
     }
 
     function verifyWeek($aux): int {

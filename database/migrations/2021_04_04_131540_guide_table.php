@@ -16,10 +16,14 @@ class GuideTable extends Migration {
             $table->bigInteger('campaign_id')->unsigned();
             $table->boolean('editable');
             $table->string('billing_number', 30)->nullable();
+            $table->float('cost')->nullable();
+            $table->boolean('manual_apportion')->nullable()->default(1);
+            $table->bigInteger('guide_parent_id')->unsigned()->nullable();
             $table->timestamps();
             $table->softDeletes();
             $table->foreign('campaign_id')->references('id')->on('campaigns');
             $table->foreign('media_id')->references('id')->on('media');
+            $table->foreign('guide_parent_id')->references('id')->on('guides');
             $table->engine = 'InnoDB';
         });
     }

@@ -30,6 +30,7 @@ class GuideController extends BaseController {
         if (isset($search)) {
             array_push($where, ['campaigns.id', '=', $search]);
         }
+
         $result_guide = DB::table('guides')
             ->select('guides.id', 'guide_name as guideName', 'guides.date_ini as dateIni', 'campaigns.id as budget', 'clients.client_name as clientName',
                 'media.NIT as billingNumber', 'media.business_name as billingName', 'guides.date_end as dateEnd', 'media.id as mediaId', 'media_name as mediaName',
@@ -418,7 +419,7 @@ class GuideController extends BaseController {
             $material->total_cost =  $ro->totalCost;
             $material->save();
         }
-        return $total_cost;
+        return $result;
     }
 
     public function getGuideMaterials($id) {
@@ -430,27 +431,16 @@ class GuideController extends BaseController {
 
         $guide = $guide[0];
         $material = Material::select('materials.id', 'material_name as materialName', 'duration', 'total_cost', 'rates.show', 'rates.id as rateId')
-            ->join('rates', 'rates.id', '=', 'materials.rate_id')
-            ->where('guide_id', '=', $id)->get();
+            ->join('rates', 'rates.id', '=', 'materials.rate_id')->where('guide_id', '=', $id)->get();
         if (!$material) {
             return $this->sendResponse([]);
         }
 
         foreach ($material as $key => $row) {
-            $material_count = DB::table('material_planing')
-                ->where('material_id', '=', $row->id)
-                ->sum('times_per_day');
-
-            $material_planing = DB::table('material_planing')
-                ->where('material_id', '=', $row->id)->get();
-
-            $material[$key]->passes = (int)$material_count;
-            if(filter_var($guide->manual_apportion, FILTER_VALIDATE_BOOLEAN)) {
-                $material[$key]->cost = $material[$key]->total_cost;
-            } else {
-                $material[$key]->cost = number_format($guide->cost / count($material), 2, '.', '');
-            }
-
+            $material_count = DB::table('material_planing')->where('material_id', '=', $row->id)->sum('times_per_day');
+            $material_planing = DB::table('material_planing')->where('material_id', '=', $row->id)->get();
+            $row->passes = (int)$material_count;
+            $row->totalCost = filter_var($guide->manual_apportion, FILTER_VALIDATE_BOOLEAN) ? $row->total_cost : $guide->cost / count($material);
             $passes = [];
             foreach ($material_planing as $k => $r) {
                 $passes[$r->broadcast_day] = [
@@ -458,9 +448,12 @@ class GuideController extends BaseController {
                     'timesPerDay' => $r->times_per_day
                 ];
             }
-            $material[$key]->timesPerDay = $passes;
-            $material[$key]->guideName = $guide->guideName;
-            $material[$key]->mediaTypeValue = $guide->mediaTypeValue;
+
+            $row->timesPerDay    = $passes;
+            $row->guideName      = $guide->guideName;
+            $row->mediaTypeValue = $guide->mediaTypeValue;
+            $row->totalCost      = number_format($row->totalCost, 2, '.', '');
+            $row->unitCost       = number_format($row->totalCost / count($row->timesPerDay), 2, '.', '');
         }
         return $this->sendResponse($material);
     }

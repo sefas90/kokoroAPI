@@ -11,6 +11,7 @@ class MaterialTable extends Migration {
             $table->bigIncrements('id');
             $table->string('material_name');
             $table->bigInteger('duration'); // in seconds
+            $table->float('total_cost', 15)->after('duration');
             $table->bigInteger('guide_id')->unsigned();
             $table->bigInteger('rate_id')->unsigned();
             $table->timestamps();
