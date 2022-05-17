@@ -179,7 +179,7 @@
                     </td>
                     @endfor
                     <td>{{ $spots }}</td>
-                    <td class="right">{{ number_format($row->unitCost / $guideRow['currencyValue'], 2, ',', '.') }}</td>
+                    <td class="right">{{ number_format($row->totalCost / $spots / $guideRow['currencyValue'], 2, ',', '.') }}</td>
                     <td class="right">{{ number_format($row->totalCost / $guideRow['currencyValue'], 2, ',', '.') }}</td>
                 </tr>
                 @endif

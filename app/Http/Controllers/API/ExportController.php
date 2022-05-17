@@ -231,6 +231,8 @@ class ExportController extends BaseController {
                     if (isset($fila->planing)) {
                         $fila->totalCost = filter_var($fila->manualApportion, FILTER_VALIDATE_BOOLEAN) ? $fila->materialCost : $fila->guideCost / count($response['result']);
                         $response['totalMount'] += $fila->totalCost;
+                    } else {
+                        $fila->totalCost = 0;
                     }
                 }
 
