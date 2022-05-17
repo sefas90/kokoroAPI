@@ -24,8 +24,7 @@ class GuideController extends BaseController {
         $search = $request->search;
         $where = [
             ['campaigns.deleted_at', '=', null],
-            ['guides.deleted_at', '=', null],
-            ['guides.editable', '<>', 2]
+            ['guides.deleted_at', '=', null]
         ];
         if (isset($search)) {
             array_push($where, ['campaigns.id', '=', $search]);
