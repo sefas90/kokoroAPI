@@ -53,13 +53,9 @@
                 @else
                     <td>0</td>
                 @endif
-                @if (!empty($data->times_per_day))
-                    <td>{{ number_format($data->totalCost * $data->times_per_day, 2, '.', '') }}</td>
-                @else
-                    <td>0</td>
-                @endif
+                <td>{{ number_format($data->totalCost / $data->passes * $data->times_per_day, 2, '.', '') }}</td>
                 <td>{{ number_format($data->currencyValue, 2, '.', '') }}</td>
-                <td>{{ number_format($data->times_per_day * $data->cost / $data->currencyValue, 2, '.', '') }}</td>
+                <td>{{ number_format($data->totalCost / $data->passes * $data->times_per_day / $data->currencyValue, 2, '.', '') }}</td>
                 <td>{{ $data->row->billing_number }}</td>
             </tr>
         @endif

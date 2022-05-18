@@ -441,18 +441,20 @@ class GuideController extends BaseController {
             $row->passes = (int)$material_count;
             $row->totalCost = filter_var($guide->manual_apportion, FILTER_VALIDATE_BOOLEAN) ? $row->total_cost : $guide->cost / count($material);
             $passes = [];
-            foreach ($material_planing as $k => $r) {
+            $totalPasses = 0;
+                foreach ($material_planing as $k => $r) {
                 $passes[$r->broadcast_day] = [
                     'date' => date('Y-m-d h:i:s', strtotime($r->broadcast_day)),
                     'timesPerDay' => $r->times_per_day
                 ];
+                $totalPasses += $r->times_per_day;
             }
 
             $row->timesPerDay    = $passes;
             $row->guideName      = $guide->guideName;
             $row->mediaTypeValue = $guide->mediaTypeValue;
             $row->totalCost      = number_format($row->totalCost, 2, '.', '');
-            $row->unitCost       = number_format($row->totalCost / count($row->timesPerDay), 2, '.', '');
+            $row->unitCost       = number_format($row->totalCost / $totalPasses, 2, '.', '');
         }
         return $this->sendResponse($material);
     }

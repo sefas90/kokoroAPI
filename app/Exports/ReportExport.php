@@ -39,8 +39,9 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
         $result = Client::select('clients.id as client_id', 'client_name', 'representative', 'clients.NIT as clientNit',
             'billing_address', 'billing_policies', 'plan_name', 'campaigns.id as budget', 'plan.id as plan_id',
             'guide_name', 'guides.id as guide_id', 'manual_apportion as manualApportion', 'media.id as media_id',
-            'material_name', 'duration', 'materials.id as material_id', 'materials.material_name', 'product',
+            'material_name', 'duration', 'materials.id as material_id', 'materials.material_name', 'product', 'materials.total_cost as materialCost',
             'campaign_name', 'guides.billing_number', 'rates.id as rate_id', 'show', 'rates.cost', 'media_name',
+            'guides.cost as guideCost',
             'business_name', 'cities.id as city_id', 'city', 'media_types.media_type')
             ->join('plan', 'plan.client_id', '=', 'clients.id')
             ->join('campaigns', 'campaigns.plan_id', '=', 'plan.id')
@@ -74,12 +75,18 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
                 } else {
                     $started = true;
                 }
+
+                $totalPasses = 0;
+                foreach ($plan as $pl => $pla) {
+                    $totalPasses += $r->times_per_day;
+                }
+                $materials = Material::where('guide_id', '=', $row->guide_id)->get();
                 $fila->user          = $user;
                 $fila->row           = $row;
                 $fila->cost          = $this->getUnitCost($row->cost, $row->media_type, $row->duration);
+                $fila->passes        = $totalPasses;
                 $fila->totalCost     = filter_var($row->manualApportion, FILTER_VALIDATE_BOOLEAN) ?
-                    $this->getManualGuideCost($row->guide_id) :
-                    $this->getAutoGuideCost($row->cost, $row->guide_id);
+                    $row->materialCost : $row->guideCost / count($materials);
                 $fila->weeksInMonth  = $this->weeksInMonth(new DateTime($r->broadcast_day));
                 $fila->currencyValue = $request['currency']->currency_value;
                 $fila->duration      = $row->duration;
