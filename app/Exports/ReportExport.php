@@ -78,7 +78,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
 
                 $totalPasses = 0;
                 foreach ($plan as $pl => $pla) {
-                    $totalPasses += $r->times_per_day;
+                    $totalPasses += (int)$pla->times_per_day;
                 }
                 $materials = Material::where('guide_id', '=', $row->guide_id)->get();
                 $fila->user          = $user;
