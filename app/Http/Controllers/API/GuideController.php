@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Models\Auspice;
 use App\Models\AuspiceMaterial;
+use App\Models\Campaign;
 use App\Models\Guide;
 use App\Models\Material;
 use App\Models\OrderNumber;
@@ -90,6 +91,7 @@ class GuideController extends BaseController {
             'date_end'        => trim($request->dateEnd),
             'media_id'        => trim($request->mediaId),
             'campaign_id'     => trim($request->campaignId),
+            'product'         => trim($request->product),
             'guide_parent_id' => empty($request->guideParentId) ? null : (trim($request->guideParentId)),
             'billing_number'  => null,
             'editable'        => 1,
@@ -131,7 +133,8 @@ class GuideController extends BaseController {
         $guide->date_end        = trim($request->dateEnd);
         $guide->media_id        = trim($request->mediaId);
         $guide->campaign_id     = trim($request->campaignId);
-        $guide->guide_parent_id = trim($request->guideParentId);
+        $guide->product         = trim($request->product);
+        $guide->guide_parent_id = empty($request->guideParentId) ? null : (trim($request->guideParentId));
 
         // TODO review this logic with the client
         /*if ($guide->media_id) {
@@ -155,10 +158,6 @@ class GuideController extends BaseController {
         if (!$guide) {
             return $this->sendError('No se encontro la guia');
         }
-        // TODO WTF with this code
-        /*if (count(Material::where('guide_id', '=', $guide->id)->get()) > 0) {
-            return $this->sendError('unD_Material', null, 200);
-        }*/
 
         return $guide->delete() ?
             $this->sendResponse('', 'La puta ' . $guide->guide_name . ' se elimino correctamente.') :
@@ -313,6 +312,7 @@ class GuideController extends BaseController {
             ])
             ->get();
         foreach ($result_guide as $k => $r) {
+            $campaign = Campaign::find($r->campaign_id);
             $auspice = Auspice::where('guide_id', '=', $r->id)->get();
             $orderNumber = OrderNumber::where('guide_id', '=', $r->id)->get();
             foreach ($auspice as $key => $row) {
@@ -327,6 +327,7 @@ class GuideController extends BaseController {
                 'editable'         => $r->editable,
                 'guide_parent_id'  => $row->guide_id,
                 'billing_number'   => $r->billing_number,
+                'product'          => $campaign->product,
                 'created_at'       => $r->created_at,
                 'updated_at'       => $r->updated_at,
                 'deleted_at'       => $r->deleted_at

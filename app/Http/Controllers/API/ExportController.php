@@ -309,7 +309,7 @@ class ExportController extends BaseController {
                 ]);
             }
         } else {
-            // TODO if search cant find search parent order_number
+            // TODO if search cant find search parent order_number /* review 2.0 */
             $parent = Guide::find($id);
             $orderNumber = OrderNumber::where('guide_id', '=', $parent->guide_parent_id)->get();
             if (count($orderNumber) > 0) {
