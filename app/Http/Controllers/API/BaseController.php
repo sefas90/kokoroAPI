@@ -27,6 +27,17 @@ class BaseController extends Controller {
         return response()->json($response, $code);
     }
 
+    public function sendWarning($error, $errorMessages = [], $code = 200) {
+        $response = [
+            'success' => false,
+            'message' => $error,
+        ];
+        if(!empty($errorMessages)){
+            $response['data'] = $errorMessages;
+        }
+        return response()->json($response, $code);
+    }
+
     public function exportPdf($response, $view, $downloadName) {
         $micro = microtime(true);
         view()->share('data', $response);

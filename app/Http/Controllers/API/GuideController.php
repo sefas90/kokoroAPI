@@ -79,6 +79,7 @@ class GuideController extends BaseController {
             'dateEnd'    => ['required', 'after_or_equal:dateIni'],
             'mediaId'    => 'required',
             'campaignId' => 'required',
+            'product'    => 'required',
         ]);
 
         if($validator->fails()){
@@ -117,6 +118,7 @@ class GuideController extends BaseController {
             'dateEnd'    => ['required', 'after_or_equal:dateIni'],
             'mediaId'    => 'required',
             'campaignId' => 'required',
+            'product'    => 'required',
         ]);
 
         if($validator->fails()){

@@ -239,7 +239,7 @@ class ExportController extends BaseController {
                 return !$request->isOrderCampaign ? $this->exportPdf($response, 'orderGuide', 'orderGuide.pdf') : $response;
             } else {
                 $request['isOrderCampaign'] = !!$request->isOrderCampaign;
-                return !$request->isOrderCampaign ? $this->sendError('No tiene materiales') : [];
+                return !$request->isOrderCampaign ? $this->sendWarning('No tiene materiales') : [];
             }
         } else {
             return $this->sendError('Error de validacion.', $validator->errors());
