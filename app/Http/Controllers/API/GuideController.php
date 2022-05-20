@@ -313,11 +313,14 @@ class GuideController extends BaseController {
                 ['auspices.deleted_at', '=', null]
             ])
             ->get();
-        foreach ($result_guide as $k => $r) {
-            $campaign = Campaign::find($r->campaign_id);
-            $guide  = Guide::find($r->id);
+        $guides = Guide::all();
+        foreach ($guides as $g => $guide) {
+            $campaign = Campaign::find($guide->campaign_id);
             $guide->product = $campaign->product;
             $guide->save();
+        }
+        foreach ($result_guide as $k => $r) {
+            $campaign = Campaign::find($r->campaign_id);
             $auspice = Auspice::where('guide_id', '=', $r->id)->get();
             $orderNumber = OrderNumber::where('guide_id', '=', $r->id)->get();
             foreach ($auspice as $key => $row) {
