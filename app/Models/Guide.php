@@ -19,6 +19,7 @@ class Guide extends Model {
         'editable',
         'guide_parent_id',
         'billing_number',
+        'product',
         'created_at',
         'updated_at',
         'deleted_at'
