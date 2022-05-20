@@ -67,7 +67,7 @@ class MaterialController extends BaseController {
             'duration'      => empty($request->duration) ? 0 : trim($request->duration),
             'guide_id'      => trim($request->guideId),
             'rate_id'       => trim($request->rateId),
-            'cost'          => trim($request->cost),
+            'total_cost'    => trim($request->cost),
         ));
 
         if($material->save())  {
@@ -123,11 +123,10 @@ class MaterialController extends BaseController {
         $material->duration      = empty($request->duration) ? 0 : trim($request->duration);
         $material->guide_id      = trim($request->guideId);
         $material->rate_id       = trim($request->rateId);
-        $material->cost          = trim($request->cost);
+        $material->total_cost    = trim($request->cost);
 
         if($material->save())  {
             $success = false;
-
             $post = PlaningMaterial::where('material_id', $id)->get();
 
             foreach ($post as $pos => $rew) {

@@ -23,7 +23,7 @@ class CampaignController extends BaseController {
         }
         $sort = explode(":", $request->sort);
         $result = DB::table('campaigns')
-            ->select('campaigns.id', 'campaign_name as campaignName', 'clients.client_name as clientName', 'clients.id as clientId', 'date_ini as dateIni', 'date_end as dateEnd', 'plan.plan_name as planName', 'plan.id as planId', 'product')
+            ->select('campaigns.id', 'campaign_name as campaignName', 'clients.client_name as clientName', 'clients.id as clientId', 'date_ini as dateIni', 'date_end as dateEnd', 'plan.plan_name as planName', 'plan.id as planId')
             ->join('plan', 'plan.id', '=', 'campaigns.plan_id')
             ->join('clients', 'clients.id', '=', 'plan.client_id')
             ->where($where)
@@ -39,7 +39,6 @@ class CampaignController extends BaseController {
     public function store(Request $request) {
         $validator = Validator::make($request->all(), [
             'campaignName' => 'required',
-            'product'      => 'required',
             'dateIni'      => ['required', 'before_or_equal:dateEnd'],
             'dateEnd'      => ['required', 'after_or_equal:dateIni'],
             'planId'       => 'required',
@@ -51,7 +50,6 @@ class CampaignController extends BaseController {
 
         $campaign = new Campaign(array(
             'campaign_name' => trim($request->campaignName),
-            'product'       => trim($request->product),
             'date_ini'      => trim($request->dateIni),
             'date_end'      => trim($request->dateEnd),
             'plan_id'       => trim($request->planId),
@@ -73,7 +71,6 @@ class CampaignController extends BaseController {
     public function update(Request $request, $id) {
         $validator = Validator::make($request->all(), [
             'campaignName' => 'required',
-            'product'      => 'required',
             'dateIni'      => ['required', 'before_or_equal:dateEnd'],
             'dateEnd'      => ['required', 'after_or_equal:dateIni'],
             'planId'       => 'required',
@@ -89,7 +86,6 @@ class CampaignController extends BaseController {
         }
 
         $campaign->campaign_name = trim($request->campaignName);
-        $campaign->product       = trim($request->product);
         $campaign->date_ini      = trim($request->dateIni);
         $campaign->date_end      = trim($request->dateEnd);
         $campaign->plan_id       = trim($request->planId);

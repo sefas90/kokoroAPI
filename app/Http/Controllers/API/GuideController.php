@@ -93,8 +93,8 @@ class GuideController extends BaseController {
             'media_id'         => trim($request->mediaId),
             'campaign_id'      => trim($request->campaignId),
             'product'          => trim($request->product),
-            'cost'             => trim($request->cost),
-            'manual_apportion' => trim($request->manualApportion),
+            'cost'             => empty($request->cost) ? 0 : trim($request->cost),
+            'manual_apportion' => !!$request->manualApportion,
             'guide_parent_id'  => empty($request->guideParentId) ? null : (trim($request->guideParentId)),
             'billing_number'   => null,
             'editable'         => 1,
@@ -136,7 +136,7 @@ class GuideController extends BaseController {
         $guide->date_end        = trim($request->dateEnd);
         $guide->campaign_id     = trim($request->campaignId);
         $guide->product         = trim($request->product);
-        $guide->cost            = trim($request->cost);
+        $guide->cost            = empty($request->cost) ? 0 : trim($request->cost);
         $guide->guide_parent_id = empty($request->guideParentId) ? null : (trim($request->guideParentId));
 
         return $guide->save() ?
