@@ -87,15 +87,17 @@ class GuideController extends BaseController {
         }
 
         $guide = new Guide(array(
-            'guide_name'      => trim($request->guideName),
-            'date_ini'        => trim($request->dateIni),
-            'date_end'        => trim($request->dateEnd),
-            'media_id'        => trim($request->mediaId),
-            'campaign_id'     => trim($request->campaignId),
-            'product'         => trim($request->product),
-            'guide_parent_id' => empty($request->guideParentId) ? null : (trim($request->guideParentId)),
-            'billing_number'  => null,
-            'editable'        => 1,
+            'guide_name'       => trim($request->guideName),
+            'date_ini'         => trim($request->dateIni),
+            'date_end'         => trim($request->dateEnd),
+            'media_id'         => trim($request->mediaId),
+            'campaign_id'      => trim($request->campaignId),
+            'product'          => trim($request->product),
+            'cost'             => trim($request->cost),
+            'manual_apportion' => trim($request->manualApportion),
+            'guide_parent_id'  => empty($request->guideParentId) ? null : (trim($request->guideParentId)),
+            'billing_number'   => null,
+            'editable'         => 1,
         ));
 
         return $guide->save() ?
@@ -116,7 +118,6 @@ class GuideController extends BaseController {
             'guideName'  => 'required',
             'dateIni'    => ['required', 'before_or_equal:dateEnd'],
             'dateEnd'    => ['required', 'after_or_equal:dateIni'],
-            'mediaId'    => 'required',
             'campaignId' => 'required',
             'product'    => 'required',
         ]);
@@ -133,22 +134,10 @@ class GuideController extends BaseController {
         $guide->guide_name      = trim($request->guideName);
         $guide->date_ini        = trim($request->dateIni);
         $guide->date_end        = trim($request->dateEnd);
-        $guide->media_id        = trim($request->mediaId);
         $guide->campaign_id     = trim($request->campaignId);
         $guide->product         = trim($request->product);
+        $guide->cost            = trim($request->cost);
         $guide->guide_parent_id = empty($request->guideParentId) ? null : (trim($request->guideParentId));
-
-        // TODO review this logic with the client
-        /*if ($guide->media_id) {
-            // remove associated materials
-            $materials = Material::where('guide_id', '=', $id)->get();
-            foreach ($materials as $key => $row) {
-                $material = Material::find($row->id);
-                $material->guide_id = 0;
-                $material->save();
-                // $material->delete();
-            }
-        }*/
 
         return $guide->save() ?
             $this->sendResponse('', 'El guide ' . $guide->guide_name . ' se actualizo correctamente') :

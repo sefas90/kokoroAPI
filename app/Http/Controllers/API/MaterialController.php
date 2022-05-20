@@ -67,6 +67,7 @@ class MaterialController extends BaseController {
             'duration'      => empty($request->duration) ? 0 : trim($request->duration),
             'guide_id'      => trim($request->guideId),
             'rate_id'       => trim($request->rateId),
+            'cost'          => trim($request->cost),
         ));
 
         if($material->save())  {
@@ -122,6 +123,7 @@ class MaterialController extends BaseController {
         $material->duration      = empty($request->duration) ? 0 : trim($request->duration);
         $material->guide_id      = trim($request->guideId);
         $material->rate_id       = trim($request->rateId);
+        $material->cost          = trim($request->cost);
 
         if($material->save())  {
             $success = false;
@@ -136,7 +138,7 @@ class MaterialController extends BaseController {
             foreach ($request['timesPerDay'] as $key => $row) {
                 $materialPlaning = new PlaningMaterial(array(
                     'material_id' => $material['id'],
-                    'times_per_day' => $row['timesPerDay'],
+                    'ti' => $row['timesPerDay'],
                     'broadcast_day' => $row['date']
                 ));
 
