@@ -96,7 +96,8 @@
                 <tr>
                     <th class="md-3" rowspan="2"><img src="../public/logo_kokoro.svg" width="80%"></th>
                     <th class="md-3 center" rowspan="2"><h1>{{$guideRow['businessName']}}</h1></th>
-                    <th class="md-3" colspan="2">Numero de orden: {{$guideRow['order']}}</th>
+                    <th class="md-3">Numero de orden: {{$guideRow['order']}}</th>
+                    <th class="md-3">Producto: {{$guideRow['product']}}</th>
                 </tr>
                 <tr>
                     <th>Fecha de emision:<br>{{$guideRow['date']}}</th>

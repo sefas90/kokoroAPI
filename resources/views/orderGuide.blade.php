@@ -84,6 +84,7 @@
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <link rel="stylesheet" href="../css/app.css">
 </head>
 <body>
 <span class="hidden">{{$count = 0}}</span>
@@ -95,7 +96,8 @@
                 <tr>
                     <th class="md-3" rowspan="2"><img src="../public/logo_kokoro.svg" width="80%"></th>
                     <th class="md-3 center" rowspan="2"><h1>{{$data['businessName']}}</h1></th>
-                    <th class="md-3" colspan="2">Numero de orden: {{$data['order']}}</th>
+                    <th class="md-3">Numero de orden: {{$data['order']}}</th>
+                    <th class="md-3">Producto: {{$data['product']}}</th>
                 </tr>
                 <tr>
                     <th>Fecha de emision:<br>{{$data['date']}}</th>

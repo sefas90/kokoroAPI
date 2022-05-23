@@ -42,7 +42,7 @@ class ExportController extends BaseController {
                 ])
                 ->select('materials.id as id', 'materials.material_name', 'materials.duration', 'materials.guide_id', 'materials.rate_id', 'materials.total_cost as materialCost',
                     'guides.guide_name', 'guides.media_id', 'guides.campaign_id', 'guides.editable as editable', 'guides.cost as guideCost',
-                    'guides.date_ini as guideDateIni', 'guides.editable', 'guides.manual_apportion as manualApportion',
+                    'guides.date_ini as guideDateIni', 'guides.editable', 'guides.manual_apportion as manualApportion', 'guides.product',
                     'rates.show', 'rates.hour_ini', 'rates.hour_end', 'rates.cost', 'media.media_name', 'media.business_name', 'media.NIT',
                     'media.media_type as mediaTypeId', 'media_types.media_type', 'campaigns.campaign_name', 'campaigns.plan_id',
                     'plan.client_id', 'campaigns.date_ini', 'campaigns.date_end', 'rates.hour_ini as hourIni', 'rates.hour_end as hourEnd',
@@ -198,6 +198,7 @@ class ExportController extends BaseController {
                 $response = [
                     'result'          => $result,
                     'status'          => $result[0]->editable,
+                    'product'         => $result[0]->product,
                     'status_value'    => $this->getStatus($result[0]->editable),
                     'order'           => $orderNumber,
                     'client'          => $result[0]->clientName,

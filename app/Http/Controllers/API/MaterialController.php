@@ -137,7 +137,7 @@ class MaterialController extends BaseController {
             foreach ($request['timesPerDay'] as $key => $row) {
                 $materialPlaning = new PlaningMaterial(array(
                     'material_id' => $material['id'],
-                    'timesPerDay' => $row['timesPerDay'],
+                    'times_per_day' => $row['timesPerDay'],
                     'broadcast_day' => $row['date']
                 ));
 
