@@ -27,7 +27,7 @@ class BaseController extends Controller {
         return response()->json($response, $code);
     }
 
-    public function sendWarning($error, $errorMessages = [], $code = 200) {
+    public function sendWarning($error, $errorMessages = [], $code = 404) {
         $response = [
             'success' => false,
             'message' => $error,
