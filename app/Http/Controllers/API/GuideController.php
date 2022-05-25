@@ -95,7 +95,7 @@ class GuideController extends BaseController {
             'product'          => trim($request->product),
             'cost'             => empty($request->cost) ? 0 : trim($request->cost),
             'manual_apportion' => !!$request->manualApportion,
-            'guide_parent_id'  => empty($request->parentGuide) ? null : (trim($request->parentGuide)),
+            'guide_parent_id'  => empty($request->guideParentId) ? null : (trim($request->guideParentId)),
             'billing_number'   => null,
             'editable'         => 1,
         ));
