@@ -95,7 +95,7 @@ class GuideController extends BaseController {
             'product'          => trim($request->product),
             'cost'             => empty($request->cost) ? 0 : trim($request->cost),
             'manual_apportion' => !!$request->manualApportion,
-            'guide_parent_id'  => empty($request->guideParentId) ? null : (trim($request->guideParentId)),
+            'guide_parent_id'  => empty($request->parentGuide) ? null : (trim($request->parentGuide)),
             'billing_number'   => null,
             'editable'         => 1,
         ));
@@ -168,9 +168,10 @@ class GuideController extends BaseController {
     public function guideParentList($id) {
         $guides = Guide::where([
             ['guide_parent_id', '=', null],
-            ['campaign.id', '=', $id]
+            ['campaigns.id', '=', $id]
         ])
             ->join('campaigns', 'campaigns.id', '=', 'guides.campaign_id')
+            ->select('guides.guide_name as label', 'guides.id', 'guides.id as value')
             ->get();
         return $this->sendResponse($guides);
     }

@@ -310,17 +310,23 @@ class ExportController extends BaseController {
                 ]);
             }
         } else {
-            // TODO if search cant find search parent order_number /* review 2.0 */
             $parent = Guide::find($id);
             $orderNumber = OrderNumber::where('guide_id', '=', $parent->guide_parent_id)->get();
+            $id = $parent->guide_parent_id;
             if (count($orderNumber) > 0) {
-                $orderNumber = $orderNumber[0];
-                if ($orderNumber->order_number) {
-                    $order = $orderNumber->order_number . '.' . $orderNumber->version;
+                if($parent->editable == 1) {
+                    $max_order   = OrderNumber::where('guide_id', '=', $id)->get()->max('order_number');
+                    $max_version = OrderNumber::where('guide_id', '=', $id)->get()->max('version') + 1;
+                    return $this->sendResponse([
+                        'order_number'  => ''. $max_order . '.' . $max_version
+                    ]);
+                } else {
+                    $max_order   = OrderNumber::where('guide_id', '=', $id)->get()->max('order_number');
+                    $max_version = OrderNumber::where('guide_id', '=', $id)->get()->max('version');
+                    return $this->sendResponse([
+                        'order_number'  => ''. $max_order . '.' . $max_version
+                    ]);
                 }
-                return $this->sendResponse([
-                    'order_number'  => $order
-                ]);
             } else {
                 $order = OrderNumber::all()->max('order_number') + 1;
                 return $this->sendResponse([
