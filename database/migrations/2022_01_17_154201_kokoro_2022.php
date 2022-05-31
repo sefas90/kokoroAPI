@@ -16,7 +16,7 @@ class Kokoro2022 extends Migration {
         });
 
         Schema::table('users', function (Blueprint $table) {
-            $table->string('name', 30)->unique();
+            $table->string('name', 30)->unique()->change();
         });
 
         Schema::table('materials', function (Blueprint $table) {
