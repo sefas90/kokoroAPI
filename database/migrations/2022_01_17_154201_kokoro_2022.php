@@ -15,6 +15,10 @@ class Kokoro2022 extends Migration {
             $table->engine = 'InnoDB';
         });
 
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('name', 30)->unique();
+        });
+
         Schema::table('materials', function (Blueprint $table) {
             $table->float('total_cost', 15)->nullable()->default(0)->after('duration');
         });

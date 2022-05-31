@@ -129,6 +129,7 @@ class ExportController extends BaseController {
                 }
 
                 // Order number
+                // TODO FIX WHEN MULTIPLE CHILD
                 if($result[0]->editable == 1) {
                     if (count($orderNumber) > 0) {
                         $orderNumber = OrderNumber::find($orderNumber[0]->id);
