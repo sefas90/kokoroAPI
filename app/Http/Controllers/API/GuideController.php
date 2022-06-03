@@ -100,9 +100,28 @@ class GuideController extends BaseController {
             'editable'         => 1,
         ));
 
-        return $guide->save() ?
-            $this->sendResponse('', 'El guide ' . $guide->guide_name . ' se guardo correctamente') :
-            $this->sendError('Ocurrio un error al crear un nuevo guide.');
+        if (filter_var($request->isCopy, FILTER_VALIDATE_BOOLEAN)) {
+            $materials = Material::where('guide_id', '=', $request->guideId)->get();
+            // dd($materials);
+            if ($guide->save()) {
+                foreach ($materials as $g => $material) {
+                    Material::create([
+                        'material_name' => $material->material_name,
+                        'duration'      => $material->duration,
+                        'total_cost'    => $material->total_cost,
+                        'guide_id'      => $guide->id,
+                        'rate_id'       => $material->rate_id
+                    ]);
+                }
+                return $this->sendResponse('', 'El guide ' . $guide->guide_name . ' se copio correctamente');
+            } else {
+                return $this->sendError('Ocurrio un error al crear un nuevo guide.');
+            }
+        } else {
+            return $guide->save() ?
+                $this->sendResponse('', 'El guide ' . $guide->guide_name . ' se guardo correctamente') :
+                $this->sendError('Ocurrio un error al crear un nuevo guide.');
+        }
     }
 
     public function show($id) {
@@ -441,19 +460,18 @@ class GuideController extends BaseController {
             $row->totalCost = filter_var($guide->manual_apportion, FILTER_VALIDATE_BOOLEAN) ? $row->total_cost : $guide->cost / count($material);
             $passes = [];
             $totalPasses = 0;
-                foreach ($material_planing as $k => $r) {
+            $row->timesPerDay    = $passes;
+            $row->guideName      = $guide->guideName;
+            $row->mediaTypeValue = $guide->mediaTypeValue;
+            foreach ($material_planing as $k => $r) {
                 $passes[$r->broadcast_day] = [
                     'date' => date('Y-m-d h:i:s', strtotime($r->broadcast_day)),
                     'timesPerDay' => $r->times_per_day
                 ];
                 $totalPasses += $r->times_per_day;
             }
-
-            $row->timesPerDay    = $passes;
-            $row->guideName      = $guide->guideName;
-            $row->mediaTypeValue = $guide->mediaTypeValue;
-            $row->totalCost      = number_format($row->totalCost, 2, '.', '');
-            $row->unitCost       = number_format($row->totalCost / $totalPasses, 2, '.', '');
+            $row->totalCost = number_format($row->totalCost, 2, '.', '');
+            $row->unitCost  = $totalPasses > 0 ? number_format($row->totalCost / $totalPasses, 2, '.', '') : 0;
         }
         return $this->sendResponse($material);
     }

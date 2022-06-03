@@ -129,7 +129,7 @@ class ExportController extends BaseController {
                 }
 
                 // Order number
-                // TODO FIX WHEN MULTIPLE CHILD
+                // TODO MULTIPLE CHILD v1
                 if($result[0]->editable == 1) {
                     if (count($orderNumber) > 0) {
                         $orderNumber = OrderNumber::find($orderNumber[0]->id);
@@ -149,16 +149,18 @@ class ExportController extends BaseController {
                                 'observation'  => $observation[1]
                             ]);
                         } else {
-                            if ($isChild){
-                                $orderNumber2 = OrderNumber::where('guide_id', '=', $guide->guide_parent_id)->get()->last();
-                                $observation[0] = $request->newOrder ?
-                                    'Remplazando a la orden '.$orderNumber2->order_number.'.'.$orderNumber2->version :
-                                    ($orderNumber2->version == 0 ?
-                                        '' :
-                                        'Remplazando a la orden '.$orderNumber2->order_number.'.'.($orderNumber2->version - 1));
-                                $orderNumber2->version = $request->newOrder ? $orderNumber2->version + 1 : $orderNumber2->version;
-                                $orderNumber2->observation = $observation[0].' - '.$observation[1];
-                                $orderNumber2->save();
+                            if ($isChild) {
+                                $orderNumber2 = OrderNumber::where('guide_id', '=', $guide->guide_parent_id)->get();
+                                foreach ($orderNumber2 as $k => $ord) {
+                                    $observation[0] = $request->newOrder ?
+                                        'Remplazando a la orden '.$orderNumber2->order_number.'.'.$orderNumber2->version :
+                                        ($orderNumber2->version == 0 ?
+                                            '' :
+                                            'Remplazando a la orden '.$orderNumber2->order_number.'.'.($orderNumber2->version - 1));
+                                    $ord->version = $request->newOrder ? $orderNumber2->version + 1 : $orderNumber2->version;
+                                    $ord->observation = $observation[0].' - '.$observation[1];
+                                    $ord->save();
+                                }
                             }
                         }
                     } else {
