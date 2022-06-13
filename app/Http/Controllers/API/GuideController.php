@@ -444,10 +444,8 @@ class GuideController extends BaseController {
             ->select('guides.id', 'guide_name as guideName', 'guides.cost', 'manual_apportion', 'guides.date_ini as dateIni', 'guides.date_end as dateEnd', 'media_types.media_type as mediaTypeValue')
             ->join('media', 'media.id', '=', 'guides.media_id')
             ->join('media_types', 'media_types.id', '=', 'media.media_type')
-            ->get();
-
-        $guide = $guide[0];
-        $material = Material::select('materials.id', 'material_name as materialName', 'duration', 'total_cost', 'rates.show', 'rates.id as rateId')
+            ->get()->last();
+        $material = Material::select('materials.id as id', 'material_name as materialName', 'duration', 'total_cost', 'rates.show', 'rates.id as rateId')
             ->join('rates', 'rates.id', '=', 'materials.rate_id')->where('guide_id', '=', $id)->get();
         if (!$material) {
             return $this->sendResponse([]);
@@ -460,7 +458,6 @@ class GuideController extends BaseController {
             $row->totalCost = filter_var($guide->manual_apportion, FILTER_VALIDATE_BOOLEAN) ? $row->total_cost : $guide->cost / count($material);
             $passes = [];
             $totalPasses = 0;
-            $row->timesPerDay    = $passes;
             $row->guideName      = $guide->guideName;
             $row->mediaTypeValue = $guide->mediaTypeValue;
             foreach ($material_planing as $k => $r) {
@@ -470,8 +467,9 @@ class GuideController extends BaseController {
                 ];
                 $totalPasses += $r->times_per_day;
             }
-            $row->totalCost = number_format($row->totalCost, 2, '.', '');
-            $row->unitCost  = $totalPasses > 0 ? number_format($row->totalCost / $totalPasses, 2, '.', '') : 0;
+            $row->timesPerDay = $passes;
+            $row->totalCost   = number_format($row->totalCost, 2, '.', '');
+            $row->unitCost    = $totalPasses > 0 ? number_format($row->totalCost / $totalPasses, 2, '.', '') : 0;
         }
         return $this->sendResponse($material);
     }

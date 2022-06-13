@@ -28,7 +28,7 @@
     </thead>
     <tbody>
     @foreach ($datas[0] as $data)
-        @if($data && $data->row)
+        @if($data && $data->row)]
             <tr>
                 <td>{{ $data->row->client_name }}</td>
                 <td>{{ $data->user }}</td>
@@ -47,7 +47,7 @@
                 <td>{{ $data->row->city }}</td>
                 <td>{{ $data->row->representative }}</td>
                 <td>{{ $data->row->budget }}</td>
-                <td></td>
+                <td>{{ $data->row->orderNumber }}</td>
                 @if (!empty($data->times_per_day))
                     <td>{{ $data->times_per_day }}</td>
                 @else

@@ -5,6 +5,7 @@ namespace App\Exports;
 use App\Models\Client;
 use App\Models\Currency;
 use App\Models\Material;
+use App\Models\OrderNumber;
 use App\Models\PlaningMaterial;
 use App\Models\User;
 use DateInterval;
@@ -41,7 +42,7 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
             'guide_name', 'guides.id as guide_id', 'manual_apportion as manualApportion', 'media.id as media_id',
             'material_name', 'duration', 'materials.id as material_id', 'materials.material_name', 'guides.product', 'materials.total_cost as materialCost',
             'campaign_name', 'guides.billing_number', 'rates.id as rate_id', 'show', 'rates.cost', 'media_name',
-            'guides.cost as guideCost',
+            'guides.cost as guideCost', 'guides.guide_parent_id',
             'business_name', 'cities.id as city_id', 'city', 'media_types.media_type')
             ->join('plan', 'plan.client_id', '=', 'clients.id')
             ->join('campaigns', 'campaigns.plan_id', '=', 'plan.id')
@@ -67,6 +68,9 @@ class ReportExport implements FromView, Responsable, ShouldAutoSize {
                 ->get();
             $times_per_day = 0;
             $started = false;
+            $orderNumber = OrderNumber::where('guide_id', '=', $row->guide_id)->get()->last();
+            $orderNumber = !!$orderNumber ? $orderNumber : OrderNumber::where('guide_id', '=', $row->guide_parent_id)->get()->last();
+            $row->orderNumber = $orderNumber->order_number . '.' . $orderNumber->version;
             foreach ($plan as $k => $r) {
                 $fila->weekOfYear    = $this->weekOfYear(strtotime($r->broadcast_day));
                 if ($started && $aux->weekOfYear != $fila->weekOfYear) {
