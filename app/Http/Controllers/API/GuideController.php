@@ -467,6 +467,9 @@ class GuideController extends BaseController {
                 ];
                 $totalPasses += $r->times_per_day;
             }
+            if (empty($passes)) {
+                $passes = (object)[];
+            }
             $row->timesPerDay = $passes;
             $row->totalCost   = number_format($row->totalCost, 2, '.', '');
             $row->unitCost    = $totalPasses > 0 ? number_format($row->totalCost / $totalPasses, 2, '.', '') : 0;
