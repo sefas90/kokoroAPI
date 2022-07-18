@@ -218,11 +218,11 @@
                     <td colspan="2">Observaciones:</td>
                 </tr>
                 <tr>
-                    <td>{{ $guideRow['billingToName'] }}<br>{{ $guideRow['billingToNit'] }}</td>
-                    <td>{{ $guideRow['billingAddress'] }}</td>
-                    <td>{{ $guideRow['billingPolicies'] }}</td>
-                    <td>{{ $guideRow['observation1'] }}</td>
-                    <td>
+                    <td class="md-5">{{ $guideRow['billingToName'] }}<br>{{ $guideRow['billingToNit'] }}</td>
+                    <td class="md-5">{{ $guideRow['billingAddress'] }}</td>
+                    <td class="md-5">{{ $guideRow['billingPolicies'] }}</td>
+                    <td class="md-5">{{ $guideRow['observation1'] }}</td>
+                    <td class="md-5">
                         @if($guideRow['status'] == 2)
                         <div class="canceled">{{ $guideRow['status_value'] }}</div>
                         @endif

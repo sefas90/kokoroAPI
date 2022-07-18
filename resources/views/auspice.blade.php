@@ -134,11 +134,11 @@
                 <td colspan="2">Observaciones:</td>
             </tr>
             <tr>
-                <td>{{ $data['billingToName'] }}<br>{{ $data['billingToNit'] }}</td>
-                <td>{{ $data['billingAddress'] }}</td>
-                <td>{{ $data['billingPolicies'] }}</td>
-                <td>{{ $data['observation1'] }}</td>
-                <td>
+                <td class="md-5">{{ $data['billingToName'] }}<br>{{ $data['billingToNit'] }}</td>
+                <td class="md-5">{{ $data['billingAddress'] }}</td>
+                <td class="md-5">{{ $data['billingPolicies'] }}</td>
+                <td class="md-5">{{ $data['observation1'] }}</td>
+                <td class="md-5">
                     @if($data['status'] == 2)
                         <div class="canceled">{{ $data['status_value'] }}</div>
                     @endif
