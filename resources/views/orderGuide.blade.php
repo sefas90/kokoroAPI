@@ -7,6 +7,7 @@
     }
     .md-5 {
         width: 20%;
+        max-width: 20%;
     }
     .data-table {
         width: 100%;
